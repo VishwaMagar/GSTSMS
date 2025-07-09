@@ -1,0 +1,106 @@
+﻿@model GSTSMSLibrary.Secretary.Secretary
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
+    <title>Modules &rsaquo; DataTables &mdash; Stisla</title>
+
+    <!-- General CSS Files -->
+    <link rel="stylesheet" href="~/Content/modules/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="~/Content/modules/fontawesome/css/all.min.css">
+
+    <!-- CSS Libraries -->
+    <link rel="stylesheet" href="~/Content/modules/datatables/datatables.min.css">
+    <link rel="stylesheet" href="~/Content/modules/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="~/Content/modules/datatables/Select-1.2.4/css/select.bootstrap4.min.css">
+
+    <!-- Template CSS -->
+    <link rel="stylesheet" href="~/Content/css/style.css">
+    <link rel="stylesheet" href="~/Content/css/components.css">
+    <!-- Start GA -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-94034622-3"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-94034622-3');
+    </script>
+</head>
+<body>
+    <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title text-center w-100" id="Feedbacktitle">List</h5>
+        <button type="button" class="close text-danger" data-dismiss="modal" aria-label="Close">
+            <span>&times;</span>
+        </button>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped table-sm" id="Feedback-table">
+                            <thead>
+                                <tr>
+                                    <th>Full Name</th>
+                                    <th>Event Name</th>
+                                    <th>Rating</th>
+                                    <th>EventDate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.FeedbackList)
+                                {
+                                    <tr>
+                                        <td>@item.FullName</td>
+                                        <td>@item.EventName</td>
+                                        <td>
+                                            @for (int i = 0; i < Convert.ToInt32(item.Ratings); i++)
+                                            {
+                                                <span class="star">★</span>
+                                            }
+                                        </td>
+                                        <td>@Convert.ToDateTime(item.EventDate).ToString("dd-MM-yyyy")</td>
+                                    </tr>
+                                }
+                            </tbody>
+
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- General JS Scripts -->
+    <script src="~/Content/modules/jquery.min.js"></script>
+    <script src="~/Content/modules/popper.js"></script>
+    <script src="~/Content/modules/tooltip.js"></script>
+    <script src="~/Content/modules/bootstrap/js/bootstrap.min.js"></script>
+    <script src="~/Content/modules/nicescroll/jquery.nicescroll.min.js"></script>
+    <script src="~/Content/modules/moment.min.js"></script>
+    <script src="~/Content/js/stisla.js"></script>
+
+    <!-- JS Libraies -->
+    <script src="~/Content/modules/datatables/datatables.min.js"></script>
+    <script src="~/Content/modules/datatables/DataTables-1.10.16/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/Content/modules/datatables/Select-1.2.4/js/dataTables.select.min.js"></script>
+    <script src="~/Content/modules/jquery-ui/jquery-ui.min.js"></script>
+
+    <!-- Page Specific JS File -->
+    <script src="~/Content/js/page/modules-datatables.js"></script>
+
+    <!-- Template JS File -->
+    <script src="~/Content/js/scripts.js"></script>
+    <script src="~/Content/js/custom.js"></script>
+
+</body>
+</html>
+

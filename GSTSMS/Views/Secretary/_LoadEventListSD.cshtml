@@ -1,0 +1,98 @@
+﻿@model GSTSMSLibrary.Secretary.Secretary
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped text-center" id="feedbackTable">
+        <thead>
+            <tr>
+                <th>Sr.No</th>
+                <th>Event Name</th>
+                <th>Organizer</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Location</th>
+                <th>View</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.FeedbackList)
+            {
+                <tr>
+                    <td>@item.SrNo</td>
+                    <td>@item.EventName</td>
+                    <td>@item.Organizer</td>
+                    <td>@item.ToDate.ToString("dd-MM-yyyy")</td>
+                    @{
+                        DateTime parsedTime;
+                        var timeValue = DateTime.TryParse(item.Time, out parsedTime)
+                            ? parsedTime.ToString("hh:mm tt")
+                            : "Invalid Time";
+                    }
+                    <td>@timeValue</td>
+                    <td>@item.Location</td>
+                    <td>
+                        <button type="button" class="btn btn-outline-info btn-sm btnSendRequest"
+                                data-eventcode="@item.EventCode">
+                            <i class="fas fa-paper-plane"></i> Send
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal -->
+<div id="requestFeedbackModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Feedback Request</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body" id="requestFeedbackContainer">
+                <!-- AJAX content loads here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JS -->
+<script src="~/Content/modules/jquery.min.js"></script>
+<script src="~/Content/modules/bootstrap/js/bootstrap.min.js"></script>
+<script src="~/Content/modules/datatables/datatables.min.js"></script>
+<script src="~/Content/modules/datatables/DataTables-1.10.16/js/dataTables.bootstrap4.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#feedbackTable').DataTable();
+
+        $(document).on('click', '.btnSendRequest', function () {
+            const eventCode = $(this).data('eventcode');
+
+            $.ajax({
+                url: '@Url.Action("_RequestFeedbackSD", "Secretary")',
+                type: 'GET',
+                data: { eventCode: eventCode },
+                success: function (response) {
+                    $('#requestFeedbackContainer').html(response);
+                    $('#requestFeedbackModal').modal({
+                        backdrop: 'static',
+                        keyboard: false
+                    }).modal('show');
+                },
+                error: function () {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong while loading the feedback form.'
+                    });
+                }
+            });
+        });
+    });
+</script>

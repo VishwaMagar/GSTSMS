@@ -1,0 +1,321 @@
+﻿@model GSTSMSLibrary.Secretary.Secretary
+
+@{
+    ViewBag.Title = "MainmaintanceVk";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="~/Content/css/MaintenanceManagementVK.css" rel="stylesheet" />
+<link href="~/Content/modules/datatables/datatables.css" rel="stylesheet" />
+<link href="~/Content/modules/datatables/datatables.min.css" rel="stylesheet" />
+<div class="main-content">
+    <section class="section">
+        <div class="">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Maintanence</h3>
+                </div>
+                <div>
+                    <button id="Schmain" class="btn  fw-bold col-md-3 .btn-gradient-add" data-staffcode="@Model.StaffCode">
+                        <i class="fas fa-plus-circle me-1"></i> Add Maintenance
+                    </button>
+                    <button id="Schmaintenancess" class="btn fw-bold col-md-3 .btn-gradient-add" data-staffcode="@Model.StaffCode">
+                        <i class="fas fa-plus me-2"></i> Add Month Maintenance
+                    </button>
+                </div>
+                <div class="card-body   .nav-tabs">
+                    <ul class="nav nav-pills nav-justified   .nav-tabs" id="myTab3" role="tablist">
+                        <li class="nav-item ">
+                            <a class="nav-link " id="pending-tab4" data-toggle="tab" href="#pending4" role="tab" aria-controls="Shedule" aria-selected="false">Shedule Maintenance</a>
+                        </li>
+                        <li class="nav-item ">
+                            <a class="nav-link active" id="pending-tab3" data-toggle="tab" href="#pending3" role="tab" aria-controls="pending" aria-selected="false">Pending</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link " id="home-tab3" data-toggle="tab" href="#home3" role="tab" aria-controls="home" aria-selected="true">Maintanence</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" id="history-tab3" data-toggle="tab" href="#history3" role="tab" aria-controls="history" aria-selected="false">History</a>
+                        </li>
+                    </ul>
+
+                    <br />
+                    <br />
+
+                    <div class="card-body mb-3 " id="datetimefilter">
+                        <div class="form-group">
+                            <a href="javascript:;" class="btn btn-primary daterange-btn icon-left btn-icon">
+                                <i class="fas fa-calendar"></i> <span>Select Date</span>
+                            </a>
+                            <input type="hidden" id="fromDate1" class="form-control" />
+                            <input type="hidden" id="toDate1" class="form-control" />
+                        </div>
+                    </div>
+                    
+                        <div class="tab-content" id="myTabContent2">
+
+                            <div class="tab-pane fade show " id="pending4" role="tabpanel" aria-labelledby="pending-tab4">
+                                <div id="Shedule">Loading...</div>
+                            </div>
+                            <div class="tab-pane fade show active" id="pending3" role="tabpanel" aria-labelledby="pending-tab3">
+                                <div id="pendingContent">Loading...</div>
+                            </div>
+                            <div class="tab-pane fade  " id="home3" role="tabpanel" aria-labelledby="home-tab3">
+                                <div id="homeContent">Loading...</div>
+                            </div>
+                            <div class="tab-pane fade" id="history3" role="tabpanel" aria-labelledby="history-tab3">
+                                <div id="historyContent">Loading...</div>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+        </div>
+      
+    </section>
+</div>
+<div class="modal fade" id="myModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" id="myModalContent">
+
+
+        </div>
+    </div>
+</div>
+
+<script src="~/Scripts/jquery-3.7.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.nicescroll/3.7.6/jquery.nicescroll.min.js"></script>
+<script src="~/Scripts/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+   $('#myTab3 a').on('click', function (e) {
+    e.preventDefault();
+    $(this).tab('show');
+
+    $('#Schmain').hide();
+    $('#Schmaintenancess').show();
+
+    var tabId = $(this).attr('href');
+
+    if (tabId === '#pending3') {
+        Swal.fire({
+            title: 'Loading...',
+            text: 'Please wait while we fetch the data.',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        $('#pendingContent').load('@Url.Action("ScheduleMaintenancesVK", "Secretary", new { staffcode = Model.StaffCode })', function (response, status, xhr) {
+            Swal.close();
+            $('#Schmain').hide();
+            $('#Schmaintenancess').hide();
+            $('#EndDate').val('');
+            $('#StartDate').val('');
+            $('#datetimefilter').show();
+
+        });
+
+    }
+   else if (tabId === '#pending4') {
+    Swal.fire({
+        title: 'Loading...',
+        text: 'Please wait while we fetch the data.',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+        $('#Shedule').load('@Url.Action("ScheduleMaintenancesListVK", "Secretary", new { staffcode = Model.StaffCode })', function (response, status, xhr) {
+        Swal.close();
+        $('#Schmain').show(); 
+        $('#Schmaintenancess').hide();
+        $('#EndDate').val('');        
+        $('#StartDate').val('');
+            $('#datetimefilter').show();
+
+    });
+
+}else if (tabId === '#home3') {
+        Swal.fire({
+            title: 'Loading...',
+            text: 'Please wait while we fetch the data.',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        $('#homeContent').load('@Url.Action("GetMaintenanceListVK", "Secretary", new { staffcode = Model.StaffCode })', function (response, status, xhr) {
+            Swal.close();
+            $('#Schmain').hide();
+            $('#Schmaintenancess').show();
+            $('#datetimefilter').hide();
+        });
+
+    } else if (tabId === '#history3') {
+        Swal.fire({
+            title: 'Loading...',
+            text: 'Please wait while we fetch the data.',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+        $('#historyContent').load('@Url.Action("MentenanceHistroyVK", "Secretary", new { staffcode = Model.StaffCode })', function (response, status, xhr) {
+            Swal.close();
+            $('#Schmain').hide();
+            $('#Schmaintenancess').hide();
+            $('#EndDate').val('');
+            $('#StartDate').val('');
+            $('#datetimefilter').show();
+
+        });
+    }
+});
+        $('#myTab3 a.active').trigger('click');
+    });
+          $(document).on("click", "#Schmain", function () {
+              var staffcode = $(this).data("staffcode") || 0
+    $.ajax({
+        url: '@Url.Action("PendingMaintenanceVK", "Secretary")',
+        type: 'GET',
+        data: {  staffcode: staffcode },
+        success: function (data) {
+            $("#myModalContent").html(data);
+            let modal = new bootstrap.Modal(document.getElementById('myModal'));
+            modal.show();
+        },
+        error: function () {
+            alert("Error loading form.");
+        }
+    });
+          });
+
+      $(document).on("click",".btnEdit", function () {
+          var id = $(this).data("id") || 0;
+          var staffcode = $(this).data("staffcode")||0
+     $.ajax({
+         url: '@Url.Action("EditSchMaintVK", "Secretary")',
+         type: 'GET',
+         data: { id: id, staffcode: staffcode },
+         success: function (data) {
+             $("#myModalContent").html(data);
+             let modal = new bootstrap.Modal(document.getElementById('myModal'));
+             modal.show();
+         },
+         error: function () {
+             alert("Error loading maintenance form.");
+         }
+     });
+      });
+
+
+
+    function validateDateRange() {
+        var fromDate = new Date($('#StartDate').val());
+        var toDate = new Date($('#EndDate').val());
+        var today = new Date();
+        var errorSpan = $('#dateError');
+
+        errorSpan.hide().text('');
+
+        fromDate.setHours(0, 0, 0, 0);
+        toDate.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+
+        if ($('#StartDate').val() && $('#EndDate').val()) {
+            if (fromDate > toDate) {
+                errorSpan.text("From Date should not be after To Date.").show();
+                $('#EndDate').val('');
+                return false;
+            }
+        }
+
+        if (toDate > today) {
+            errorSpan.text("To Date cannot be in the future.").show();
+            $('#EndDate').val('');
+            return false;u
+        }
+
+        return true;
+    }
+    $(document).on('submit', '#yourFormId', function (e) {
+        if (!validateDateRange()) {
+            e.preventDefault();
+        }
+    });
+</script>
+<script>
+    $(document).on('submit', '#frmsubmit', function (e) {
+        e.preventDefault();
+        debugger
+        var form = $(this);
+        var formData = form.serialize();
+
+        $.ajax({
+            url:'@Url.Action("PendingMaintenanceVK", "Secretary")',
+            type: 'POST',
+            data: formData,
+            success: function (response) {
+                if (response.success) {
+                    alert("Maintenance " + ($('#id').val() > 0 ? "updated" : "saved") + " successfully.");
+                    $('#myModal').modal('hide');
+                    location.reload();
+                } else {
+
+                    $('#myModalContent').html(response);
+                }
+            },
+            error: function () {
+                alert("An error occurred while saving maintenance.");
+            }
+        });
+    });
+
+        $(document).on("click", "#Schmaintenancess", function () {
+
+            let selectedIds = [];
+
+    $('#myTables').DataTable().rows().every(function () {
+        var row = this.node();
+        var checkbox = $(row).find(".row-checkboxs");
+
+        if (checkbox.prop("checked")) {
+            selectedIds.push(checkbox.data("id"));
+        }
+    });
+    if (selectedIds.length === 0) {
+        alert("Please select at least one maintenance item.");
+        return;
+    }
+    $.ajax({
+        url: '@Url.Action("LoadScheduleMaintenanceVK", "Secretary", new { staffcode = Model.StaffCode })',
+        type: 'POST',
+        data: { ids: selectedIds },
+        traditional: true,
+        success: function (html) {
+            $("#myModalContent").html(html);
+            let modal = new bootstrap.Modal(document.getElementById('myModal'));
+            modal.show();
+        },
+        error: function () {
+            iziToast.warning({
+                title: 'Warning',
+                message: 'Please select at least one Maintenace.',
+                position: 'topCenter',
+                timeout: 5000
+            });
+        }
+    });
+});
+</script>

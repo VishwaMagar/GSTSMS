@@ -1,0 +1,889 @@
+﻿@model GSTSMSLibrary.Secretary.Secretary
+
+@{
+    ViewBag.Title = "VendorList1PG";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Vendor List</title>
+
+    <link rel="stylesheet" href="~/Content/modules/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="~/Content/modules/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="~/Content/css/style.css">
+    <link rel="stylesheet" href="~/Content/css/components.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link href="~/Content/css/VendorManagementPG.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap4.min.css">
+
+    <link rel="stylesheet" href="~/Content/modules/bootstrap-daterangepicker/daterangepicker.css">
+
+
+</head>
+<body>
+    <div class="main-content">
+        <section class="section">
+            <div class="section-header">
+                <h1>Vendor List</h1>
+                <div class="section-header-breadcrumb">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header card-header-controls">
+                            <div class="left-controls">
+                                <div class="form-group mb-0">
+                                    <a href="javascript:;" class="btn btn-info daterange-btn icon-left text-center ">
+                                        <i class="fas fa-calendar-alt"></i> <span>Select Date</span>
+                                    </a>
+                                    <input type="hidden" id="fromDate1" class="form-control" />
+                                    <input type="hidden" id="toDate1" class="form-control" />
+                                </div>
+
+
+
+                                <div class="export-container">
+                                    <button type="button" class="btn export-icon-btn export-pdf-btn" id="exportPdfBtn" title="Export to PDF">
+                                        <i class="fas fa-file-pdf fa-lg text-danger" title="Export PDF"></i>
+                                    </button>
+                                    <button class="btn export-icon-btn export-csv-btn" id="exportCsvBtn" title="Export to CSV">
+                                        <i class="fas fa-file-csv fa-lg text-primary" title="Export CSV"></i>
+                                    </button>
+                                    <button class="btn export-icon-btn export-excel-btn" id="exportExcelBtn" title="Export to Excel">
+                                        <i class="fas fa-file-excel fa-lg text-success" title="Export Excel"></i>
+                                    </button>
+                                </div>
+
+                            </div>
+                            <div class="right-controls">
+                                <div class="custom-search">
+                                    <input type="text" id="customSearchInput" class="form-control" placeholder="Search vendors..." />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover p-0 " id="table-2">
+                                    <thead class="thead">
+                                        <tr>
+                                            <th class="text-center" width="50">
+                                                <div class="custom-checkbox custom-control">
+                                                    <input type="checkbox" data-checkboxes="mygroup" data-checkbox-role="dad" class="custom-control-input" id="checkbox-all">
+                                                    <label for="checkbox-all" class="custom-control-label">&nbsp;</label>
+                                                </div>
+                                            </th>
+                                            <th width="80">Sr No.</th>
+                                            <th>Vendor Code</th>
+                                            <th>Vendor Name</th>
+                                            <th>Service Provide</th>
+                                            <th>Email</th>
+                                            <th>Phone Number</th>
+                                            <th>Address</th>
+                                            <th>Joining Date</th>
+                                            <th width="80">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="tbody">
+                                        @{
+                                            int srNo = 1;
+                                        }
+                                        @if (Model != null && Model.VendorList != null)
+                                        {
+                                            foreach (var item in Model.VendorList)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        <div class="custom-checkbox custom-control">
+                                                            <input type="checkbox" data-checkboxes="mygroup" class="custom-control-input vendor-checkbox" id="checkbox-@srNo" data-vendor-code="@item.VendorCode">
+                                                            <label for="checkbox-@srNo" class="custom-control-label">&nbsp;</label>
+                                                        </div>
+                                                    </td>
+                                                    <td>@srNo</td>
+                                                    <td>@Html.DisplayFor(modelItem => item.VendorCode)</td>
+                                                    <td>@Html.DisplayFor(modelItem => item.VendorName)</td>
+                                                    <td>@Html.DisplayFor(modelItem => item.ServiceProvide)</td>
+                                                    <td>@Html.DisplayFor(modelItem => item.Email)</td>
+                                                    <td>@Html.DisplayFor(modelItem => item.PhoneNumber)</td>
+                                                    <td>@Html.DisplayFor(modelItem => item.Address)</td>
+                                                    <td>@Html.DisplayFor(modelItem => item.JoiningDate)</td>
+                                                    <td>
+                                                        <a href="javascript:void(0);" class="btn btn-sm view-btn anchorDetail" data-id="@item.VendorCode" title="View">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+
+                                                    </td>
+                                                </tr>
+                                                srNo++;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="10" class="text-center text-muted py-4">
+                                                    <i class="fas fa-inbox fa-3x mb-3"></i><br>
+                                                    <h5>No vendors found</h5>
+                                                    <p>No vendor records match your current filters.</p>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="modal fade" id="feedbackModal" tabindex="-1" role="dialog" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                </div>
+                <div class="modal-body" id="feedbackModalBody">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="~/Content/modules/bootstrap/js/bootstrap.min.js"></script>
+    <script src="~/Content/modules/nicescroll/jquery.nicescroll.min.js"></script>
+    <script src="~/Content/modules/jquery-ui/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/Content/modules/datatables/Select-1.2.4/js/dataTables.select.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script src="~/Content/modules/moment.min.js"></script>
+    <script src="~/Content/modules/bootstrap-daterangepicker/daterangepicker.js"></script>
+
+    <script src="~/Content/js/stisla.js"></script>
+    <script src="~/Content/js/scripts.js"></script>
+    <script src="~/Content/js/custom.js"></script>
+
+    <script>
+        var dataTable;
+        var selectedVendors = new Set(); // Store selected vendor codes across all pages
+
+        $(document).ready(function () {
+            // Initialize DataTable
+            initializeDataTable();
+
+            // Initialize Date Range Picker
+            initializeDateRangePicker();
+
+            // Custom search functionality
+            $('#customSearchInput').on('keyup', function () {
+                dataTable.search(this.value).draw();
+            });
+
+            // Enhanced Clear Date Filter Function
+            $('#clearDateFilter').on('click', function() {
+                $('#fromDate1').val('');
+                $('#toDate1').val('');
+                $('.daterange-btn span').html('Select Date');
+
+                // Force table redraw
+                if (dataTable) {
+                    dataTable.draw();
+                }
+
+                console.log('Date filter cleared - showing all records');
+            });
+
+            // Enhanced Date Range Apply Function
+            $('.daterange-btn').on('apply.daterangepicker', function(ev, picker) {
+                var displayFormat = 'DD-MM-YYYY';
+                var startDate = picker.startDate.format(displayFormat);
+                var endDate = picker.endDate.format(displayFormat);
+
+                $(this).find('span').html(startDate + ' - ' + endDate);
+                $('#fromDate1').val(startDate);
+                $('#toDate1').val(endDate);
+
+                console.log('Date filter applied:', {
+                    from: startDate,
+                    to: endDate,
+                    fromMoment: picker.startDate.format(),
+                    toMoment: picker.endDate.format()
+                });
+
+                // Redraw table with new filter
+                dataTable.draw();
+
+                // Count filtered results - just for console logging
+                setTimeout(function() {
+                    var filteredCount = dataTable.rows({ search: 'applied' }).count();
+                    var totalCount = dataTable.rows().count();
+
+                    console.log('Filter results:', {
+                        filtered: filteredCount,
+                        total: totalCount
+                    });
+                }, 100);
+            });
+
+
+            // Enhanced Checkbox select all - works across all pages
+            $("#checkbox-all").on('change', function () {
+                var isChecked = $(this).is(":checked");
+
+                if (isChecked) {
+                    // Select all vendors across all pages (including filtered)
+                    dataTable.rows({ search: 'applied' }).every(function () {
+                        var row = this.node();
+                        var checkbox = $(row).find('.vendor-checkbox');
+                        var vendorCode = checkbox.data('vendor-code');
+
+                        if (vendorCode) {
+                            selectedVendors.add(vendorCode.toString());
+                            checkbox.prop('checked', true);
+                        }
+                    });
+                } else {
+                    // Deselect all vendors
+                    selectedVendors.clear();
+                    $('.vendor-checkbox').prop('checked', false);
+                }
+
+                updateSelectAllState();
+            });
+
+            // Handle individual checkbox changes
+            $(document).on('change', '.vendor-checkbox', function() {
+                var vendorCode = $(this).data('vendor-code');
+                if (vendorCode) {
+                    if ($(this).is(':checked')) {
+                        selectedVendors.add(vendorCode.toString());
+                    } else {
+                        selectedVendors.delete(vendorCode.toString());
+                    }
+                }
+                updateSelectAllState();
+            });
+
+            // Restore checkbox states when page changes
+            dataTable.on('draw', function () {
+                $('.vendor-checkbox').each(function() {
+                    var vendorCode = $(this).data('vendor-code');
+                    if (vendorCode && selectedVendors.has(vendorCode.toString())) {
+                        $(this).prop('checked', true);
+                    }
+                });
+                updateSelectAllState();
+            });
+
+            // View Vendor Modal via AJAX
+            $(document).on("click", ".anchorDetail", function (e) {
+                e.preventDefault();
+                var vendorCode = $(this).data("id");
+
+                $('#feedbackModalBody').html(`
+                    <div class="text-center">
+                        <i class="fas fa-spinner fa-spin fa-2x text-primary"></i><br><br>
+                        <p>Loading vendor details...</p>
+                        <small>Vendor Code: ${vendorCode}</small>
+                    </div>
+                `);
+
+                $('#feedbackModal').modal('show');
+
+                $.ajax({
+                    url: '@Url.Action("_ViewVendorPG", "Secretary")',
+                    type: 'GET',
+                    data: { id: vendorCode },
+                    success: function (data) {
+                        $('#feedbackModalBody').html(data);
+                    },
+                    error: function (xhr) {
+                        $('#feedbackModalBody').html(`
+                            <div class="alert alert-danger">
+                                <h5>Error loading vendor details</h5>
+                                <p><strong>Status:</strong> ${xhr.status}</p>
+                                <p><strong>Error:</strong> ${xhr.statusText}</p>
+                            </div>
+                        `);
+                    }
+                });
+            });
+
+            // Export functionality
+            $('#exportPdfBtn').on('click', function() {
+                exportToPDF();
+            });
+
+            $('#exportCsvBtn').on('click', function() {
+                exportToCSV();
+            });
+
+            $('#exportExcelBtn').on('click', function() {
+                exportToExcel();
+            });
+        });
+
+        // Export to PDF Function
+        function exportToPDF() {
+            try {
+                // Show loading message
+                Swal.fire({
+                    title: 'Exporting...',
+                    text: 'Please wait while we generate your PDF',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('l', 'mm', 'a4'); // Landscape orientation
+
+                // Get filtered data
+                var exportData = [];
+                var headers = ['Sr No.', 'Vendor Code', 'Vendor Name', 'Service Provide', 'Email', 'Phone Number', 'Address', 'Joining Date'];
+
+                // Get filtered rows
+                dataTable.rows({ search: 'applied' }).every(function(rowIdx, tableLoop, rowLoop) {
+                    var data = this.data();
+                    exportData.push([
+                        data[1], // Sr No
+                        data[2], // Vendor Code
+                        data[3], // Vendor Name
+                        data[4], // Service Provide
+                        data[5], // Email
+                        data[6], // Phone Number
+                        data[7], // Address
+                        data[8]  // Joining Date
+                    ]);
+                });
+
+                // Add title
+                doc.setFontSize(16);
+                doc.text('Vendor List Report', 14, 15);
+
+                // Add date range if applied
+                var fromDate = $('#fromDate1').val();
+                var toDate = $('#toDate1').val();
+                if (fromDate && toDate) {
+                    doc.setFontSize(12);
+                    doc.text(`Date Range: ${fromDate} to ${toDate}`, 14, 25);
+                }
+
+                // Add export date
+                doc.setFontSize(10);
+                doc.text(`Generated on: ${moment().format('DD-MM-YYYY HH:mm:ss')}`, 14, fromDate && toDate ? 35 : 25);
+
+                // Add table
+                doc.autoTable({
+                    head: [headers],
+                    body: exportData,
+                    startY: fromDate && toDate ? 40 : 30,
+                    styles: {
+                        fontSize: 8,
+                        cellPadding: 2
+                    },
+                    headStyles: {
+                        fillColor: [22, 160, 133],
+                        textColor: 255,
+                        fontSize: 9
+                    },
+                    columnStyles: {
+                        0: { cellWidth: 15 }, // Sr No
+                        1: { cellWidth: 25 }, // Vendor Code
+                        2: { cellWidth: 40 }, // Vendor Name
+                        3: { cellWidth: 35 }, // Service Provide
+                        4: { cellWidth: 40 }, // Email
+                        5: { cellWidth: 25 }, // Phone Number
+                        6: { cellWidth: 50 }, // Address
+                        7: { cellWidth: 25 }  // Joining Date
+                    },
+                    margin: { top: 10, right: 14, bottom: 10, left: 14 }
+                });
+
+                // Generate filename
+                var filename = 'Vendor_List_' + moment().format('DDMMYYYY_HHmmss') + '.pdf';
+
+                // Save the PDF
+                doc.save(filename);
+
+                // Close loading
+                Swal.close();
+
+                // Success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'PDF Exported!',
+                    text: `${exportData.length} vendors exported successfully`,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+            } catch (error) {
+                console.error('PDF Export Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Export Failed',
+                    text: 'There was an error generating the PDF. Please try again.'
+                });
+            }
+        }
+
+        // Export to CSV Function
+        function exportToCSV() {
+            try {
+                // Show loading message
+                Swal.fire({
+                    title: 'Exporting...',
+                    text: 'Please wait while we generate your CSV',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                var csvContent = '';
+                var headers = ['Sr No.', 'Vendor Code', 'Vendor Name', 'Service Provide', 'Email', 'Phone Number', 'Address', 'Joining Date'];
+
+                // Add headers
+                csvContent += headers.join(',') + '\n';
+
+                // Add filtered data
+                var exportCount = 0;
+                dataTable.rows({ search: 'applied' }).every(function(rowIdx, tableLoop, rowLoop) {
+                    var data = this.data();
+                    var row = [
+                        data[1], // Sr No
+                        '"' + (data[2] || '').replace(/"/g, '""') + '"', // Vendor Code
+                        '"' + (data[3] || '').replace(/"/g, '""') + '"', // Vendor Name
+                        '"' + (data[4] || '').replace(/"/g, '""') + '"', // Service Provide
+                        '"' + (data[5] || '').replace(/"/g, '""') + '"', // Email
+                        '"' + (data[6] || '').replace(/"/g, '""') + '"', // Phone Number
+                        '"' + (data[7] || '').replace(/"/g, '""') + '"', // Address
+                        '"' + (data[8] || '').replace(/"/g, '""') + '"'  // Joining Date
+                    ];
+                    csvContent += row.join(',') + '\n';
+                    exportCount++;
+                });
+
+                // Create and download file
+                var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                var link = document.createElement('a');
+                var url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+
+                var filename = 'Vendor_List_' + moment().format('DDMMYYYY_HHmmss') + '.csv';
+                link.setAttribute('download', filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // Close loading
+                Swal.close();
+
+                // Success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'CSV Exported!',
+                    text: `${exportCount} vendors exported successfully`,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+            } catch (error) {
+                console.error('CSV Export Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Export Failed',
+                    text: 'There was an error generating the CSV. Please try again.'
+                });
+            }
+        }
+
+        // Export to Excel Function
+        function exportToExcel() {
+            try {
+                // Show loading message
+                Swal.fire({
+                    title: 'Exporting...',
+                    text: 'Please wait while we generate your Excel file',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                var wb = XLSX.utils.book_new();
+                var wsData = [];
+
+                // Add headers
+                var headers = ['Sr No.', 'Vendor Code', 'Vendor Name', 'Service Provide', 'Email', 'Phone Number', 'Address', 'Joining Date'];
+                wsData.push(headers);
+
+                // Add filtered data
+                var exportCount = 0;
+                dataTable.rows({ search: 'applied' }).every(function(rowIdx, tableLoop, rowLoop) {
+                    var data = this.data();
+                    var row = [
+                        data[1], // Sr No
+                        data[2], // Vendor Code
+                        data[3], // Vendor Name
+                        data[4], // Service Provide
+                        data[5], // Email
+                        data[6], // Phone Number
+                        data[7], // Address
+                        data[8]  // Joining Date
+                    ];
+                    wsData.push(row);
+                    exportCount++;
+                });
+
+                // Create worksheet
+                var ws = XLSX.utils.aoa_to_sheet(wsData);
+
+                // Set column widths
+                ws['!cols'] = [
+                    { width: 10 }, // Sr No
+                    { width: 15 }, // Vendor Code
+                    { width: 25 }, // Vendor Name
+                    { width: 20 }, // Service Provide
+                    { width: 25 }, // Email
+                    { width: 15 }, // Phone Number
+                    { width: 30 }, // Address
+                    { width: 15 }  // Joining Date
+                ];
+
+                // Add worksheet to workbook
+                XLSX.utils.book_append_sheet(wb, ws, 'Vendor List');
+
+                // Generate filename
+                var filename = 'Vendor_List_' + moment().format('DDMMYYYY_HHmmss') + '.xlsx';
+
+                // Save the file
+                XLSX.writeFile(wb, filename);
+
+                // Close loading
+                Swal.close();
+
+                // Success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Excel Exported!',
+                    text: `${exportCount} vendors exported successfully`,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+            } catch (error) {
+                console.error('Excel Export Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Export Failed',
+                    text: 'There was an error generating the Excel file. Please try again.'
+                });
+            }
+        }
+
+        // IMPROVED Date Range Picker Initialization Function
+        function initializeDateRangePicker() {
+            $('.daterange-btn').daterangepicker({
+                locale: {
+                    format: 'DD-MM-YYYY',
+                    separator: ' - ',
+                    applyLabel: 'Apply',
+                    cancelLabel: 'Cancel',
+                    fromLabel: 'From',
+                    toLabel: 'To',
+                    customRangeLabel: 'Custom Range',
+                    daysOfWeek: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
+                    monthNames: ['January', 'February', 'March', 'April', 'May', 'June',
+                                'July', 'August', 'September', 'October', 'November', 'December'],
+                    firstDay: 1
+                },
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                },
+                opens: 'right',
+                autoUpdateInput: false,
+                autoApply: false,
+                showDropdowns: true,
+                minYear: 2020,
+                maxYear: parseInt(moment().format('YYYY'), 10) + 1
+            });
+
+            // Handle the cancel event
+            $('.daterange-btn').on('cancel.daterangepicker', function(ev, picker) {
+                $('#fromDate1').val('');
+                $('#toDate1').val('');
+                $(this).find('span').html('Select Date');
+                dataTable.draw();
+            });
+
+            // Initialize with no default dates
+            $('#fromDate1').val('');
+            $('#toDate1').val('');
+            $('.daterange-btn span').html('Select Date');
+        }
+
+        // FIXED DataTable Custom Search for Date Range - Improved date parsing
+        $.fn.dataTable.ext.search.splice(0, $.fn.dataTable.ext.search.length); // Clear existing search functions
+
+        $.fn.dataTable.ext.search.push(
+            function (settings, data, dataIndex) {
+                var min = $('#fromDate1').val();
+                var max = $('#toDate1').val();
+                var dateStr = data[8]; // Column index for Joining Date (assuming it's column 8)
+
+                // If no date filter is set, show all records
+                if (!min && !max) {
+                    return true;
+                }
+
+                // If date column is empty, hide the row when filter is active
+                if (!dateStr || dateStr.trim() === '') {
+                    return false;
+                }
+
+                try {
+                    // Clean the date string
+                    var cleanDateStr = dateStr.trim();
+
+                    // Parse the row date - handle common Indian date formats
+                    var rowDate = null;
+
+                    // First try to parse with moment using flexible parsing
+                    rowDate = moment(cleanDateStr, [
+                        'DD-MM-YYYY',
+                        'DD/MM/YYYY',
+                        'DD-MM-YY',
+                        'DD/MM/YY',
+                        'MM/DD/YYYY',
+                        'YYYY-MM-DD',
+                        'MM-DD-YYYY',
+                        'YYYY/MM/DD',
+                        'D-M-YYYY',
+                        'D/M/YYYY'
+                    ], true);
+
+                    // If strict parsing failed, try loose parsing
+                    if (!rowDate.isValid()) {
+                        rowDate = moment(cleanDateStr);
+                    }
+
+                    // If still invalid, try manual parsing for Indian format
+                    if (!rowDate.isValid()) {
+                        var parts = cleanDateStr.split(/[-\/]/);
+                        if (parts.length === 3) {
+                            // Assume DD-MM-YYYY or DD/MM/YYYY format
+                            var day = parseInt(parts[0]);
+                            var month = parseInt(parts[1]) - 1; // Month is 0-indexed in moment
+                            var year = parseInt(parts[2]);
+
+                            if (year < 100) {
+                                year += 2000; // Convert 2-digit year to 4-digit
+                            }
+
+                            rowDate = moment([year, month, day]);
+                        }
+                    }
+
+                    // If still invalid, exclude this row
+                    if (!rowDate || !rowDate.isValid()) {
+                        console.warn('Could not parse date:', cleanDateStr);
+                        return false;
+                    }
+
+                    // Parse filter dates (they come in DD-MM-YYYY format)
+                    var minDate = min ? moment(min, 'DD-MM-YYYY', true) : null;
+                    var maxDate = max ? moment(max, 'DD-MM-YYYY', true) : null;
+
+                    // Validate filter dates
+                    if (minDate && !minDate.isValid()) {
+                        console.error('Invalid min date:', min);
+                        return true;
+                    }
+                    if (maxDate && !maxDate.isValid()) {
+                        console.error('Invalid max date:', max);
+                        return true;
+                    }
+
+                    // Check if row date is within range (inclusive)
+                    var isInRange = true;
+
+                    if (minDate) {
+                        isInRange = isInRange && (rowDate.isSameOrAfter(minDate, 'day'));
+                    }
+
+                    if (maxDate) {
+                        isInRange = isInRange && (rowDate.isSameOrBefore(maxDate, 'day'));
+                    }
+
+                    // Debug logging for specific date range
+                    if (min && max) {
+                        console.log('Date Filter Debug:', {
+                            originalDate: dateStr,
+                            parsedDate: rowDate.format('DD-MM-YYYY'),
+                            minDate: minDate ? minDate.format('DD-MM-YYYY') : null,
+                            maxDate: maxDate ? maxDate.format('DD-MM-YYYY') : null,
+                            isInRange: isInRange,
+                            comparison: {
+                                afterMin: minDate ? rowDate.isSameOrAfter(minDate, 'day') : 'N/A',
+                                beforeMax: maxDate ? rowDate.isSameOrBefore(maxDate, 'day') : 'N/A'
+                            }
+                        });
+                    }
+
+                    return isInRange;
+
+                } catch (e) {
+                    console.error('Date parsing error:', e, 'for date:', dateStr);
+                    return false;
+                }
+            }
+        );
+
+        // Function to test date parsing - you can call this in console to debug
+        function testDateParsing(testDate) {
+            console.log('Testing date:', testDate);
+
+            var parsedDate = moment(testDate, [
+                'DD-MM-YYYY',
+                'DD/MM/YYYY',
+                'DD-MM-YY',
+                'DD/MM/YY',
+                'MM/DD/YYYY',
+                'YYYY-MM-DD'
+            ], true);
+
+            if (!parsedDate.isValid()) {
+                parsedDate = moment(testDate);
+            }
+
+            console.log('Parsed result:', {
+                isValid: parsedDate.isValid(),
+                formatted: parsedDate.isValid() ? parsedDate.format('DD-MM-YYYY') : 'Invalid'
+            });
+
+            return parsedDate;
+        }
+
+        // Function to debug current filter state
+        function debugCurrentFilter() {
+            var min = $('#fromDate1').val();
+            var max = $('#toDate1').val();
+
+            console.log('Current Filter State:', {
+                from: min,
+                to: max,
+                fromMoment: min ? moment(min, 'DD-MM-YYYY').format() : 'None',
+                toMoment: max ? moment(max, 'DD-MM-YYYY').format() : 'None'
+            });
+
+            var totalRows = dataTable.rows().count();
+            var filteredRows = dataTable.rows({ search: 'applied' }).count();
+
+            console.log('Row Counts:', {
+                total: totalRows,
+                filtered: filteredRows,
+                hidden: totalRows - filteredRows
+            });
+
+            // Check first few dates
+            console.log('Sample dates from table:');
+            dataTable.rows().every(function(rowIdx) {
+                if (rowIdx < 5) { // Show first 5 rows only
+                    var data = this.data();
+                    var dateStr = data[8];
+                    var parsedDate = moment(dateStr, ['DD-MM-YYYY', 'DD/MM/YYYY'], true);
+
+                    console.log(`Row ${rowIdx + 1}:`, {
+                        original: dateStr,
+                        parsed: parsedDate.isValid() ? parsedDate.format('DD-MM-YYYY') : 'Invalid',
+                        visible: $(this.node()).is(':visible')
+                    });
+                }
+            });
+        }
+
+        function updateSelectAllState() {
+            var totalFilteredRows = dataTable.rows({ search: 'applied' }).count();
+            var selectedFilteredCount = 0;
+
+            dataTable.rows({ search: 'applied' }).every(function () {
+                var row = this.node();
+                var checkbox = $(row).find('.vendor-checkbox');
+                var vendorCode = checkbox.data('vendor-code');
+
+                if (vendorCode && selectedVendors.has(vendorCode.toString())) {
+                    selectedFilteredCount++;
+                }
+            });
+
+            var selectAllCheckbox = $("#checkbox-all");
+            if (selectedFilteredCount === 0) {
+                selectAllCheckbox.prop('checked', false);
+                selectAllCheckbox.prop('indeterminate', false);
+            } else if (selectedFilteredCount === totalFilteredRows) {
+                selectAllCheckbox.prop('checked', true);
+                selectAllCheckbox.prop('indeterminate', false);
+            } else {
+                selectAllCheckbox.prop('checked', false);
+                selectAllCheckbox.prop('indeterminate', true);
+            }
+        }
+
+        function initializeDataTable() {
+            if ($.fn.DataTable.isDataTable('#table-2')) {
+                $('#table-2').DataTable().destroy();
+            }
+
+            dataTable = $('#table-2').DataTable({
+                "dom": '<"top">rt<"bottom"ip><"clear">', // Only table, pagination and info
+                "pagingType": "full_numbers", // Show first, last, next, previous and page numbers
+                "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]], // Rows per page options
+                "pageLength": 10, // Default rows per page
+                "language": {
+                    "emptyTable": "No vendors available in the table.",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+                    "infoEmpty": "Showing 0 to 0 of 0 entries",
+                    "infoFiltered": "(filtered from _MAX_ total entries)",
+                    "lengthMenu": "Show _MENU_ entries",
+                    "loadingRecords": "Loading...",
+                    "processing": "Processing...",
+                    "search": "Search:",
+                    "zeroRecords": "No matching vendors found",
+                    "paginate": {
+                        "first": "First",
+                        "last": "Last",
+                        "next": "Next",
+                        "previous": "Previous"
+                    }
+                },
+                "columnDefs": [
+                    { "orderable": false, "targets": [0, 9] } // Disable ordering for checkbox and action columns
+                ],
+                "order": [[1, 'asc']] // Default order by Sr No.
+            });
+        }
+    </script>
+</body>
+</html>

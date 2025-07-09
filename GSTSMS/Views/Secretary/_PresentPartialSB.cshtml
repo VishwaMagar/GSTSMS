@@ -1,0 +1,49 @@
+﻿@model List<GSTSMSLibrary.Secretary.Secretary>
+
+<link href="~/Content/css/SecretaryDashboardSB.css" rel="stylesheet" />
+
+<div class="modal-header position-relative bg-success text-white">
+    <h5 class="modal-title text-center w-100">Present Workers</h5>
+    <button type="button" class="close text-danger position-absolute" style="top: 10px; right: 15px;" data-dismiss="modal" aria-label="Close">
+        <span>&times;</span>
+    </button>
+</div>
+
+<div class="modal-body">
+    <table id="PresentWorkers" class="display data-table-sb" style="width:100%">
+        <thead>
+            <tr>
+                <th class="text-center">
+                    <div class="custom-checkbox custom-control">
+                        <input type="checkbox" class="custom-control-input" id="checkbox-all">
+                        <label for="checkbox-all" class="custom-control-label">&nbsp;</label>
+
+                    </div>
+                </th>
+                <th>Sr No</th>
+                <th>Worker Name</th>
+                <th>Check-In</th>
+                <th>Check-Out</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var worker in Model)
+            {
+                <tr>
+                    <td>
+                        <div class="custom-checkbox custom-control">
+                            <input type="checkbox" class="custom-control-input row-checkbox" id="checkbox-@worker.SrNo">
+                            <label for="checkbox-@worker.SrNo" class="custom-control-label">&nbsp;</label>
+                        </div>
+                    </td>
+                    <td>@worker.SrNo</td>
+                    <td>@worker.WorkerName</td>
+                    <td>@(worker.CheckIn?.ToString("g"))</td>
+                    <td>@(worker.CheckOut != null ? worker.CheckOut.Value.ToString("g") : "Not Checked Out")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+

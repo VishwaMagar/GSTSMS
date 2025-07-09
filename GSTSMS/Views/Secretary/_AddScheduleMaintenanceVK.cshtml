@@ -1,0 +1,521 @@
+﻿@model GSTSMSLibrary.Secretary.Secretary
+@{
+    Layout = null;
+}
+<link href="~/Content/modules/izitoast/css/iziToast.min.css" rel="stylesheet" />
+<!-- Start GA -->
+<link href="~/Content/modules/select2/dist/css/select2.min.css" rel="stylesheet" />
+<link href="~/Content/css/MaintenanceManagementVK.css" rel="stylesheet" />
+
+<div class="card shadow-lg border-0 rounded-4">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center rounded-top-4">
+        <h5 class="mb-0">
+            <i class="fas fa-tools me-2"></i>
+            @(Model.ID > 0 ? "Update" : "Add") Schedule Maintenance
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+
+    <div class="card-body p-4">
+        <!-- Hidden Maintenance Code -->
+        <input type="hidden" id="maintenacecode" name="MaintenanceCode" value="@Model.MaintenanceCode" />
+
+        <!-- Maintenance Info Form -->
+        <div class="border rounded-3 p-4 shadow-sm mb-4 bg-light">
+            <!-- First Row: Maintenance Title + Description -->
+            <div class="row g-4">
+                <!-- Maintenance Title -->
+                <div class="col-md-6">
+                    <label for="MaintenanceName" class="form-label fw-bold">
+                        Maintenance Title <sup class="text-danger">*</sup>
+                    </label>
+                    <input type="text" class="form-control" id="MaintenanceName" name="MaintenanceName"
+                           placeholder="Enter maintenance title" value="@Model.MaintanceNamae" />
+                </div>
+
+                <!-- Description -->
+                <div class="col-md-6">
+                    <label for="Description" class="form-label fw-bold">
+                        Description <sup class="text-danger">*</sup>
+                    </label>
+                    <textarea class="form-control" id="Description" name="Description" rows="3"
+                              placeholder="E.g. Water + Cleaning + Security">@Model.Description</textarea>
+                    <div class="invalid-feedback">Description must be at least 15 characters long.</div>
+                    <small id="descCounter" class="text-muted">0 / At least 15 characters</small>
+                </div>
+            </div>
+
+            @if (Model.ID > 0)
+            {
+                <div class="row g-4 mt-3">
+                    <!-- Start Date -->
+                    <div class="col-md-6">
+                        <label for="StartDates" class="form-label fw-bold">
+                            Start Date <sup class="text-danger">*</sup>
+                        </label>
+                        <input type="date" class="form-control" id="StartDates" name="StartDate"
+                               value="@Model.StartDate.ToString("yyyy-MM-dd")"
+                               min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        <div class="invalid-feedback">Start date is required.</div>
+                    </div>
+
+                    <!-- Deadline Date -->
+                    <div class="col-md-6">
+                        <label for="DeadlineDate" class="form-label font-weight-bold">
+                            Deadline Date <sup class="text-danger">*</sup>
+                        </label>
+                        <input type="date" class="form-control" id="DeadlineDate" name="DeadlineDate"
+                               value="@Model.DeadlineDate.ToString("yyyy-MM-dd")"
+                               min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        <div class="invalid-feedback">Deadline date is required.</div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="row g-4 mt-3">
+                    <!-- Start Date -->
+                    <div class="col-md-6">
+                        <label for="StartDates" class="form-label fw-bold">
+                            Start Date <sup class="text-danger">*</sup>
+                        </label>
+                        <input type="date" class="form-control" id="StartDates" name="StartDate"
+                               min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        <div class="invalid-feedback">Start date is required.</div>
+                    </div>
+
+                    <!-- Deadline Date -->
+                    <div class="col-md-6">
+                        <label for="DeadlineDate" class="form-label fw-bold">
+                            Deadline Date <sup class="text-danger">*</sup>
+                        </label>
+                        <input type="date" class="form-control" id="DeadlineDate" name="DeadlineDate"            
+                               min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        <div class="invalid-feedback">Deadline date is required.</div>
+                    </div>
+                </div>
+            }
+
+            <!-- Third Row: Total & Per Resident Amount + Add Button -->
+            <div class="row g-4 mt-3">
+                <!-- Total Amount -->
+                <div class="col-md-4">
+                    <label for="MaintenanceAmount" class="form-label fw-bold">Total Maintenance Amount</label>
+                    <input type="text" class="form-control" id="MaintenanceAmount" name="MaintenanceAmount" value="0" readonly />
+                </div>
+
+                <!-- Per Resident Amount -->
+                <div class="col-md-4">
+                    <label for="PermainMaintenanceAmount" class="form-label fw-bold">Per Resident Maintenance Amount</label>
+                    <input type="text" class="form-control" id="PermainMaintenanceAmount" name="PerResidentAmount" value="0" readonly />
+                </div>
+
+                <!-- Add Item Button -->
+                <div class="col-md-4 d-flex align-items-end">
+                    <button id="btnShowHideAddForm" class="btn btn-warning text-white fw-bold w-100">
+                        <i class="fas fa-plus-circle me-1"></i> Add Maintenance Item
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Maintenance Item Form -->
+        <div id="addlistmin" class="border rounded-3 p-4 shadow-sm bg-light mb-4" style="display:none;">
+            <div class="row g-4 align-items-end">
+                <div class="col-md-5">
+                    <label for="Name" class="form-label fw-bold">Maintenance Name <sup class="text-danger">*</sup></label>
+                    <input type="text" class="form-control" id="Name" placeholder="Enter maintenance name" />
+                </div>
+                <div class="col-md-5">
+                    <label for="Amount" class="form-label fw-bold">(₹) Amount <sup class="text-danger">*</sup></label>
+                    <input type="number" min="0" class="form-control" id="Amount" placeholder="Enter amount" />
+                </div>
+                <div class="col-md-2 text-end">
+                    <label class="form-label fw-bold d-block invisible">.</label>
+                    <button id="btnSaveMaintenanceItem" class="btn btn-success w-100">
+                        <i class="fas fa-save me-1"></i> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button id="btnSaveMaintenance" class="btn btn-success w-100 mb-4">
+            <i class="fas fa-save me-1"></i> @(Model.ID > 0 ? "Update" : "Add") Maintenance
+        </button>
+
+        <!-- Maintenance Items List -->
+        <div>
+            <h5 class="fw-bold mb-3">Maintenance Items Added</h5>
+            <ul id="maintenanceItemList" class="list-group">
+                <!-- List items will be appended here -->
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="~/Content/modules/izitoast/js/iziToast.min.js"></script>
+<script src="~/Content/js/page/modules-toastr.js"></script>
+<script>
+    $(document).ready(function () {
+
+        $('#maintenacecode').hide();
+
+
+    var existingItems = [];
+
+    @if (Model.MonthMaintenanceList != null && Model.MonthMaintenanceList.Any())
+    {
+        foreach (var item in Model.MonthMaintenanceList)
+        {
+            <text>
+                existingItems.push({
+                    MainName: "@item.MainName",
+                    Amount: "@item.Amount"
+                });
+            </text>
+        }
+    }
+    var count = @Model.MemberCount;
+
+    existingItems.forEach(function (item) {
+        var name = item.MainName;
+        var amount = item.Amount;
+        var memamount = amount / count;
+
+        var newItem = `
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>${name}</strong><br/>
+                    <small class="text-muted">Amount: ₹${parseFloat(amount).toFixed(2)}</small><br/>
+                    <smalls class="text-muted"> Per Resident Amount: ₹${parseFloat(memamount).toFixed(2)}</smalls>
+                </div>
+                <button type="button" class="btn btn-sm btn-danger btn-remove-item">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </li>
+        `;
+
+        var total = parseFloat($('#MaintenanceAmount').val()) || 0;
+        var memtotal = parseFloat($('#PermainMaintenanceAmount').val()) || 0;
+
+        $('#MaintenanceAmount').val((total + parseFloat(amount)).toFixed(2));
+        $('#PermainMaintenanceAmount').val((memtotal + parseFloat(memamount)).toFixed(2));
+        $('#maintenanceItemList').append(newItem);
+
+});
+
+
+        $('#btnShowHideAddForm').click(function () {
+
+            $('#addlistmin').slideToggle('fast');
+        });
+
+        $('#btnSaveMaintenanceItem').click(function () {
+
+            var name = $('#Name').val().trim();
+            var amount = $('#Amount').val().trim();
+            var count =@Model.MemberCount;
+            var memamount = amount / count;
+            if (name === '' || amount === '') {
+                iziToast.warning({
+                    title: 'Warning',
+                    message: 'Maintenance name and amount cannot be empty or invalid.',
+                    position: 'topCenter',
+                    timeout: 5000,
+                    icon: 'fas fa-exclamation-triangle',
+                    backgroundColor: '#ffc107', // Bootstrap warning yellow
+                    titleColor: '#000',
+                    messageColor: '#000',
+                    progressBarColor: '#000',
+                    transitionIn: 'bounceInLeft',
+                    transitionOut: 'fadeOutRight',
+                    close: true
+                });
+                return;
+            }
+
+            var newItem = `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>${name}</strong><br/>
+                        <small class="text-muted">Amount: ₹${parseFloat(amount).toFixed(2)}</small><br/>
+                        <smalls class="text-muted"> Per Resident Amount: ₹${parseFloat(memamount).toFixed(2)}</smalls>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-danger btn-remove-item">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </li>
+            `;
+
+            var total = parseFloat($('#MaintenanceAmount').val());
+            var memtotal = parseFloat($('#PermainMaintenanceAmount').val());
+
+            $('#MaintenanceAmount').val((total + parseFloat(amount)).toFixed(2));
+            $('#PermainMaintenanceAmount').val((memtotal + parseFloat(memamount)).toFixed(2));
+            $('#maintenanceItemList').append(newItem);
+            $('#Name').val('');
+            $('#Amount').val('');
+        });
+
+
+        $(document).on('click', '.btn-remove-item', function () {
+
+            var listItem = $(this).closest('li');
+            var amountText = listItem.find('small').text();
+            var amount = parseFloat(amountText.replace(/[^\d.-]/g, ''));
+              var count =@Model.MemberCount;
+  var memamount = amount / count;
+            var currentTotal = parseFloat($('#MaintenanceAmount').val());
+            var PermembcurrentTotal = parseFloat($('#PermainMaintenanceAmount').val());
+
+            if (currentTotal > 0)
+            {
+                var newTotal = currentTotal - amount;
+                var memnewTotal = PermembcurrentTotal - memamount;
+            }
+            if (currentTotal == 0) {
+                $('#MaintenanceAmount').val('0.00');
+                $('#PermainMaintenanceAmount').val('0.00');
+            }
+            $('#MaintenanceAmount').val(newTotal.toFixed(2));
+            $('#PermainMaintenanceAmount').val(memnewTotal.toFixed(2));
+
+            listItem.fadeOut(300, function () {
+                $(this).remove();
+            });
+        });
+
+    });
+
+</script>
+<script>
+         $('#btnSaveMaintenance').click(function (e) {
+    e.preventDefault();
+
+    const maintenanceNames = $('#MaintenanceName').val().trim();
+    const descriptions = $('#Description').val().trim();
+    const Createdatess = $('#StartDates').val();
+    const deadlineDates = $('#DeadlineDate').val();
+    const maintenanceAmounts = $('#MaintenanceAmount').val().trim();
+    const MaintenanceCodes = $('#maintenacecode').val().trim();
+
+             if (!maintenanceNames) {
+                 showInvalid('MaintenanceName', 'Please enter maintenance title.');
+                 return;
+             }
+             if (!descriptions || descriptions.length < 15) {
+                 showInvalid('Description', 'Description must be at least 15 characters long.');
+                 return;
+             }
+             if (!Createdatess) {
+                 showInvalid('StartDates', 'Start date is required.');
+                 return;
+             }
+             if (!deadlineDates) {
+                 showInvalid('DeadlineDate', 'Deadline date is required.');
+                 return;
+             }
+
+    const maintenanceItems = [];
+    $('#maintenanceItemList li').each(function () {
+        const itemName = $(this).find('strong').text();
+        const itemAmountText = $(this).find('small').text();
+        const itemAmount = parseFloat(itemAmountText.replace(/[^\d.-]/g, '')) || 0;
+
+        maintenanceItems.push({
+            MainName: itemName,
+            Amount: itemAmount
+        });
+    });
+
+    if (maintenanceItems.length === 0) {
+        iziToast.warning({
+            title: 'Warning',
+            message: 'Please add at least one maintenance item.',
+            position: 'topCenter',
+            timeout: 5000,
+            icon: 'fas fa-exclamation-triangle',
+            backgroundColor: '#ffc107', 
+            titleColor: '#000',
+            messageColor: '#000',
+            progressBarColor: '#000',
+            transitionIn: 'bounceInLeft',
+            transitionOut: 'fadeOutRight',
+            close: true
+        });
+        return;
+    }
+
+    const secretaryData = {
+        MaintanceNamae: maintenanceNames,
+        Description: descriptions,
+        CreateDates: Createdatess,
+        CompleteDates: deadlineDates,
+        TotalAmount: maintenanceAmounts,
+        MonthMaintenanceList: maintenanceItems,
+        MaintenanceCode: MaintenanceCodes
+    };
+
+    const swalWithBootstrapButtons = Swal.mixin({
+        customClass: {
+            confirmButton: "btn btn-success",
+            cancelButton: "btn btn-danger"
+        },
+        buttonsStyling: false
+    });
+
+    swalWithBootstrapButtons.fire({
+        title: "Are you sure?",
+        text: "Once saved, you cannot modify or delete.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, Save it!",
+        cancelButtonText: "No, Cancel!",
+        reverseButtons: true
+    }).then((result) => {
+        debugger
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Saving...',
+                text: 'Please wait while we save your data.',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: '@Url.Action("SaveMaintenanceVK", "Secretary", new { staffcode = Model.StaffCode })',
+                type: 'POST',
+                data: JSON.stringify(secretaryData),
+                contentType: 'application/json',
+                success: function (response) {
+                    Swal.close();
+                    if (response.success) {
+                        swalWithBootstrapButtons.fire({
+                            title: "Saved Successfully!",
+                            text: "Your Maintenance has been saved successfully.",
+                            timer: 1500,
+                            timerProgressBar: true,
+                            icon: "success",
+                            showConfirmButton: false
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        swalWithBootstrapButtons.fire({
+                            title: "Save Failed",
+                            text: "Unable to save your Maintenance data.",
+                            timer: 1500,
+                            timerProgressBar: true,
+                            icon: "error"
+                        });
+                    }
+                },
+                error: function () {
+                    Swal.close();
+                    swalWithBootstrapButtons.fire("Error!", "Server error occurred.", "error");
+                }
+            });
+
+        } else if (result.isDismissed) {
+            swalWithBootstrapButtons.fire("Changes not saved", "", "info");
+        }
+    });
+         });
+
+
+    function showInvalid(inputId, message) {
+        const input = $('#' + inputId);
+        input.addClass('is-invalid');
+        input.next('.invalid-feedback').text(message).show();
+        input.focus();
+    }
+</script>
+<script>
+    function validateDateRange() {
+        var fromDate = new Date($('#StartDates').val());
+        var toDate = new Date($('#EndDate').val());
+        var today = new Date();
+        var errorSpan = $('#dateError');
+
+        errorSpan.hide().text('');
+
+        // Convert to midnight to avoid time issues
+        fromDate.setHours(0, 0, 0, 0);
+        toDate.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+
+        if ($('#StartDates').val() && $('#EndDate').val()) {
+            if (fromDate > toDate) {
+                errorSpan.text("From Date should not be after To Date.").show();
+                $('#EndDate').val('');
+                return false;
+            }
+        }
+
+        if (toDate > today) {
+            errorSpan.text("To Date cannot be in the future.").show();
+            $('#EndDate').val('');
+            return false;
+        }
+
+        return true;
+    }
+    $('#MaintenanceName, #Description, #StartDates, #DeadlineDate').on('input change', function () {
+        const $input = $(this);
+        const value = $input.val().trim();
+
+        if (value) {
+            $input.removeClass('is-invalid');
+            $input.next('.invalid-feedback').hide();
+        }
+    });
+    $('#Description').on('input', function () {
+        const $input = $(this);
+        const value = $input.val().trim();
+        const counter = $('#descCounter');
+
+        counter.text(value.length + ' / 15 characters');
+
+        if (value.length >= 15) {
+            $input.removeClass('is-invalid');
+            $input.next('.invalid-feedback').hide();
+            counter.removeClass('text-danger').addClass('text-success');
+        } else {
+            $input.addClass('is-invalid');
+            $input.next('.invalid-feedback').text('Description must be at least 15 characters long.').show();
+            counter.removeClass('text-success').addClass('text-danger');
+        }
+    });
+    $('#StartDates, #DeadlineDate').on('change', function () {
+        var min = $('#StartDates').val();
+        var max = $('#DeadlineDate').val();
+
+        if (min && max && new Date(min) > new Date(max)) {
+            iziToast.warning({
+                title: 'Warning',
+                message: 'Start Date should not be after Deadline Date',
+                position: 'topCenter',
+                timeout: 5000,
+                icon: 'fas fa-exclamation-triangle',
+                backgroundColor: '#ffc107', // Bootstrap warning yellow
+                titleColor: '#000',
+                messageColor: '#000',
+                progressBarColor: '#000',
+                transitionIn: 'bounceInLeft',
+                transitionOut: 'fadeOutRight',
+                close: true
+            });
+            $('#DeadlineDate').val('');
+            return;
+        }
+
+    });
+
+</script>

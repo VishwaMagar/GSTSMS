@@ -1,0 +1,370 @@
+﻿
+
+@{
+    ViewBag.Title = "Parking Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<!-- CSS & JS Libraries -->
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+
+<link href="~/Content/css/StyleCSSSP.css" rel="stylesheet" />
+
+<div class="main-content">
+    <section class="section">
+        <div class="container-fluid">
+            <div class="card shadow-sm p-4 mb-4">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-4">
+                        <label>Select Date Range</label>
+                        <div class="d-flex gap-2">
+                            <a href="javascript:;" class="btn btn-outline-primary daterange-btn"><span></span></a>
+
+                        </div>
+                        <input type="hidden" id="fromDate1" />
+                        <input type="hidden" id="toDate1" />
+                    </div>
+                    <div class="col-md-8">
+                        <div class="progress mt-4">
+                            <div id="occupancyBar" class="progress-bar bg-success" style="width:0%">0%</div>
+                        </div>
+                        <p class="mt-2 mb-0"><small>Total Occupancy</small></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card shadow-sm p-3">
+                        <h6><i class="fas fa-motorcycle me-2"></i>Bike Parking Slots</h6>
+                        <div id="bikeParkingSlotMatrix" class="slot-matrix slotmain"></div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card shadow-sm p-3">
+                        <h6><i class="fas fa-car me-2"></i>Car Parking Slots</h6>
+                        <div id="carParkingSlotMatrix" class="slot-matrix slotmain"></div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="card shadow-sm p-3">
+                        <div id="parkingChart"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@*Parking Modal*@
+<div class="modal fade" id="ParkingModal" tabindex="-1" role="dialog" aria-labelledby="ParkingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" id="ParkingListContainer"></div>
+    </div>
+</div>
+
+
+
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+<script src="~/Content/modules/bootstrap-daterangepicker/daterangepicker.js"></script>
+
+
+<script>
+    $(function () {
+        initializeDateRangePicker();
+        $('#fromDate1, #toDate1').on('change', loadParkingReport);
+        loadParkingReport();
+    });
+
+    function initializeDateRangePicker() {
+        const displayFormat = 'YYYY-MM-DD';
+
+        $('.daterange-btn').daterangepicker({
+            locale: { format: displayFormat },
+            startDate: moment().startOf('month'),
+            endDate: moment(),
+            ranges: {
+                'Today': [moment(), moment()],
+                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            }
+        }, function (start, end) {
+            var today = moment();
+
+            if (start.isAfter(end, 'day')) {
+                alert("From Date should not be after To Date.");
+                return;
+            }
+
+            if (end.isAfter(today, 'day')) {
+                alert("To Date cannot be a future date.");
+                return;
+            }
+            $('#fromDate1').val(start.format(displayFormat));
+            $('#toDate1').val(end.format(displayFormat));
+            $('.daterange-btn span').html(start.format(displayFormat) + ' - ' + end.format(displayFormat));
+            loadParkingReport();
+        });
+
+        $('#fromDate1').val(moment().startOf('month').format(displayFormat));
+        $('#toDate1').val(moment().format(displayFormat));
+        $('.daterange-btn span').html(moment().startOf('month').format(displayFormat) + ' - ' + moment().format(displayFormat));
+    }
+
+    function loadParkingReport() {
+        const fromDate = $('#fromDate1').val();
+        const toDate = $('#toDate1').val();
+
+
+        $.getJSON('/Secretary/ParkingDataSP', { fromDate: fromDate, toDate: toDate }, function (data) {
+            renderSlotMatrix(data);
+            renderOccupancyBar(data);
+            renderParkingChart(data);
+        });
+    }
+
+    function renderSlotMatrix(data) {
+        $('#bikeParkingSlotMatrix, #carParkingSlotMatrix').empty();
+
+        data.forEach(slot => {
+            const icon = slot.SlotStatus === 'Allocated'
+                ? (slot.ParkingType === 'Bike' ? '<i class="fas fa-motorcycle"></i>' : '<i class="fas fa-car"></i>')
+                : slot.ParkingCode;
+
+            const html = `
+            <div class="slot-card slotcardSP ${slot.SlotStatus.toLowerCase()}"
+                 title="${slot.ParkingCode}"
+                 data-type="${slot.SlotStatus}"
+                 data-code="${slot.ParkingCode}">
+                ${icon}
+            </div>`; const container = slot.ParkingType === 'Bike' ? '#bikeParkingSlotMatrix' : '#carParkingSlotMatrix';
+
+            $(container).append(html);
+
+        });
+        $('.slot-card').off('click').on('click', function () {
+            const status = $(this).data('type');        // 'Allocated' or 'Unallocated'
+            const code = $(this).data('code');          // 'PARK001', 'PARK002', etc.
+
+            // Use your actual fromDate and toDate variables here
+            const fromDate = $('#fromDate1').val();
+            const toDate = $('#toDate1').val();
+
+            loadParkingListPartial(status, fromDate, toDate, code);
+        });
+    }
+
+    function renderOccupancyBar(data) {
+        const total = data.length;
+        const allocated = data.filter(x => x.SlotStatus === 'Allocated').length;
+        const percent = total ? Math.round((allocated / total) * 100) : 0;
+
+        $('#occupancyBar').css('width', percent + '%').text(percent + '%');
+    }
+
+    function renderParkingChart(data) {
+
+        const allocated = data.filter(x => x.SlotStatus === 'Allocated').length;
+        const unallocated = data.filter(x => x.SlotStatus === 'Unallocated').length;
+
+        Highcharts.chart('parkingChart', {
+            chart: { type: 'column' },
+            title: { text: 'Parking Utilization Summary' },
+            xAxis: {
+                categories: ['Slots'],
+                title: { text: 'Parking Summary' }
+            },
+            yAxis: {
+                min: 0,
+                title: { text: 'Number of Slots' },
+                stackLabels: { enabled: true }
+            },
+            exporting: {
+                enabled: true
+            },
+            exportData: {
+                enabled: true
+            },
+            plotOptions: {
+                column: {
+                    stacking: 'normal',
+                    dataLabels: { enabled: true }
+                }
+            },
+
+            series: [
+                { name: 'Allocated', data: [allocated], color: '#28a745' },
+                { name: 'Unallocated', data: [unallocated], color: '#e0e0e0' }
+            ]
+        });
+    }
+
+    function loadParkingListPartial(status, fromDate, toDate, code) {
+        debugger;
+        $.ajax({
+            url: '/Secretary/_ParkingListPartialSP',
+            type: 'GET',
+            data: {
+                status: status,
+                fromDate: fromDate,
+                toDate: toDate,
+                code: code
+            },
+            success: function (html) {
+                $("#ParkingListContainer").html(html);
+                $('#parkingtitle').text(`List of ${status} Parking `);
+
+                $("#ParkingModal").modal('show'); // Show the modal
+
+                if ($.fn.DataTable.isDataTable('#parkingtable')) {
+                    $('#parkingtable').DataTable().destroy();
+                }
+                var table = $('#parkingtable').DataTable({
+                    paging: true,
+                    ordering: true,
+                    info: true,
+                    pageLength: 5,
+                    searching: true,
+                    responsive: true,
+                    retrieve: true,
+                    dom: '<"row mb-3"' +
+                        '<"col-md-6 d-flex gap-2 align-items-center" B>' +          // Buttons - left
+                        '<"col-md-6 d-flex align-items-center justify-content-end" f>' + // Search - right, vertically centered
+                        '>rtip',
+                    buttons: [
+                        {
+                            extend: 'csvHtml5',
+                            text: '<img src="/Content/img/icons8-csv-64 (1).png" title="CSV" alt="CSV" height="30" width="30"/>',
+                            titleAttr: 'CSV',
+                            exportOptions: {
+                                modifier: {
+                                    selected: true
+                                }
+                            },
+                            action: exportIfSelected('csvHtml5')
+
+                        },
+                        {
+                            extend: 'excelHtml5',
+                            text: '<img src="/Content/img/icons8-xls-64 (1).png"  title="Excel" alt="Excel" height="30" width="30"/>',
+                            titleAttr: 'Excel',
+                            exportOptions: {
+                                modifier: {
+                                    selected: true
+                                }
+                            },
+                            action: exportIfSelected('excelHtml5')
+                        },
+                        {
+                            extend: 'pdfHtml5',
+                            text: '<img src="/Content/img/icons8-pdf-64 (1).png"  title="Excel" alt="Excel" height="30" width="30"/>',
+                            title: function () {
+                                var today = new Date();
+                                var formattedDate = today.toLocaleDateString('en-GB'); // dd/mm/yyyy
+                                return 'Visitor List ';
+                            },
+                            orientation: 'landscape',
+                            customize: function (doc) {
+                                var now = new Date();
+                                var jsDate = now.getDate() + '-' + (now.getMonth() + 1) + '-' + now.getFullYear();
+
+                                doc.content.splice(0, 0, {
+                                    text: 'Date: ' + jsDate,
+                                    margin: [0, 0, 0, 12],
+                                    alignment: 'right',
+                                    fontSize: 10
+                                });
+                            },
+                            orientation: 'landscape',
+                            exportOptions: {
+                                modifier: {
+                                    selected: true
+                                }
+                            },
+                            action: exportIfSelected('pdfHtml5')
+                        },
+                        {
+                            extend: 'print',
+                            text: '<img src="/Content/img/icons8-print-64 (1).png"  title="Print" alt="Print" height="30" width="30"/>',
+                            titleAttr: 'Print',
+                            exportOptions: {
+                                modifier: {
+                                    selected: true
+                                }
+                            },
+                            action: exportIfSelected('print')
+                        }
+                    ]
+                });
+
+
+                // Handle "Select All" checkbox
+                $('#checkbox-all').on('click', function () {
+                    var isChecked = $(this).prop('checked');
+
+                    // Get all rows (including those not currently visible)
+                    table.rows().nodes().to$().find('.row-checkbox').prop('checked', isChecked);
+
+                    // Select or Deselect rows in DataTable
+                    if (isChecked) {
+                        table.rows().select();
+                    } else {
+                        table.rows().deselect();
+                    }
+
+                    // Update the custom checkbox styling
+                    table.rows().nodes().to$().find('.row-checkbox').trigger('change');
+                });
+
+                // Handle individual row checkboxes
+                $('#parkingtable').on('change', '.row-checkbox', function () {
+                    var row = $(this).closest('tr'); // Changed js(this) to $(this)
+                    var table = $('#parkingtable').DataTable(); // Changed js('#parkingtable') to $('#parkingtable')
+                    var isChecked = $(this).prop('checked'); // Changed js(this) to $(this)
+
+                    if (isChecked) {
+                        table.row(row).select();
+                    } else {
+                        table.row(row).deselect();
+                    }
+
+                    // Master checkbox state update
+                    var total = table.rows().count();
+                    var checked = table.rows({ selected: true }).count();
+                    $('#checkbox-all').prop('checked', total === checked); // Changed js('#checkbox-all') to $('#checkbox-all')
+                });
+
+
+                function exportIfSelected(actionName) {
+                    return function (e, dt, button, config) {
+                        if (dt.rows({ selected: true }).count() === 0) {
+                            alert("Please select at least one record to export.");
+                            return;
+                        }
+
+                        // Get original button definition from DataTables buttons extension
+                        var originalAction = $.fn.dataTable.ext.buttons[actionName].action; // Changed js.fn to $.fn
+                        originalAction.call(this, e, dt, button, config);
+                    };
+                }
+
+            },
+            error: function (err) {
+                console.error("Error loading partial view:", err);
+            }
+        });
+    }
+</script>

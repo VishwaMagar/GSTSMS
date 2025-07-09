@@ -1,0 +1,344 @@
+﻿@model GSTSMSLibrary.AccountManager.AccountManager
+
+@{
+
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var selectedWing = ViewBag.SelectedWing as string ?? "All";
+    var members = ViewBag.MemberList as List<GSTSMSLibrary.AccountManager.AccountManager>;
+}
+
+<!-- Summernote CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-bs4.min.css" rel="stylesheet">
+
+<!-- jQuery and Bootstrap JS (required) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.6.0/css/bootstrap.min.css" rel="stylesheet" />
+
+
+<!-- Summernote JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-bs4.min.js"></script>
+
+
+
+<!-- Loading spinner overlay -->
+<div id="loadingSpinner" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; text-align:center; padding-top:200px;">
+    <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;">
+        <span class="sr-only">Loading...</span>
+    </div>
+    <p style="font-size: 18px; font-weight: bold; margin-top: 15px;">Please wait... Sending emails</p>
+</div>
+
+
+<style>
+    .h2 {
+    }
+
+    body {
+/*        margin-left: 275px;*/
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+    }
+
+    .container {
+        width: 90%;
+        max-width: 1200px;
+        margin: 20px auto;
+        background: #fff;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .form-control,
+    .smart-dropdown {
+        width: 236px;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        margin-bottom: 15px;
+        box-sizing: border-box;
+        position: relative;
+        z-index: 1000; 
+    }
+
+    .checkbox-scroll-box {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+        background: #fefefe;
+        margin-bottom: 15px;
+        width: 500px;
+    }
+
+    .form-check {
+        margin-bottom: 5px;
+    }
+
+        .form-check input {
+            margin-right: 5px;
+        }
+
+    .wing-details {
+        width: 324px;
+        margin-top: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #fdfdfd;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+        .wing-details summary {
+            cursor: pointer;
+            font-weight: bold;
+            padding: 5px;
+        }
+
+        .wing-details[open] summary {
+            background-color: #e6f7ff;
+            border-bottom: 1px solid #ccc;
+        }
+
+    .members-box {
+        max-height: 200px;
+        overflow-y: auto;
+        padding-left: 10px;
+        margin-top: 5px;
+    }
+
+    .email-editor {
+        width: 100%;
+        min-height: 300px;
+        font-size: 15px;
+        line-height: 1.8;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #fff;
+        border: 1px solid #ccc;
+    }
+
+    .button-row {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn {
+        padding: 10px;
+        text-align: center;
+        border: none;
+        border-radius: 5px;
+        color: white;
+        cursor: pointer;
+        flex: 1;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+    }
+
+    .alert {
+        background: #dff0d8;
+        padding: 10px;
+        margin-bottom: 20px;
+        border-left: 5px solid #4caf50;
+        color: #3c763d;
+        border-radius: 5px;
+    }
+
+    .card {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-top: 20px;
+    }
+
+    .card-header {
+        background-color: #f7f7f7;
+        border-bottom: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 10px 10px 0 0;
+    }
+
+    .card-body {
+        padding: 15px;
+    }
+
+    .card-footer {
+        padding: 15px;
+        border-top: 1px solid #ddd;
+        text-align: right;
+    }
+
+    .label {
+        color: black;
+        font-size: large;
+        font-weight: 500;
+    }
+
+    .email-editor {
+        height: 600px;
+        scroll-behavior: inherit;
+    }
+
+    #emailBody {
+        max-height: 300px; 
+        overflow-y: auto; 
+        border: 1px solid #000; 
+        padding: 10px;
+        background-color: #fff;
+    }
+
+    .email-editor {
+        display: block;
+    }
+</style>
+
+<div id="loadingSpinner" style="display:none;">
+    <p>Please wait... Sending emails</p>
+    <img src="~/Content/loader.gif" alt="Loading..." />
+</div>
+
+<div class="container">
+
+
+    <h2>Send  Email</h2>
+
+
+
+    @if (ViewBag.Message != null)
+    {
+        <div class="alert">@Html.Raw(ViewBag.Message)</div>
+    }
+
+    @using (Html.BeginForm("SendEMail", "AccountManager", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+        <label class="label"> From </label>
+        @Html.TextBoxFor(m => m.FromEmailAddress, new
+   {
+       @readonly = "readonly",
+       @class = "form-control",
+       style = "background-color: #e9ecef; font-weight: bold; width: 236px;"
+   })
+
+
+
+        <label class="label">Select Wing </label>
+        <br />
+        <div style="position: relative;">
+            <select id="wingSelector" class="smart-dropdown" onchange="handleWingSelection(this)">
+                <option value="">-- Select --</option>
+                <option value="ALL">All Members</option>
+                <option value="A">Wing A</option>
+                <option value="B">Wing B</option>
+                <option value="C">Wing C</option>
+
+
+            </select>
+        </div>
+        <br />
+
+        <label class="label">Select Member </label>
+        <div class="checkbox-scroll-box,label">
+            @foreach (var wing in new[] { "A", "B", "C" })
+            {
+                <details class="wing-details" id="details_@wing" @(selectedWing == wing || selectedWing == "ALL" ? "open" : "")>
+                    <summary><strong>Wing @wing</strong></summary>
+                    <div id="members_@wing" class="members-box">
+                        @foreach (var member in members.Where(m => m.FlatCode.StartsWith(wing)))
+                        {
+                            <div class="form-check">
+                                <input type="checkbox"
+                                       class="memberCheckbox member-@wing"
+                                       name="ToEmailAddresses"
+                                       value="@member.ToEmailAddress"
+                                       id="chk_@member.ToEmailAddress"
+                                       @(member.IsSelected ? "checked" : "") />
+                                <label for="chk_@member.ToEmailAddress">@member.FullName (@member.FlatCode)</label>
+                            </div>
+                        }
+                    </div>
+                </details>
+            }
+        </div>
+
+
+        <label class="label">Subject</label>
+        @Html.TextBoxFor(m => m.Subject, new { required = "required", @class = "form-control" })
+
+        <div class="card">
+            <div class="card-header">
+                <h4 class="label">Message</h4>
+            </div>
+            <div class="card-body">
+                <div id="emailBody" class="email-editor" contenteditable="true">
+                    @Html.Raw(Model.EmailBodyMessage)
+                </div>
+
+            </div>
+
+
+
+
+        </div>
+
+
+
+
+
+        <input type="hidden" name="EmailBodyMessage" id="hiddenEmailBody" />
+
+        <label class="label">Attachment (optional)</label>
+        <input type="file" name="PostedFile" class="form-control" />
+
+        <div class="button-row">
+            <button type="submit" class="btn btn-success">Send Email</button>
+            <a href="@Url.Action("SendEMail", "AccountManager")" class="btn btn-danger">Cancel</a>
+        </div>
+    }
+</div>
+
+<script>
+    function handleWingSelection    (dropdown) {
+        const value = dropdown.value;
+        document.querySelectorAll(".memberCheckbox").forEach(cb => cb.checked = false);
+        document.querySelectorAll("details").forEach(d => d.removeAttribute("open"));
+
+        if (value === "ALL") {
+            document.querySelectorAll(".memberCheckbox").forEach(cb => cb.checked = true);
+            document.querySelectorAll("details").forEach(d => d.setAttribute("open", true));
+        } else if (["A", "B", "C"].includes(value)) {
+            document.querySelectorAll(".member-" + value).forEach(cb => cb.checked = true);
+            document.getElementById("details_" + value).setAttribute("open", true);
+        }
+    }
+
+    document.querySelector("form").addEventListener("submit", function () {
+        var emailBody = document.getElementById("emailBody").innerHTML;
+        document.getElementById("hiddenEmailBody").value = emailBody;
+        document.getElementById("loadingSpinner").style.display = "block";
+    });
+
+
+    document.querySelector('input[name="Subject"]').value = "";
+
+    // Uncheck all checkboxes
+    document.querySelectorAll('.memberCheckbox').forEach(cb => cb.checked = false);
+
+    // Collapse all wings
+    document.querySelectorAll("details").forEach(d => d.removeAttribute("open"));
+</script>

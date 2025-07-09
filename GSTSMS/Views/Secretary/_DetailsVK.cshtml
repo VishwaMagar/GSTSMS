@@ -1,0 +1,404 @@
+﻿@model GSTSMSLibrary.Secretary.Secretary
+@{
+    Layout = null;
+    var maintenanceAmountPer = ViewBag.amountmaintance;
+    var totalAmount = Model.TotalMntAmount;
+    var collectedAmount = Model.TotalAmount;
+    var remainingAmount = totalAmount - collectedAmount;
+    var collectedPerc = ((double)collectedAmount / (double)totalAmount) * 100;
+    var remainingPerc = ((double)remainingAmount / (double)totalAmount) * 100;
+
+
+}
+
+<!-- DataTables CSS -->
+<link href="~/Content/modules/datatables/datatables.css" rel="stylesheet" />
+<link href="~/Content/modules/datatables/datatables.min.css" rel="stylesheet" />
+
+<!-- Custom Styles -->
+<link href="~/Content/css/MaintenanceManagementVK.css" rel="stylesheet" />
+
+
+<div class="modal-header bg-primary text-white rounded-top">
+    <h5 class="modal-title">
+        <i class="fas fa-info-circle me-2"></i> Maintenance Detail
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<div class="modal-body">
+    <div class="container-fluid">
+
+        <!-- Maintenance Info -->
+        <div class="card mb-4 border-0 shadow-sm">
+            <div class="card-header bg-light text-center">
+                <h5 class="mb-0 fw-bold text-uppercase text-primary">
+                    Maintenance Details
+                </h5>
+            </div>
+
+            <div class="card-body">
+                <!-- Row 1 -->
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <label class="form-label fw-bold text-secondary">Maintenance Name</label>
+                        <div class="input-group">
+
+                            @Html.EditorFor(model => model.MaintanceNamae, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <label class="form-label fw-bold text-secondary">Description</label>
+                        <div class="input-group">
+                            @Html.TextAreaFor(model => model.Description, new { @class = "form-control", rows = 3, @readonly = "readonly" })
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2 -->
+                <div class="row">
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-secondary">Start Date</label>
+                        <div class="input-group">
+
+                            @Html.EditorFor(model => model.CreateDates, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                        </div>
+                    </div>
+
+
+                    @if (Model.Amount != 0)
+                    {
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold text-secondary">Deadline Date</label>
+                            <div class="input-group">
+                                @Html.EditorFor(model => model.CompleteDates, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold text-secondary">Complete Date</label>
+                            <div class="input-group">
+                                @Html.EditorFor(model => model.CompleteDates, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                            </div>
+                        </div>
+                    }
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-secondary">Maintenance Per Member</label>
+                        <div class="input-group">
+                            <input type="text" value="@maintenanceAmountPer" class="form-control" readonly="readonly" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    @if (ViewBag.massage == "pending")
+    {
+        <div class="row">
+            <div class="col-md-4 mb-3 ">
+                <div class="card text-white bg-primary h-60 shadow-sm rounded-3  border-2">
+                    <div class="card-body text-center">
+                        <h6>Total Maintenance</h6>
+                        <h5 class="fw-bold">₹ @Model.TotalMntAmount</h5>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3 ">
+                <div class="card text-white  h-60 shadow-sm rounded-3  border-2" style="background-color: #59bf22">
+                    <div class="card-body text-center">
+                        <h6>Collected</h6>
+                        <h5 class="fw-bold">₹ @collectedAmount</h5>
+                        <span class="badge bg-light text-dark">@collectedPerc%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3 ">
+                <div class="card text-white h-60 shadow-sm rounded-3  border-2" style="background-color: #f06829">
+                    <div class="card-body text-center">
+                        <h6>Remaining</h6>
+                        <h5 class="fw-bold">₹ @remainingAmount</h5>
+                        <span class="badge bg-light text-dark">@remainingPerc%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    @if (ViewBag.massage == "pending")
+    {
+        <button id="toggleBtn" class="btn  mb-2" style=" background: linear-gradient(to right, #f3904f, #3b4371);">
+            <i class="fas fa-eye"></i> Show Payment Status
+        </button>
+    }
+    <button id="toggleBtn1" class="btn  mb-2" style="background:linear-gradient(to right, #67b26f, #4ca2cd);">
+        <i class="fas fa-eye"></i> Show Sub Maintenance
+    </button>
+    <div id="subMaintenanceDiv" style="display: none;" class="mt-3">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-light text-center">
+                <h6 class="mb-0 fw-bold text-uppercase text-primary">
+                    Maintenance Sub Items
+                </h6>
+            </div>
+
+            <div class="card-body p-3">
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered align-middle mb-0" id="submytableunpaid" style="width:100%;">
+                        <thead class="text-center bg-light text-dark">
+                            <tr>
+                                <th scope="col">Sr. No.</th>
+                                <th scope="col">Item Name</th>
+                                <th scope="col">Amount (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.MeetingList != null)
+                            {
+                                int i = 0;
+                                foreach (var item in Model.MeetingList)
+                                {
+                                    i++;
+                                    <tr>
+                                        <td class="text-center">@i</td>
+                                        <td>@item.MainName</td>
+                                        <td class="text-center">₹ @string.Format("{0:N2}", item.Amount)</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">No maintenance sub items available.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+@if (ViewBag.massage == "pending")
+{
+
+    <div id="paymentStatusDiv" style="display: none;" class="mt-3">
+        <div class="row">
+            <!-- Left: Tabs Section -->
+            <div class="col-12 col-lg-12 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-light text-center">
+                        <strong>Payment Status</strong>
+                    </div>
+                    <div class="card-body">
+                        <!-- Tabs -->
+                        <ul class="nav nav-pills mb-3 justify-content-center" id="maintab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="paid-tab" data-bs-toggle="tab" href="#paidtab" role="tab">Paid Members</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="unpaid-tab" data-bs-toggle="tab" href="#unpaidtab" role="tab">Unpaid Members</a>
+                            </li>
+                        </ul>
+
+                        <!-- Tab Content -->
+                        <div class="tab-content" id="tabContent">
+                            <!-- Paid Members -->
+                            <div class="tab-pane fade show active" id="paidtab" role="tabpanel" aria-labelledby="paid-tab">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover" id="mytablepaid" style="width:100%;">
+                                        <thead class="text-center table-primary">
+                                            <tr>
+                                                <th>SR No.</th>
+                                                <th>Flat No.</th>
+                                                <th>Paid Amount</th>
+                                                <th>Paid Date</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (Model.List != null)
+                                            {
+                                                int i = 0;
+                                                foreach (var item in Model.List)
+                                                {
+                                                    i++;
+                                                    <tr>
+                                                        <td>@i</td>
+                                                        <td>@item.FloorCode</td>
+                                                        <td class="text-center">₹ @item.FloorName</td>
+                                                        <td>@item.CreateDates</td>
+                                                        <td class="text-center">
+                                                            <a href="javascript:void(0);" class="btn btn-sm btn-outline-info HistrDetail" data-flatcode="@item.MemeberCode" title="View Details">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Unpaid Members -->
+                            <div class="tab-pane fade" id="unpaidtab" role="tabpanel" aria-labelledby="unpaid-tab">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover" id="mytableunpaid" style="width:100%;">
+                                        <thead class="text-center table-primary">
+                                            <tr>
+                                                <th>SR No.</th>
+                                                <th>Flat No.</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (Model.MonthMaintenanceList != null)
+                                            {
+                                                int i = 0;
+                                                foreach (var item in Model.MonthMaintenanceList)
+                                                {
+                                                    i++;
+                                                    <tr>
+                                                        <td>@i</td>
+                                                        <td>@item.FloorCode</td>
+                                                        <td class="text-center">
+                                                            <a href="javascript:void(0);" class="btn btn-sm btn-outline-info HistrDetail" data-flatcode="@item.MemeberCode" title="View Details">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div> <!-- /tab-content -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+
+<script src="~/Scripts/jquery-3.7.0.min.js"></script>
+<script src="~/Scripts/bootstrap.bundle.min.js"></script>
+<script src="~/Content/modules/datatables/datatables.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    $(document).ready(function () {
+
+        // 1. DataTable Initialization for Paid
+        if ($.fn.DataTable.isDataTable('#mytablepaid')) {
+            $('#mytablepaid').DataTable().destroy();
+        }
+
+        $('#mytablepaid').DataTable({
+            paging: true,
+            ordering: true,
+            info: true,
+            pageLength: 5,
+            searching: true,
+            responsive: true,
+            autoWidth: false,
+            language: { emptyTable: "No records found" },
+            dom: '<"row mb-3"<"col-md-6 d-flex gap-2 align-items-center"B><"col-md-6 d-flex justify-content-end"f>>rtip',
+            buttons: getExportButtons('Paid Member')
+        });
+
+        // 2. DataTable Initialization for Unpaid
+        if ($.fn.DataTable.isDataTable('#mytableunpaid')) {
+            $('#mytableunpaid').DataTable().destroy();
+        }
+
+        $('#mytableunpaid').DataTable({
+            paging: true,
+            ordering: true,
+            info: true,
+            pageLength: 5,
+            searching: true,
+            responsive: true,
+            autoWidth: false,
+            language: { emptyTable: "No records found" },
+            dom: '<"row mb-3"<"col-md-6 d-flex gap-2 align-items-center"B><"col-md-6 d-flex justify-content-end"f>>rtip',
+            buttons: getExportButtons('UnPaid Member')
+        });
+
+        // 3. Toggle Payment Status Section
+        $("#toggleBtn").on("click", function (e) {
+            e.preventDefault();
+            $("#paymentStatusDiv").stop(true, true).slideToggle("fast", function () {
+                const visible = $(this).is(":visible");
+                const icon = visible ? 'fa-eye-slash' : 'fa-eye';
+                const label = visible ? 'Hide Payment Status' : 'Show Payment Status';
+                $("#toggleBtn").html(`<i class="fas ${icon}"></i> ${label}`);
+            });
+        });
+
+        // 4. Toggle Sub Maintenance Section
+        $("#toggleBtn1").on("click", function (e) {
+            e.preventDefault();
+            $("#subMaintenanceDiv").stop(true, true).slideToggle("fast", function () {
+                const visible = $(this).is(":visible");
+                const icon = visible ? 'fa-eye-slash' : 'fa-eye';
+                const label = visible ? 'Hide Sub Maintenance' : 'Show Sub Maintenance';
+                $("#toggleBtn1").html(`<i class="fas ${icon}"></i> ${label}`);
+            });
+        });
+
+        // 5. Set Initial Toggle Button Texts (on page load)
+        function setInitialToggleState(buttonId, divId, labelText) {
+            const visible = $(divId).is(":visible");
+            const icon = visible ? 'fa-eye-slash' : 'fa-eye';
+            const label = visible ? 'Hide ' + labelText : 'Show ' + labelText;
+            $(buttonId).html(`<i class="fas ${icon}"></i> ${label}`);
+        }
+
+        setInitialToggleState("#toggleBtn", "#paymentStatusDiv", "Payment Status");
+        setInitialToggleState("#toggleBtn1", "#subMaintenanceDiv", "Sub Maintenance");
+
+        // 6. Export Button Config
+        function getExportButtons(titlePrefix) {
+            return [
+                {
+                    extend: 'csv',
+                    text: '<img src="/Content/img/icons8-csv-64 (1).png" title="CSV" alt="CSV" height="30" width="30"/>',
+                    titleAttr: 'CSV',
+                    title: titlePrefix,
+                    exportOptions: { columns: ':not(:last-child)' }
+                },
+                {
+                    extend: 'excel',
+                    text: '<img src="/Content/img/icons8-xls-64 (1).png" title="Excel" alt="Excel" height="30" width="30"/>',
+                    titleAttr: 'Excel',
+                    title: titlePrefix,
+                    exportOptions: { columns: ':not(:last-child)' }
+                },
+                {
+                    extend: 'pdf',
+                    text: '<img src="/Content/img/icons8-pdf-64 (1).png" title="PDF" alt="PDF" height="30" width="30"/>',
+                    titleAttr: 'PDF',
+                    title: titlePrefix,
+                    exportOptions: { columns: ':not(:last-child)' },
+                    orientation: 'landscape'
+                }
+            ];
+        }
+    });
+</script>
+

@@ -1,0 +1,210 @@
+﻿@model GSTSMSLibrary.Secretary.Secretary
+@{
+    ViewBag.Title = "ShowListFacilitySK";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var role = Session["RoleId"]?.ToString();
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   
+    <meta charset="UTF-8" />
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport" />
+    <title>Modules &rsaquo; DataTables &mdash; Stisla</title>
+
+    <link rel="stylesheet" href="~/Content/modules/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/Content/modules/fontawesome/css/all.min.css" />
+    <link rel="stylesheet" href="~/Content/modules/datatables/datatables.min.css" />
+    <link rel="stylesheet" href="~/Content/modules/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css" />
+    <link rel="stylesheet" href="~/Content/modules/datatables/Select-1.2.4/css/select.bootstrap4.min.css" />
+    <link rel="stylesheet" href="~/Content/css/style.css" />
+    <link rel="stylesheet" href="~/Content/css/custom.css" />
+    <link href="~/Content/css/FacilityManagementSK.css" rel="stylesheet" />
+
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+    <button class="fas fa-file-pdf"></button>
+    <button class="fas fa-file-csv"></button>
+    <button class="fas fa-file-excel"></button>
+
+    <div class="main-content pt-1">
+        <div class="row mb-3">
+            <div class="col-3">
+                <label>Search:</label>
+                <input type="text" id="searchInput" class="form-control" />
+            </div>
+        </div>
+
+        <div class="row">
+            @foreach (var user in Model.AllFacility)
+            {
+                <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-4 facility-card"
+                     data-facility-name="@user.FacilityName.ToLower()"
+                     data-description="@user.Description.ToLower()">
+
+                    <article class="article h-100 shadow-sm">
+                        @{
+                            // 1. Define the default image URL. This should be a specific default image file.
+                            //    Assuming 'default.jpg' exists directly in '~/Content/img/' as per your previous code,
+                            //    or adjust to '~/Content/Documents/Facility/default.jpg' if that's where your actual default is.
+                            string defaultImagePath = Url.Content("~/Content/img/default.jpg"); // Or wherever your fallback image is
+
+                            // 2. Initialize imagePath with the default.
+                            string imagePath = defaultImagePath;
+
+                            // 3. Check if user.Path exists and is valid.
+                            if (!string.IsNullOrWhiteSpace(user.Path))
+                            {
+                                // Construct the relative path from the web root to the user's document.
+                                // IMPORTANT: Your user.Path seems to contain "Facility" already.
+                                // So, "~/Documents/" is likely enough if user.Path is something like "Facility/image.jpg"
+                                // If user.Path is just "image.jpg", then it should be "~/Documents/Facility/" + user.Path
+                                // Let's assume user.Path is just the filename, like "myfacilitypic.png"
+                                string relativeDocPath = "~/Content/Documents/Facility/" + user.Path.Replace("\\", "/");
+
+                                // Convert the relative web path to a physical server path to check existence.
+                                string physicalDocPath = Server.MapPath(relativeDocPath);
+
+                                // Check if the file actually exists on the server.
+                                if (System.IO.File.Exists(physicalDocPath))
+                                {
+                                    // If it exists, use its web-addressable URL.
+                                    imagePath = Url.Content(relativeDocPath);
+                                }
+                                // Else, it will remain the defaultImagePath (already set).
+                            }
+                        }
+                        <img src="@imagePath" alt="Facility Image" class="card-img toggle-image" style="cursor: pointer;" />
+
+                      
+                        <div class="article-title p-3">
+                            <h5 class="mb-1">@user.FacilityName</h5>
+                        </div>
+
+                        <div class="article-details px-3 pb-3">
+                            <p class="mb-2">@user.Description</p>
+
+                            <div class="modal-footer">
+                                <button id="downloadPdfBtn" class="btn btn-outline-danger">
+                                    <i class="fas fa-file-pdf"></i> Download Brochure (PDF)
+                                </button>
+                            </div>
+
+                            @if (role == "Chairman")
+                            {
+                                <div class="d-flex justify-content-between mt-2">
+                                    <div class="pr-1">
+                                        <a href="@Url.Action("FetchFacilityByIdSK", "Secretary", new { id = user.FacilityId })"
+                                           class="btn btn-sm edittask btn-primary" title="Edit Facility" data-id="@user.FacilityId">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                    <div class="pr-1">
+                                        <a href="#" class="btn btn-sm btn-danger delete-btn btnDelete"
+                                           data-id="@user.FacilityId" title="Delete Facility">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </article>
+                </div>
+            }
+        </div>
+
+        <!-- Detail Modal -->
+        <div class="modal fade" id="facilityDetailModal" tabindex="-1" role="dialog" aria-labelledby="facilityDetailModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <button type="button" class="btn btn-danger rounded-circle position-absolute top-0 end-0 m-2 p-0 d-flex align-items-center justify-content-center"
+                            data-bs-dismiss="modal" aria-label="Close" style="width: 32px; height: 32px;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="facilityDetailModalLabel">Facility Details</h5>
+                    </div>
+                    <div class="modal-body" id="facilityDetailContent">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        $(document).ready(function () {
+            // Image click opens modal
+            $(".toggle-image").on("click", function () {
+                var $card = $(this).closest(".facility-card");
+                var name = $card.find("h5").text();
+                var description = $card.find("p").first().text();
+                var address = $card.find(".card-extra-details p").eq(0).text();
+                var contact = $card.find(".card-extra-details p").eq(1).text();
+                var imgSrc = $(this).attr("src");
+
+                var contentHtml = `
+            <div class="row align-items-center">
+                <div class="col-md-5 text-center mb-3">
+                    <img src="${imgSrc}" class="img-fluid rounded" style="max-height: 200px; object-fit: cover;" />
+                </div>
+                <div class="col-md-7 ps-3">
+                    <p><strong>Name:</strong> ${name}</p>
+                    <p><strong>Description:</strong> ${description}</p>
+                    <p><strong>${address}</strong></p>
+                    <p><strong>${contact}</strong></p>
+                </div>
+            </div>
+`;
+
+
+                $("#facilityDetailContent").html(contentHtml);
+                var modal = new bootstrap.Modal(document.getElementById('facilityDetailModal'));
+                modal.show();
+            });
+
+            // Search filter
+            $("#searchInput").on("keyup", function () {
+                var searchTerm = $(this).val().toLowerCase();
+                $(".facility-card").each(function () {
+                    var name = $(this).data("facility-name");
+                    var description = $(this).data("description");
+                    $(this).toggle(name.includes(searchTerm) || description.includes(searchTerm));
+                });
+            });
+        });
+    </script>
+
+
+
+    <script>
+
+
+        document.getElementById("downloadPdfBtn").addEventListener("click", function () {
+            debugger
+            const { jsPDF } = window.jspdf;
+
+            const doc = new jsPDF();
+
+            const name = $("#facilityDetailContent strong:contains('Name')").parent().text();
+            const description = $("#facilityDetailContent strong:contains('Description')").parent().text();
+            debugger
+            doc.setFontSize(16);
+            doc.text("Facility Brochure", 10, 10);
+            doc.setFontSize(12);
+            doc.text(name, 10, 20);
+            doc.text(description, 10, 30);
+
+            doc.save("FacilityBrochure.pdf");
+        });
+
+    </script>
+</body>
+</html>

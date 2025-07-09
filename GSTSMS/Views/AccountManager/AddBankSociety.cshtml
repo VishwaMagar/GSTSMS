@@ -1,0 +1,166 @@
+﻿@model GSTSMSLibrary.AccountManager.AccountManager
+@{
+    ViewBag.Title = "Add Bank Society";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    .AddSocietybankbody {
+        margin-left: 344px;
+        margin-right: -124px;
+        width: 1111px;
+        margin-top: -73px;
+    }
+</style>
+<div class="AddSocietybankbody">
+    <h2 class="section-title">Add Bank Account</h2>
+    <p class="section-lead">Please fill all mandatory bank details below.</p>
+
+    @if (TempData["msg"] != null)
+    {
+        <div class="alert alert-success text-center">@TempData["msg"]</div>
+    }
+
+    @using (Html.BeginForm("AddBankSociety", "AccountManager", FormMethod.Post, new { id = "bankForm", @class = "needs-validation", novalidate = "novalidate" }))
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="row">
+            <div class="col-12 col-md-6">
+                <div class="card">
+                    <div class="card-header"><h4>Bank Information</h4></div>
+                    <div class="card-body">
+
+                        <!-- IFSC Code -->
+                        <div class="form-group">
+                            <label>IFSC Code <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="ifscCode" placeholder="e.g. SBIN0001456" />
+                            @Html.HiddenFor(m => m.IFSCCode, new { id = "actualIfsc" })
+                        </div>
+
+                        <!-- Account Number -->
+                        <div class="form-group">
+                            <label>Account Number <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="accountNumberMasked" />
+                            @Html.HiddenFor(m => m.Accountnumber, new { id = "accountNumberActual" })
+                        </div>
+
+                        <!-- Bank Name -->
+                        <div class="form-group">
+                            <label>Bank Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="bankNameDisplay" readonly />
+                            @Html.HiddenFor(m => m.BankName, new { id = "BankName" })
+                        </div>
+
+                        <!-- UPI ID -->
+                        <div class="form-group">
+                            <label>UPI ID <span class="text-danger">*</span></label>
+                            @Html.TextBoxFor(m => m.UpiId, new { @class = "form-control", placeholder = "yourname@upi", id = "UpiId" })
+                        </div>
+
+                        <!-- Account Type -->
+                        <div class="form-group">
+                            <label>Account Type <span class="text-danger">*</span></label>
+                            @Html.DropDownListFor(m => m.AccountTypeid, (List<SelectListItem>)ViewBag.AccountTypes, "Select Account Type", new { @class = "form-control", id = "accountType" })
+                        </div>
+
+                        <!-- Opening Balance -->
+                        <div class="form-group">
+                            <label>Opening Balance <span class="text-danger">*</span></label>
+                            @Html.TextBoxFor(m => m.OpeningBalance, new { @class = "form-control", placeholder = "₹ 2000", id = "OpeningBalance" })
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary">+ Add Bank</button>
+                            <button type="reset" class="btn btn-danger ml-2">Clear</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>$(document).ready(function () {
+            let realIFSC = "", realAccountNumber = "";
+
+            $('#ifscCode').on('input', function (e) {
+                let added = e.originalEvent?.data;
+                if (!added) {
+                    realIFSC = realIFSC.slice(0, -1);
+                } else {
+                    realIFSC += added.toUpperCase();
+                }
+                if (realIFSC.length <= 4) {
+                    $(this).val(realIFSC);
+                } else {
+                    $(this).val("*".repeat(realIFSC.length - 4) + realIFSC.slice(-4));
+                }
+
+                $('#actualIfsc').val(realIFSC);
+
+                if (realIFSC.length === 11) {
+                    $.ajax({
+                        url: "https://ifsc.razorpay.com/" + realIFSC,
+                        method: "GET",
+                        success: function (data) {
+                            $('#bankNameDisplay').val(data.BANK);
+                            $('#BankName').val(data.BANK);
+                        },
+                        error: function () {
+                            $('#bankNameDisplay').val('');
+                            $('#BankName').val('');
+                            alert("Invalid IFSC Code.");
+                        }
+                    });
+                }
+            });
+
+            $('#accountNumberMasked').on('input', function (e) {
+                let added = e.originalEvent?.data;
+                if (!added) {
+                    realAccountNumber = realAccountNumber.slice(0, -1);
+                } else {
+                    realAccountNumber += added;
+                }
+
+                if (realAccountNumber.length <= 4) {
+                    $(this).val(realAccountNumber);
+                } else {
+                    $(this).val("*".repeat(realAccountNumber.length - 4) + realAccountNumber.slice(-4));
+                }
+
+                $('#accountNumberActual').val(realAccountNumber);
+            });
+
+            $('#OpeningBalance').on('input', function () {
+                this.value = this.value.replace(/[^0-9.]/g, '');
+            });
+
+            $('#bankForm').on('submit', function (e) {
+                let isValid = true;
+
+                function markInvalid(id) { $('#' + id).addClass('is-invalid'); isValid = false; }
+                function clearInvalid(id) { $('#' + id).removeClass('is-invalid'); }
+
+                const ifsc = $('#actualIfsc').val().trim();
+                const acc = $('#accountNumberActual').val().trim();
+                const bank = $('#BankName').val().trim();
+                const upi = $('#UpiId').val().trim();
+                const type = $('#accountType').val();
+                const balance = $('#OpeningBalance').val().trim();
+
+                if (ifsc === "" || ifsc.length !== 11) markInvalid('ifscCode'); else clearInvalid('ifscCode');
+                if (acc === "") markInvalid('accountNumberMasked'); else clearInvalid('accountNumberMasked');
+                if (bank === "") markInvalid('bankNameDisplay'); else clearInvalid('bankNameDisplay');
+                if (upi === "") markInvalid('UpiId'); else clearInvalid('UpiId');
+                if (type === "" || type === "Select Account Type") markInvalid('accountType'); else clearInvalid('accountType');
+                if (!/^\d+(\.\d{1,2})?$/.test(balance)) markInvalid('OpeningBalance'); else clearInvalid('OpeningBalance');
+
+                if (!isValid) {
+                    e.preventDefault();
+                    alert("Please fill all required fields correctly.");
+                }
+            });</script>
+}

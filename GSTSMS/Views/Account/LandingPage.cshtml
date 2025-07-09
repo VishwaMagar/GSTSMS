@@ -1,0 +1,992 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+    <title>Housing Society Management System</title>
+    <meta name="description" content="A smart platform to manage residents, visitors, amenities & more in your housing society.">
+    <meta name="keywords" content="Housing Society, Apartment Management, Visitor Tracking, Maintenance Automation, Resident Portal">
+    <!-- Load jQuery FIRST -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Favicons -->
+    <link href="~/Content/img/hsm-logo.png" rel="icon">
+    <link href="~/Content/img/hsm-logo.png" rel="apple-touch-icon">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Vendor CSS Files -->
+    <link href="~/Content/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="~/Content/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="~/Content/vendor/aos/aos.css" rel="stylesheet">
+    <link href="~/Content/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+    <link href="~/Content/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+
+    <!-- Main CSS File -->
+    <link href="~/Content/css/main.css" rel="stylesheet">
+    <!--Map Animation link-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+    <!-- Custom UI Styling -->
+    <!-- Template Attribution -->
+    <!-- Template: Imperial from BootstrapMade (http s://bootstrapmade.com/imperial-free-onepage-bootstrap-theme/) -->
+    <!--link for External CSS file-->
+    <link rel="stylesheet" href="custom.css">
+
+    <!--link for popup form of CheckActiveSubscription-->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .map-wrapper {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+        }
+
+            .map-wrapper iframe {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100% !important;
+                height: 100% !important;
+                border: 2px;
+                border-radius: 20px;
+                display: block;
+            }
+        .navmenu a {
+            text-decoration: none !important;
+        }
+        .logo, .logo h1, .logo a {
+            text-decoration: none !important;
+        }
+
+    </style>
+</head>
+
+<body class="index-page">
+
+    <!-- ======= Header ======= -->
+    <header id="header" class="header d-flex align-items-center fixed-top">
+        <div class="container-fluid container-xl d-flex align-items-center justify-content-between">
+
+            <a href="index.html" class="logo d-flex align-items-center">
+                <!-- Optionally add your own logo image -->
+                <!-- <img src="~/Content/img/logo.png" alt="Logo"> -->
+                <h1 class="sitename">Housing Society</h1>
+            </a>
+
+            <nav id="navmenu" class="navmenu">
+                <ul>
+                    <li><a href="#hero" class="active">Home</a></li>
+                    <li><a href="#about">Why Us</a></li>
+                    <li><a href="#services">Modules</a></li>
+                    <li><a href="#enquiry">Enquiry</a></li>
+                    <li><a href="#testimonials">Testimonials</a></li>
+                    <li><a href="#plans">Plans</a></li>
+                    <li><a href="/Account/LoginRK">Login</a></li>
+                </ul>
+                <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+            </nav><!-- .navmenu -->
+
+
+        </div>
+    </header><!-- End Header -->
+
+    <main class="main">
+
+        <!-- ======= Hero Section ======= -->
+        <section id="hero" class="hero section dark-background position-relative">
+
+            <!-- Background Image -->
+            <img src="@Url.Content("~/Content/img/hero-bg.jpg")" class="hero-bg" alt="Hero Background" data-aos="fade-in" style="filter: brightness(0.5);">
+
+            <!-- Hero Content -->
+            <div class="container text-center text-white position-relative z-2" data-aos="fade-up" data-aos-delay="100">
+                <!-- Optional Logo (if you want) -->
+                <!-- <img src="~/Content/img/housingsys-logo.png" class="img-fluid mb-3" alt="HousingSys Logo"> -->
+                <h1 class="display-4 fw-bold mb-3">Smart Housing Society Management</h1>
+                <p class="lead mb-4">
+                    One unified platform to manage residents, security, maintenance, meetings, and everything in between.
+                    <br>
+                    <span class="typed" data-typed-items="Automated Workflows, Resident Portals, Complaint Tracking, Visitor Management"></span>
+                </p>
+
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="#plans" class="btn btn-warning btn-lg px-4 shadow">Explore Plans</a>
+                    <a href="#services" class="btn btn-outline-light btn-lg px-4">Explore Features</a>
+                </div>
+            </div>
+
+            <!-- Optional Hero Overlay -->
+            <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-50"></div>
+
+        </section><!-- End Hero Section -->
+        <!-- About Section -->
+        <section id="about" class="section py-5" style="background: linear-gradient(to bottom, #0e0e0e, #1c1c1c); color: #f1f1f1;">
+            <div class="container" data-aos="fade-up">
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold display-6" style="color: #ffe28a;">🌟 About Us</h2>
+                    <p class="lead text-white" id="aboutUs">
+                        We simplify and automate daily society operations for committees and residents with style, trust, and transparency.
+                    </p>
+                </div>
+
+                <div class="row align-items-center gy-4">
+                    <!-- Image -->
+                    <div class="col-lg-6 animate__animated animate__fadeInLeft">
+                        <img src="@Url.Content("~/Content/img/AboutUsimg.png")" alt="Smart Society" class="img-fluid rounded-4 shadow-lg">
+
+                    </div>
+                    <!-- Content -->
+                    <div class="col-lg-6">
+                        <div class="glass-box p-4 rounded-4 shadow-lg animate__animated animate__fadeInRight">
+                            <h3 class="text-warning fw-bold mb-4">Why Choose Us?</h3>
+                            <ul class="list-unstyled fs-5">
+                                <li class="mb-3 d-flex">
+                                    <i class="bi bi-speedometer2 text-info fs-4 me-3"></i>
+                                    <span><strong>Centralized Dashboard:</strong> Everything at one place for admins, staff & residents.</span>
+                                </li>
+                                <li class="mb-3 d-flex">
+                                    <i class="bi bi-chat-left-dots text-primary fs-4 me-3"></i>
+                                    <span><strong>Built-in Communication:</strong> Notices, feedback & chat system included.</span>
+                                </li>
+                                <li class="mb-3 d-flex">
+                                    <i class="bi bi-bar-chart-line text-success fs-4 me-3"></i>
+                                    <span><strong>Live Logs:</strong> Track visitors, payments, bookings & more — in real-time.</span>
+                                </li>
+                            </ul>
+                            <a href="#services" class="btn btn-outline-warning rounded-pill mt-3 px-4 fw-semibold">
+                                🚀 Explore Features
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- /About Section -->
+        <!-- Services Section -->
+        <section id="services" class="services section light-background">
+
+            <!-- Section Title -->
+            <div class="container section-title" data-aos="fade-up">
+                <h2>Our Core Services</h2>
+                <p>Everything you need to manage a housing society — all in one platform, built for communities of every size.</p>
+            </div>
+
+            <div class="container">
+                <div class="row gy-4">
+
+                    <!-- Service 1 -->
+                    <div class="col-lg-4 col-md-6 service-item d-flex" data-aos="fade-up" data-aos-delay="100">
+                        <div class="icon flex-shrink-0"><i class="bi bi-building"></i></div>
+                        <div>
+                            <h4 class="title"><a href="#" class="stretched-link">Society Administration</a></h4>
+                            <p class="description">Manage society wings, flats, and members with full transparency. All administrative tools in one place.</p>
+                        </div>
+                    </div>
+
+                    <!-- Service 2 -->
+                    <div class="col-lg-4 col-md-6 service-item d-flex" data-aos="fade-up" data-aos-delay="200">
+                        <div class="icon flex-shrink-0"><i class="bi bi-currency-rupee"></i></div>
+                        <div>
+                            <h4 class="title"><a href="#" class="stretched-link">Maintenance & Payments</a></h4>
+                            <p class="description">Auto-generate bills, send reminders, and accept payments securely with real-time tracking.</p>
+                        </div>
+                    </div>
+
+                    <!-- Service 3 -->
+                    <div class="col-lg-4 col-md-6 service-item d-flex" data-aos="fade-up" data-aos-delay="300">
+                        <div class="icon flex-shrink-0"><i class="bi bi-shield-lock"></i></div>
+                        <div>
+                            <h4 class="title"><a href="#" class="stretched-link">Visitor Management</a></h4>
+                            <p class="description">Digitally log visitors, deliveries, and service staff. Secure your premises with real-time alerts.</p>
+                        </div>
+                    </div>
+
+                    <!-- Service 4 -->
+                    <div class="col-lg-4 col-md-6 service-item d-flex" data-aos="fade-up" data-aos-delay="400">
+                        <div class="icon flex-shrink-0"><i class="bi bi-people-fill"></i></div>
+                        <div>
+                            <h4 class="title"><a href="#" class="stretched-link">Resident Communication</a></h4>
+                            <p class="description">Send notices, polls, and collect feedback. Keep everyone informed and involved.</p>
+                        </div>
+                    </div>
+
+                    <!-- Service 5 -->
+                    <div class="col-lg-4 col-md-6 service-item d-flex" data-aos="fade-up" data-aos-delay="500">
+                        <div class="icon flex-shrink-0"><i class="bi bi-tools"></i></div>
+                        <div>
+                            <h4 class="title"><a href="#" class="stretched-link">Complaint & Maintenance</a></h4>
+                            <p class="description">Track society maintenance tasks, raise complaints, and monitor resolution progress effortlessly.</p>
+                        </div>
+                    </div>
+
+                    <!-- Service 6 -->
+                    <div class="col-lg-4 col-md-6 service-item d-flex" data-aos="fade-up" data-aos-delay="600">
+                        <div class="icon flex-shrink-0"><i class="bi bi-calendar-event"></i></div>
+                        <div>
+                            <h4 class="title"><a href="#" class="stretched-link">Event & Facility Booking</a></h4>
+                            <p class="description">Schedule events, reserve common areas, and manage bookings from one convenient calendar.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+        <!-- /Services Section -->
+        <!-- Features Section -->
+        <section id="features" class="features section bg-light">
+
+            <!-- Section Title -->
+            <div class="container section-title" data-aos="fade-up">
+                <h2>Key Highlights</h2>
+                <p>Explore what makes our housing management system the best fit for modern societies and gated communities.</p>
+            </div>
+
+            <div class="container">
+                <div class="row gy-4">
+
+                    <!-- Feature 1 -->
+                    <div class="col-xl-3 col-md-6" data-aos="zoom-in" data-aos-delay="100">
+                        <div class="feature-box orange">
+                            <i class="bi bi-unlock-fill"></i>
+                            <h4>Role-Based Access</h4>
+                            <p>Each user gets access to features specific to their role — Chairman, Secretary, Resident, or Security.</p>
+                        </div>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div class="col-xl-3 col-md-6" data-aos="zoom-in" data-aos-delay="200">
+                        <div class="feature-box blue">
+                            <i class="bi bi-bar-chart-fill"></i>
+                            <h4>Real-Time Reports</h4>
+                            <p>Dynamic dashboards and charts to monitor visitor stats, dues, complaints, and maintenance logs instantly.</p>
+                        </div>
+                    </div>
+
+                    <!-- Feature 3 -->
+                    <div class="col-xl-3 col-md-6" data-aos="zoom-in" data-aos-delay="300">
+                        <div class="feature-box green">
+                            <i class="bi bi-envelope-paper-fill"></i>
+                            <h4>Notice Board & Polls</h4>
+                            <p>Send important announcements, conduct surveys, and share events directly with residents in seconds.</p>
+                        </div>
+                    </div>
+
+                    <!-- Feature 4 -->
+                    <div class="col-xl-3 col-md-6" data-aos="zoom-in" data-aos-delay="400">
+                        <div class="feature-box red">
+                            <i class="bi bi-calendar-check-fill"></i>
+                            <h4>Booking & Scheduling</h4>
+                            <p>Integrated calendar to manage community hall bookings, service appointments, and meetings.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+        <!-- /Features Section -->
+        <!-- Content -->
+        <!-- CTA Section -->
+        <section id="enquiry" class="py-5 bg-dark text-white">
+            <div class="container position-relative" style="z-index: 2;">
+                <div class="row justify-content-between align-items-center" data-aos="zoom-in" data-aos-delay="100">
+
+                    <!-- Original CTA -->
+                    <div id="ctaRequest" class="col-xl-9 text-center text-xl-start text-white">
+                        <h3 class="fw-bold" id="wpd" style=" color: antiquewhite !important;">Want a Personalized Demo?</h3>
+                        <p class="mt-3 mb-0">
+                            Discover how our platform can streamline your society's management — from billing to visitor tracking.
+                            Get a walkthrough of features tailored to your needs.
+                        </p>
+                    </div>
+
+                    <!-- Confirmation Message -->
+                    <div id="ctaConfirmed" class="col-xl-9 text-center text-xl-start text-white d-none">
+                        <h3 class="fw-bold text-success">Thank you! 🎉</h3>
+                        <p class="mt-3 mb-0">
+                            Your enquiry has been received. Please check your email for a demo video link.
+                        </p>
+                    </div>
+
+                    <!-- Button -->
+                    <div class="col-xl-3 text-center mt-4 mt-xl-0" id="ctaButton">
+                        <a href="javascript:void(0);" class="cta-btn align-middle shadow" data-bs-toggle="modal" data-bs-target="#enquiryModal">
+                            Request a Demo
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Enquiry Modal -->
+        <!--<div class="modal fade" id="enquiryModal" tabindex="-1" role="dialog" aria-labelledby="enquiryModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                <div class="modal-content">
+
+                    <div id="enquiryFormContainer">-->
+                        @*@Html.Partial("_EnquiryFormRK")*@
+                    <!--</div>
+                </div>
+            </div>
+        </div>-->
+
+        <!-- Testimonials Section -->
+        <section id="testimonials" class="testimonials section bg-light">
+
+            <!-- Section Title -->
+            <div class="container section-title" data-aos="fade-up">
+                <h2>What Societies Say</h2>
+                <p>Discover how HousingSystem transformed society operations across different cities</p>
+            </div>
+
+            <div class="container" data-aos="fade-up" data-aos-delay="100">
+                <div class="swiper testimonial-swiper">
+                    <div class="swiper-wrapper" id="testimonialContainer">
+                        <!-- JS will inject slides here -->
+                    </div>
+                    <div class="swiper-pagination"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Script to load testimonials -->
+        <script>
+            $(document).ready(function () {
+                $.ajax({
+                    url: '/SuperAdmin/GetPublicTestimonials',
+                    method: 'GET',
+                    success: function (data) {
+                        let html = '';
+
+                        data.forEach(t => {
+                            let stars = '';
+                            for (let i = 0; i < t.Rating; i++) {
+                                stars += '<i class="bi bi-star-fill"></i>';
+                            }
+
+                            html += `
+                                        <div class="swiper-slide">
+                                            <div class="testimonial-item">
+                                                <div class="row gy-4 justify-content-center">
+                                                    <div class="col-lg-8">
+                                                        <div class="testimonial-content text-center">
+                                                            <p>
+                                                                <i class="bi bi-quote quote-icon-left"></i>
+                                                                <span>${t.Message}</span>
+                                                                <i class="bi bi-quote quote-icon-right"></i>
+                                                            </p>
+                                                            <h3>${t.Name}</h3>
+                                                            <h4>${t.Role}, ${t.Society}</h4>
+                                                            <div class="stars">${stars}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>`;
+                        });
+
+                        $('#testimonialContainer').html(html);
+
+                        if (window.testimonialSwiper && typeof window.testimonialSwiper.destroy === 'function') {
+                            window.testimonialSwiper.destroy(true, true);
+                        }
+
+                        window.testimonialSwiper = new Swiper('.testimonial-swiper', {
+                            loop: true,
+                            speed: 600,
+                            autoplay: { delay: 5000 },
+                            slidesPerView: 1,
+                            spaceBetween: 20,
+                            pagination: {
+                                el: '.swiper-pagination',
+                                clickable: true
+                            }
+                        });
+                    },
+                    error: function () {
+                        $('#testimonialContainer').html('<p class="text-danger text-center">❌ Failed to load testimonials.</p>');
+                    }
+                });
+            });
+        </script>
+        <!-- End Of Testimonials Section -->
+        <!-- Pricing Plans Section -->
+        <section id="plans" class="section bg-light">
+            <div class="container section-title" data-aos="fade-up">
+                <h2>Subscription Plans</h2>
+                <p>Choose the right plan for your society and unlock seamless management features</p>
+            </div>
+            <div class="container px-lg-5">
+                <div id="plansContainer" class="row justify-content-center">
+                    <!-- Dynamic Plans will come here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Confetti Library -->
+        <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
+
+        <script>
+            let selectedPlan = {};
+
+            $(document).ready(function () {
+                loadPlans();
+            });
+
+            function loadPlans() {
+                $.ajax({
+                    url: '/SuperAdmin/GetPlansAndFeatures',
+                    method: 'GET',
+                    success: function (plans) {
+                        let html = '';
+                        plans.forEach(function (plan, index) {
+                            let borderClass = getBorderClass(index);
+
+                            html += `
+                                    <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="${(index + 1) * 100}">
+                                        <div class="card h-100 d-flex flex-column justify-content-between shadow pricing-card ${borderClass}">
+                                            <div class="card-body d-flex flex-column text-center">
+                                                <h5 class="card-title mb-1">${plan.PlanName}</h5>
+                                                <p class="text-muted small">${plan.NoOfMember}+ Members</p>
+                                                <hr class="my-3">
+                                                <ul class="list-unstyled text-start flex-grow-1 feature-list mb-4">
+                                `;
+
+                            plan.Features.forEach(feature => {
+                                html += `<li class="mb-2 d-flex align-items-start"><i class="bi bi-check-circle-fill me-2 text-success"></i>${feature}</li>`;
+                            });
+
+                            html += `
+                                            </ul>
+                                            <p class="fw-bold text-muted mt-auto">Price: ₹${plan.Amount} / ${plan.Duration}</p>
+                                        </div>
+                                        <div class="card-footer bg-transparent border-0 text-center">
+                                            <button class="btn btn-gradient w-100 rounded-pill" onclick="showSignupForm('${plan.PlanName}', ${plan.Amount}, '${plan.Duration}')">
+                                                SUBSCRIBE
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+
+                        $('#plansContainer').html(html);
+                    },
+                    error: function () {
+                        alert('❌ Failed to load plans. Try refreshing.');
+                    }
+                });
+            }
+
+            function getBorderClass(index) {
+                const classes = ['border-start border-4 border-primary', 'border-4 border-info', 'border-4 border-success', 'border-4 border-dark'];
+                return classes[index % classes.length];
+            }
+
+            function showSignupForm(planName, amount, duration) {
+                selectedPlan = {
+                    name: planName,
+                    amount: amount,
+                    duration: duration,
+                    startDate: new Date().toLocaleDateString('en-GB'),
+                    endDate: calculateEndDate(duration)
+                };
+                $('#emailVerifyModal').modal('show');
+            }
+
+            function calculateEndDate(duration) {
+                let end = new Date();
+                if (duration.includes("Month")) {
+                    let months = parseInt(duration);
+                    end.setMonth(end.getMonth() + months);
+                } else if (duration.includes("Year")) {
+                    let years = parseInt(duration);
+                    end.setFullYear(end.getFullYear() + years);
+                }
+                return end.toLocaleDateString('en-GB');
+            }
+
+            function verifyEmailForSubscription() {
+                let email = $('#verifyEmailInput').val().trim();
+
+                if (email === '') {
+                    alert("⚠️ Please enter your email.");
+                    return;
+                }
+
+                $.post('/SuperAdmin/CheckActiveSubscription', { email: email }, function (res) {
+
+                    if (res.success) {
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'You already have an active subscription!',
+                            html: `<b>Plan:</b> ${res.plan}<br>
+                               <b>Start:</b> ${res.start}<br>
+                               <b>Expires on:</b> ${res.expiry}`,
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#5D3FD3'
+                        });
+                    } else {
+                        // Proceed to OTP
+                        sendOtpForEmail(email);
+                    }
+                });
+            }
+
+            function sendOtpForEmail(email) {
+                $('#sendOtpBtn').attr('disabled', true);
+                $('#sendOtpText').text("Sending...");
+                $('#sendOtpSpinner').removeClass('d-none');
+
+                $.ajax({
+                    url: '/SuperAdmin/SendOtpIfEnquiryExists',
+                    method: 'POST',
+                    data: { email: email },
+                    success: function (res) {
+                        $('#sendOtpBtn').attr('disabled', false);
+                        $('#sendOtpText').text("Continue");
+                        $('#sendOtpSpinner').addClass('d-none');
+
+                        if (res.success) {
+                            sessionStorage.setItem("verifiedEmail", email);
+                            $('#emailVerifyModal').modal('hide');
+                            $('#otpVerifyModal').modal('show');
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: '🚫 Subscription Blocked',
+                                text: res.message,
+                                confirmButtonColor: '#5D3FD3'
+                            });
+                        }
+                    },
+                    error: function () {
+                        $('#sendOtpBtn').attr('disabled', false);
+                        $('#sendOtpText').text("Continue");
+                        $('#sendOtpSpinner').addClass('d-none');
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Server Error',
+                            text: 'Something went wrong while sending the OTP.',
+                            confirmButtonColor: '#5D3FD3'
+                        });
+                    }
+                });
+            }
+
+            function verifyEnteredOtp() {
+                let otp = $('#otpInput').val().trim();
+
+                if (otp === '') {
+                    alert("⚠️ Please enter the OTP.");
+                    return;
+                }
+
+                $.ajax({
+                    url: '/SuperAdmin/VerifyOtp',
+                    method: 'POST',
+                    data: { enteredOtp: otp },
+                    success: function (res) {
+                        if (res.success) {
+                            alert("✅ OTP verified. Proceeding to payment.");
+                            $('#otpVerifyModal').modal('hide');
+                            triggerRazorpayFromVerifiedFlow();
+                        } else {
+                            alert("❌ Incorrect OTP. Please try again.");
+                        }
+                    },
+                    error: function () {
+                        alert("❌ Something went wrong during OTP verification.");
+                    }
+                });
+            }
+
+            function triggerRazorpayFromVerifiedFlow() {
+                $.ajax({
+                    url: '/SuperAdmin/CreateOrder',
+                    method: 'POST',
+                    data: {
+                        planName: selectedPlan.name,
+                        amount: selectedPlan.amount
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            var options = {
+                                key: response.razorpayKey,
+                                amount: selectedPlan.amount * 100,
+                                currency: "INR",
+                                name: "Housing Society System",
+                                description: `${selectedPlan.name} - ${selectedPlan.duration}`,
+                                order_id: response.orderId,
+                                handler: function (paymentInfo) {
+                                    handlePaymentSuccess(
+                                        paymentInfo.razorpay_payment_id,
+                                        selectedPlan.name,
+                                        selectedPlan.amount,
+                                        selectedPlan.duration,
+                                        selectedPlan.startDate,
+                                        selectedPlan.endDate
+                                    );
+                                },
+                                theme: {
+                                    color: "#5D3FD3"
+                                }
+                            };
+                            var rzp = new Razorpay(options);
+                            rzp.open();
+                        } else {
+                            alert("❌ Razorpay order creation failed.");
+                        }
+                    },
+                    error: function () {
+                        alert("❌ Error connecting to Razorpay.");
+                    }
+                });
+            }
+            function convertToDate(ddmmyyyy) {
+                const [day, month, year] = ddmmyyyy.split('/');
+                return `${year}-${month}-${day}`;
+            }
+
+            function launchConfetti() {
+                const durationMs = 3 * 1000;
+                const animationEnd = Date.now() + durationMs;
+                const defaults = {
+                    spread: 60,
+                    ticks: 70,
+                    gravity: 0.6,
+                    origin: { y: 0.7 },
+                    colors: ['#5D3FD3', '#FF9F45', '#00D2FF', '#FC6076']
+                };
+
+                const interval = setInterval(() => {
+                    const timeLeft = animationEnd - Date.now();
+                    if (timeLeft <= 0) clearInterval(interval);
+
+                    confetti({
+                        ...defaults,
+                        particleCount: 50,
+                        scalar: Math.random() * 0.6 + 0.7,
+                        origin: {
+                            x: Math.random(),
+                            y: Math.random() - 0.2
+                        }
+                    });
+                }, 250);
+            }
+
+            function handlePaymentSuccess(paymentId, planName, amount, duration, startDate, endDate) {
+                // Show modal
+                document.getElementById("planNameSpan").innerText = planName;
+                document.getElementById("amountSpan").innerText = amount;
+                document.getElementById("durationSpan").innerText = duration;
+                document.getElementById("startDateSpan").innerText = startDate;
+                document.getElementById("expiryDateSpan").innerText = endDate;
+                document.getElementById("paymentIdSpan").innerText = paymentId;
+
+                const modal = new bootstrap.Modal(document.getElementById('paymentSuccessModal'));
+                modal.show();
+
+                // 🎉 Confetti
+                launchConfetti();
+
+                // Save to DB
+                $.ajax({
+                    url: '/SuperAdmin/SaveSubscriptionAfterPayment',
+                    method: 'POST',
+                    data: {
+                        planName: planName,
+                        startDate: convertToDate(startDate),
+                        expiryDate: convertToDate(endDate),
+                        chairmanEmail: sessionStorage.getItem("verifiedEmail")
+                    },
+                    success: function (res) {
+                        if (res.success) {
+                            console.log("✅ Subscription saved.");
+
+                            // ✅ Send receipt email only if DB save was successful
+                            $.ajax({
+                                url: '/SuperAdmin/SendSubscriptionReceipt',
+                                method: 'POST',
+                                data: {
+                                    email: sessionStorage.getItem("verifiedEmail"),
+                                    planName: planName,
+                                    amount: amount,
+                                    duration: duration,
+                                    startDate: convertToDate(startDate),
+                                    expiryDate: convertToDate(endDate),
+                                    paymentId: paymentId
+                                },
+                                success: function (res) {
+                                    if (res.success) {
+                                        console.log("📧 Receipt email sent.");
+                                    } else {
+                                        console.warn("❌ Email failed: " + res.message);
+                                    }
+                                },
+                                error: function () {
+                                    console.error("❌ Failed to send receipt email.");
+                                }
+                            });
+
+                        } else {
+                            alert("⚠️ Payment was successful, but subscription wasn't saved: " + res.message);
+                        }
+                    },
+                    error: function () {
+                        alert("❌ Payment done but failed to save subscription in database.");
+                    }
+                });
+            }
+
+
+        </script>
+
+        <!-- Button CSS -->
+        <style>
+            .btn-gradient {
+                background: linear-gradient(135deg, #6f42c1, #805ad5);
+                color: #fff;
+                font-weight: 600;
+                font-size: 1rem;
+                padding: 10px 20px;
+                transition: 0.3s;
+            }
+
+                .btn-gradient:hover {
+                    opacity: 0.9;
+                    transform: scale(1.03);
+                }
+        </style>
+
+        <!-- Email Verification Modal -->
+        <div class="modal fade" id="emailVerifyModal" tabindex="-1" aria-labelledby="emailVerifyModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content p-4">
+                    <h5 class="modal-title text-center mb-3" id="emailVerifyModalLabel">
+                        🔐 Verify Your Email
+                    </h5>
+                    <p class="text-muted text-center small mb-3">
+                        Already submitted an enquiry? Enter your email to continue.<br />
+                        If New user <a href="#enquiryModal" data-bs-toggle="modal" data-bs-dismiss="modal">Submit enquiry first</a>.
+                    </p>
+                    <div class="mb-3">
+                        <input type="email" id="verifyEmailInput" class="form-control" placeholder="Enter your email" required />
+                    </div>
+                    <div class="d-grid">
+                        <button id="sendOtpBtn" class="btn btn-gradient" onclick="verifyEmailForSubscription()">
+                            <span id="sendOtpText">Continue</span>
+                            <span id="sendOtpSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- OTP Verification Modal -->
+        <div class="modal fade" id="otpVerifyModal" tabindex="-1" aria-labelledby="otpVerifyModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content p-4 text-center">
+                    <h5 class="modal-title mb-3 text-primary" id="otpVerifyModalLabel">🔐 Enter OTP</h5>
+                    <p>Please check your email and enter the 6-digit OTP to continue.</p>
+                    <input type="text" class="form-control mb-3 text-center" id="otpInput" placeholder="Enter OTP" maxlength="6">
+                    <button type="button" class="btn btn-gradient" onclick="verifyEnteredOtp()">Verify OTP</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Success Modal -->
+        <div class="modal fade" id="paymentSuccessModal" tabindex="-1" aria-labelledby="paymentSuccessModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content text-center p-4">
+                    <h5 class="modal-title mb-3 text-success">🎉 Payment Successful!</h5>
+                    <p><strong>Plan:</strong> <span id="planNameSpan"></span></p>
+                    <p><strong>Amount Paid:</strong> ₹<span id="amountSpan"></span></p>
+                    <p><strong>Duration:</strong> <span id="durationSpan"></span></p>
+                    <p><strong>Start Date:</strong> <span id="startDateSpan"></span></p>
+                    <p><strong>Expiry Date:</strong> <span id="expiryDateSpan"></span></p>
+                    <p><strong>Payment ID:</strong> <span id="paymentIdSpan"></span></p>
+                    <button type="button" class="btn btn-gradient mt-3" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Office Location Map with Marker -->
+        <div class="col-lg-10 mx-auto" data-aos="fade-up" data-aos-delay="100">
+            <h4 class="mb-3 text-white fw-bold">📍 Locate Us</h4>
+
+            <div class="map-wrapper animate__animated animate__fadeInUp">
+                <iframe src="https://www.google.com/maps?q=Choice+Institute,+Ground+Daulat+Estate,+near+Choice+Health+Club,+Off+Karve+Road,+Jhala+Co-Op+Housing+Society,+Kothrud,+Pune,+Maharashtra+411038&output=embed"
+                        width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+
+            <div class="text-center mt-3">
+                <a href="https://www.google.com/maps?q=Choice+Institute,+Ground+Daulat+Estate,+near+Choice+Health+Club,+Off+Karve+Road,+Jhala+Co-Op+Housing+Society,+Kothrud,+Pune,+Maharashtra+411038"
+                   target="_blank" class="btn btn-outline-light rounded-pill px-4">
+                    🔗 Open in Google Maps
+                </a>
+            </div>
+        </div>
+
+
+
+    </main>
+
+    <footer id="footer" class="footer dark-background">
+
+        <div class="container">
+            <div class="row gy-3">
+                <div class="col-lg-3 col-md-6 d-flex">
+                    <i class="bi bi-geo-alt icon"></i>
+                    <div class="address">
+                        <h4>Address</h4>
+                        <p>Choice Institute, Ground Daulat Estate, near Choice Health Club,</p>
+                        <p>Off Karve Road, Jhala Co-Op Housing Society,</p>
+                        <p>Kothrud, Pune, Maharashtra 411038</p>
+                    </div>
+
+
+                </div>
+
+                <div class="col-lg-3 col-md-6 d-flex">
+                    <i class="bi bi-telephone icon"></i>
+                    <div>
+                        <h4>Contact</h4>
+                        <p>
+                            <strong>Phone:</strong> <span>+8468845424</span><br>
+                            <strong>Email:</strong> <span>sms.8081gayasofttech@gmail.com</span><br>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 d-flex">
+                    <i class="bi bi-clock icon"></i>
+                    <div>
+                        <h4>Opening Hours</h4>
+                        <p>
+                            <strong>Mon-Sat:</strong> <span>11AM - 08PM</span><br>
+                            <strong>Sunday</strong>: <span>Closed</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <h4>Follow Us</h4>
+                    <div class="social-links d-flex">
+                        <a href="#" class="twitter"><i class="bi bi-twitter-x"></i></a>
+                        <a href="#" class="facebook"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="instagram"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="linkedin"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="container copyright text-center mt-4">
+            <p>© <span>Copyright</span> <strong class="px-1 sitename">GayaSoftTech</strong> <span>All Rights Reserved</span></p>
+            <div class="credits">
+                <!-- All the links in the footer should remain intact. -->
+                <!-- You can delete the links only if you've purchased the pro version. -->
+                <!-- Licensing information: https://bootstrapmade.com/license/ -->
+                <!-- Purchase the pro version with working PHP/AJAX contact form: [buy-url] -->
+                Designed by <a href="http://gayasofttech.com/">GayaSoftMade</a>
+            </div>
+        </div>
+
+    </footer>
+
+    <!-- Scroll Top -->
+    <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+    <!-- Preloader -->
+    <div id="preloader"></div>
+
+    <!-- Vendor JS Files -->
+    <script src="~/Content/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/Content/vendor/php-email-form/validate.js"></script>
+    <script src="~/Content/vendor/aos/aos.js"></script>
+    <script src="~/Content/vendor/typed.js/typed.umd.js"></script>
+    <script src="~/Content/vendor/glightbox/js/glightbox.min.js"></script>
+    <script src="~/Content/vendor/imagesloaded/imagesloaded.pkgd.min.js"></script>
+    <script src="~/Content/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+    <script src="~/Content/vendor/swiper/swiper-bundle.min.js"></script>
+
+    <!-- Main JS File -->
+    <script src="~/Content/js/main.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-ajax-unobtrusive/3.2.6/jquery.unobtrusive-ajax.min.js"></script>
+    <!--CDN for Confetti-->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <!--CDN for sliding the Feedback-->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+
+    <script>
+
+        function onEnquirySuccess(response) {
+            if (response.success) {
+                const enquiryModal = bootstrap.Modal.getInstance(document.getElementById('enquiryModal'));
+                enquiryModal.hide();
+
+                // Hide the original demo message + button
+                document.getElementById('ctaRequest').classList.add('d-none');
+                document.getElementById('ctaButton').classList.add('d-none');
+
+                // Show the new confirmation message
+                document.getElementById('ctaConfirmed').classList.remove('d-none');
+
+                // Scroll to it
+                document.getElementById('call-to-action').scrollIntoView({ behavior: 'smooth' });
+            } else {
+                document.getElementById('enquiryResult').innerHTML = `
+                                        <div class="alert alert-danger mt-3">${response.message}</div>`;
+            }
+        }
+    </script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <!-- Payment Success Modal -->
+    <div class="modal fade" id="paymentSuccessModal" tabindex="-1" aria-labelledby="paymentSuccessLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="paymentSuccessLabel"><i class="bi bi-check-circle me-2"></i>Subscription Successful!</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Plan:</strong> <span id="planNameSpan"></span></p>
+                    <p><strong>Amount Paid:</strong> ₹<span id="amountSpan"></span></p>
+                    <p><strong>Duration:</strong> <span id="durationSpan"></span></p>
+                    <p><strong>Start Date:</strong> <span id="startDateSpan"></span></p>
+                    <p><strong>Valid Until:</strong> <span id="expiryDateSpan"></span></p>
+                    <hr>
+                    <p class="small text-muted mb-0"><strong>Payment ID:</strong> <span id="paymentIdSpan"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

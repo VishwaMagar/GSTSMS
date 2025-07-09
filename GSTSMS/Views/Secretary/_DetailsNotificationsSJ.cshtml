@@ -1,0 +1,52 @@
+﻿@model GSTSMSLibrary.Secretary.Secretary
+
+<div class="modal-body">
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Title</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.Title)</dd>
+
+                <dt class="col-sm-4">Type</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.Type)</dd>
+
+                <dt class="col-sm-4">Description</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.Description)</dd>
+
+                @*<dt class="col-sm-4">Notification ID</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.NotificationId)</dd>*@
+
+                @if (Model.Type == "Feedback" && Model.Ratings.HasValue)
+                {
+                    <dt class="col-sm-4">Ratings</dt>
+                    <dd class="col-sm-8">
+                        @for (int i = 0; i < (int)Model.Ratings.Value; i++)
+                        {
+                            <i class="fa fa-star text-warning"></i>
+                        }
+                    </dd>
+                }
+
+                @if (Model.Type == "Feedback" && !string.IsNullOrEmpty(Model.FullName))
+                {
+                    <dt class="col-sm-4">Member Name</dt>
+                    <dd class="col-sm-8">@Html.DisplayFor(model => model.FullName)</dd>
+                }
+
+                @if (Model.Type == "Event" && !string.IsNullOrEmpty(Model.EventCode))
+                {
+                    <dt class="col-sm-4">Event Code</dt>
+                    <dd class="col-sm-8">@Html.DisplayFor(model => model.EventCode)</dd>
+                }
+
+                @if (Model.Type == "Meeting" && !string.IsNullOrEmpty(Model.MeetingCode))
+                {
+                    <dt class="col-sm-4">Meeting Code</dt>
+                    <dd class="col-sm-8">@Html.DisplayFor(model => model.MeetingCode)</dd>
+                }
+
+            </dl>
+
+        </div>
+    </div>
+</div>

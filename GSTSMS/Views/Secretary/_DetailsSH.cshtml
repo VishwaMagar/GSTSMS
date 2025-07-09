@@ -1,0 +1,168 @@
+﻿@model GSTSMSLibrary.Secretary.Secretary
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h4 class="text-center w-100">Notice Details</h4>
+        <!-- Cross icon button (for close) -->
+        @*<a href="javascript:void(0);" class="btn btn-close" aria-label="Close" onclick="goBack()"></a>*@
+        <button class="close-button" onclick="goBack()" title="Close">&times;</button>
+
+
+    </div>
+    <hr />
+
+    @Html.HiddenFor(model => model.NoticeId)
+
+
+<dl class="row">
+    <dt class="col-sm-3">
+        @Html.DisplayNameFor(model => model.NoticeCode)
+    </dt>
+    <dd class="col-sm-9">
+        @Html.DisplayFor(model => model.NoticeCode)
+    </dd>
+
+    <dt class="col-sm-3">
+        @Html.DisplayNameFor(model => model.NoticeType)
+    </dt>
+    <dd class="col-sm-9">
+        @Html.DisplayFor(model => model.SubType)
+    </dd>
+
+    <dt class="col-sm-3">
+        @Html.DisplayNameFor(model => model.NoticeTitle)
+    </dt>
+    <dd class="col-sm-9">
+        @Html.DisplayFor(model => model.NoticeTitle)
+    </dd>
+
+    <dt class="col-sm-3">
+        @Html.DisplayNameFor(model => model.Description)
+    </dt>
+    <dd class="col-sm-9">
+        @Html.DisplayFor(model => model.Description)
+    </dd>
+
+    <dt class="col-sm-3">
+        @Html.DisplayNameFor(model => model.StartDate)
+    </dt>
+    <dd class="col-sm-9">
+        @if (Model.StartDate != null)
+        {
+            @Model.StartDate.ToString("yyyy-MM-dd")
+        }
+        else
+        {
+            <span>No start date available</span>
+        }
+    </dd>
+
+    <dt class="col-sm-3">
+        @Html.DisplayNameFor(model => model.DeadLineDate)
+    </dt>
+    <dd class="col-sm-9">
+        @if (Model.DeadLineDate != null)
+        {
+            @Model.DeadLineDate.ToString("yyyy-MM-dd")
+        }
+        else
+        {
+            <span>No DeadLineDate date available</span>
+        }
+    </dd>
+
+    @*<dt class="col-sm-3">
+            @Html.DisplayName("Document")
+        </dt>*@
+    @*<dd class="col-sm-9">
+            @if (!string.IsNullOrEmpty(Model.Document))
+            {
+                var documentPath = Url.Content("~/UploadedDocuments/" + Model.Document);
+                <a href="@documentPath" target="_blank" class="btn btn-link">
+                    📎 View Document
+                </a>
+            }
+            else
+            {
+                <span>No Document</span>
+            }
+        </dd>*@
+
+
+    @*<dt class="col-sm-3">
+            @Html.DisplayName("Document")
+        </dt>*@
+
+    @*<dd>
+            @if (!string.IsNullOrEmpty(Model.Document) && Model.Document != "NO FILE")
+            {
+                var docUrl = Url.Content("~/Documents/Secretary/" + Model.Document);
+                <a href="javascript:void(0);" onclick="openDocument('@docUrl')">View Document</a>
+            }
+            else
+            {
+                <span>No Document</span>
+            }
+        </dd>*@
+
+    <dt class="col-sm-3">
+        @Html.DisplayName("Document")
+    </dt>
+
+    <dd>
+        @if (!string.IsNullOrEmpty(Model.Document) && Model.Document != "NO FILE")
+        {
+            string docUrl = Url.Action("ViewDocument", "Secretary", new { fileName = Model.Document });
+            <a href="@docUrl" target="_blank">View Document</a>
+        }
+        else
+        {
+            <span>No Document</span>
+        }
+    </dd>
+
+
+</dl>
+</div>
+<script>
+    function openDocument(url) {
+        var win = window.open(url, '_blank');
+        if (win) {
+            win.focus();
+        } else {
+            alert('Please allow popups for this website to view the document.');
+        }
+    }
+</script>
+
+
+
+
+
+
+@*<script>
+        function openDocument(url) {
+            // Open in a new window
+            var win = window.open(url, '_blank');
+            if (win) {
+                win.focus();
+            } else {
+                alert('Please allow popups for this website to view Document.');
+            }
+        }
+    </script>*@
+
+
+
+
+
+<!--Close Button-->
+<link href="~/Content/css/NoticeAndEmailSH.css" rel="stylesheet" />
+
+
+<script>
+    // JavaScript function to go back to the list page
+    function goBack() {
+        window.location.href = '@Url.Action("GetListSH", "Secretary")'; // Redirect to the GetList action
+    }
+</script>

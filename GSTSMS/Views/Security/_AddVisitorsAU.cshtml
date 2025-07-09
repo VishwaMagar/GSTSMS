@@ -1,0 +1,737 @@
+﻿@model GSTSMSLibrary.Security.Security
+@{
+    ViewBag.Title = "Add Visitors";
+}
+<!DOCTYPE html>
+<html>
+<head>
+
+
+
+
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
+    <title>Forms › Form Validation — Stisla</title>
+
+    <!-- General CSS Files -->
+    <link rel="stylesheet" href="assets/modules/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/modules/fontawesome/css/all.min.css">
+
+    <!-- CSS Libraries -->
+    <!-- Template CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <!-- Start GA -->
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-94034622-3"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-94034622-3');
+    </script>
+    <!-- /END GA -->
+    <script src="~/Scripts/jquery-3.6.0.min.js"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+
+    <link href="~/Content/css/VisitorManagementAU.css" rel="stylesheet" />
+
+
+
+
+
+</head>
+<body>
+
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    <div class="card">
+
+
+
+        @using (Html.BeginForm("_AddVisitorsAU", "Security", FormMethod.Post, new { @id = "scheduleMeetingForm", @class = "needs-validation", novalidate = "novalidate" }))
+
+        {
+            @Html.AntiForgeryToken()
+
+        <div class="card-body px-4">
+            <h2 class="text-center mb-4">Add Visitor</h2>
+
+            <!-- 1st Row: Visitor Type and Visitor Name -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    @Html.LabelFor(m => m.SelectedType, "Visitor Type", new { @class = "form-label" })<span class="text-danger">*</span>
+                    @Html.DropDownListFor(m => m.SelectedType,
+                                                                                                                                                                                                        new SelectList(ViewBag.type, "SubTypeId", "SubType"),
+                                                                                                                                                                                                        "-- Select Visitor Type --",
+                                                                                                                                                                                                        new { @class = "form-control", required = "required", @id = "SelectedType" })
+                    @Html.ValidationMessageFor(m => m.SelectedType, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="col-md-6" id="visitorNameDropdownDiv" style="display:none;">
+                    <label for="VisitorNameDropdown" class="form-label">Visitor Name<span class="text-danger">*</span></label>
+                    <select id="VisitorNameDropdown" name="VisitorNameDropdown" class="form-control" required>
+                        <option value="">-- Select Visitor Name --</option>
+                    </select>
+                    @Html.ValidationMessage("VisitorNameDropdown", "", new { @class = "text-danger" })
+                </div>
+
+                <div class="col-md-6" id="visitorNameTextboxDiv">
+                    <label for="VisitorNameTextbox" class="form-label">Visitor Name<span class="text-danger">*</span></label>
+                    <input type="text" id="VisitorNameTextbox" name="VisitorNameTextbox" class="form-control" required pattern="^[a-zA-Z ]+$" title="Only alphabets allowed" />
+                    <div class="invalid-feedback">
+                        Please enter a valid Visitor Name (letters only).
+                    </div>
+                    @Html.ValidationMessage("VisitorName", "", new { @class = "text-danger" })
+                </div>
+
+            </div>
+
+            <!-- 2nd Row: Visitor Count and Wing -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="VisitorCount" class="form-label">Visitor Count <span class="text-danger">*</span></label>
+                    @Html.TextBoxFor(m => m.VisitorCount, new { @class = "form-control", type = "number", required = "required", min = "1", max = "20" })
+                    @Html.ValidationMessageFor(m => m.VisitorCount, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Wing <span class="text-danger">*</span></label>
+                    @Html.DropDownListFor(m => m.SelectedWing, Model.WingsName, "---Select Wing---", new { @class = "form-control", id = "Wing", required = "required" })
+                    @Html.ValidationMessageFor(m => m.SelectedWing, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Flat</label>
+                    <select id="Flats" class="form-control">
+                        <option value="">--Select flats--</option>
+                    </select>
+                    @Html.HiddenFor(m => m.FlatCode, new { id = "FlatCodeFinal" })
+                </div>
+
+
+
+
+
+                <div class="col-md-6">
+                    <label class="form-label required-field">Vehicle Type<span class="text-danger">*</span></label>
+                    <select name="SelectedVehicleType" id="SelectedVehicleType" class="form-control" required>
+                        <option value="">---Select Vehicle Type---</option>
+                        @if (ViewBag.Vehicletype != null)
+                        {
+                            foreach (var item in ViewBag.Vehicletype)
+                            {
+                                <option value="@item.SubTypeId">@item.SubType</option>
+                            }
+                        }
+                    </select>
+                    @Html.ValidationMessage("SelectedVehicleType", "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <!-- 4th Row: Vehicle Number and Visitor Contact -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    @Html.LabelFor(m => m.VehicleNumber, new { @class = "form-label" })
+                    @Html.TextBoxFor(m => m.VehicleNumber, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(m => m.VehicleNumber, "", new { @class = "text-danger" })
+                </div>
+
+
+
+                <div class="col-md-6">
+                    @Html.LabelFor(m => m.VisitorContact, new { @class = "form-label" })<span class="text-danger">*</span>
+                    @Html.TextBoxFor(m => m.VisitorContact, new
+                    {
+                        @class = "form-control",
+                        type = "tel",
+                        required = "required",
+                        pattern = "^[6-9][0-9]{9}$",
+                        maxlength = "10",
+                        title = "Enter a valid 10-digit mobile number",
+                        oninput = "this.value = this.value.replace(/[^0-9]/g, '')",
+                        id = "VisitorContact"
+                    })
+                    @Html.ValidationMessageFor(m => m.VisitorContact, "", new { @class = "text-danger" })
+                </div>
+
+
+                <!-- 5th Row: Allocated Parking and Reason -->
+                <div class="row col-md-12">
+                    <div class="col-md-6">
+                        <label class="form-label">Allocated Parking</label>
+                        <select name="ParkingCode" id="ParkingCode" class="form-control">
+                            <option value="">---Select parking---</option>
+                            @if (ViewBag.Parking != null)
+                            {
+                                foreach (var item in ViewBag.Parking)
+                                {
+                                    <option value="@item.ParkingCode">@item.ParkingCode</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        @Html.LabelFor(m => m.Reason, new { @class = "form-label" })<span class="text-danger">*</span>
+                        @Html.TextBoxFor(m => m.Reason, new { @class = "form-control", required = "required", placeholder = "Enter reason", id = "VisitorReason" })
+                        @Html.ValidationMessageFor(m => m.Reason, "", new { @class = "text-danger" })
+                    </div>
+
+                   
+
+                    <!-- Photo Capture Section -->
+                    <div class="col-md-6" id="photoCaptureSection">
+                        <label class="form-label">📷 Capture Photo<span class="text-danger">*</span></label>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="startFullscreenCamera()">📸 Capture</button>
+                        <input type="file" id="CapturedFile" name="document" accept="image/*" style="display:none;" />
+                    </div>
+
+                    <!-- Worker Photo Section -->
+                    <div class="col-md-6" id="workerPhotoDiv" style="display:none;">
+                        <label class="form-label">Worker Photo</label>
+                        <a id="workerPhotoLink" href="#" target="_blank" class="btn btn-info btn-sm">👤 View Photo</a>
+                    </div>
+
+                    <div class="col-md-6" id="workerShiftTimingDiv" style="display:none;">
+                        <label for="WorkerShiftTiming" class="form-label">Shift Timing</label>
+                        <input type="text" id="WorkerShiftTiming" name="WorkerShiftTiming" class="form-control" readonly />
+                        @Html.ValidationMessage("WorkerShiftTiming", "", new { @class = "text-danger" })
+                    </div>
+
+
+
+
+
+
+
+
+                    <span>  </span>
+
+                    <div class="row col-md-12">
+                        <div class="col text-center py-3">
+                            <!-- Adds vertical padding -->
+                            <button type="button" class="btn btn-success me-3 px-4 py-2" onclick="SaveVisitor()" id="btnsubmit">Submit</button>
+                            <button type="button" id="btn" class="btn btn-danger ml-2 px-4 py-2" onclick="onCancelClick()" data-dismiss="modal" aria-label="Close">Cancel</button>
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <!-- Hidden file input for server -->
+                <div id="cameraContainer" class="camera-container">
+                    <video id="videoFull" autoplay playsinline class="camera-video"></video>
+
+                    <!-- Preview box - initially hidden -->
+                    <div id="smallPreview" class="preview-box">
+                        <img id="photoPreviewMini" class="preview-image" />
+                        <div id="miniBtnBox" class="preview-buttons">
+                            <button onclick="confirmPhoto()" class="btn btn-success btn-sm">Use Photo</button>
+                            <button onclick="retakePhoto()" class="btn btn-warning btn-sm">Retake</button>
+                        </div>
+                    </div>
+
+                    <!-- Capture + Cancel buttons container -->
+                    <div class="bottom-button-container">
+                        <button onclick="captureAndShowPreview()" class="btn btn-light">📸 Capture</button>
+                        <button onclick="cancelCamera()" class="btn btn-danger">✖ Cancel</button>
+                    </div>
+
+                    <canvas id="canvas" class="hidden-canvas"></canvas>
+                    <input type="file" name="document" id="CapturedFile" class="hidden-input" />
+                </div>
+
+
+
+
+
+
+
+            </div>
+
+        </div>
+        }
+        </div>
+
+
+            <!-- SweetAlert2 v11 (v4 branch) CDN -->
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+            <!-- General JS Scripts -->
+            <script src="assets/modules/jquery.min.js"></script>
+            <script src="assets/modules/popper.js"></script>
+            <script src="assets/modules/tooltip.js"></script>
+            <script src="assets/modules/bootstrap/js/bootstrap.min.js"></script>
+            <script src="assets/modules/nicescroll/jquery.nicescroll.min.js"></script>
+            <script src="assets/modules/moment.min.js"></script>
+            <script src="assets/js/stisla.js"></script>
+
+            <!-- JS Libraies -->
+            <!-- Page Specific JS File -->
+            <!-- Template JS File -->
+            <script src="assets/js/scripts.js"></script>
+            <script src="assets/js/custom.js"></script>
+
+
+            <!-- Wing to Flat binding -->
+            <script>
+
+     $("#Wing").change(function () {
+    var Wingid = $(this).val();
+    console.log("Wingid selected:", Wingid); // ✅ Debugging purpose
+
+    if (Wingid !== null && Wingid !== undefined && Wingid !== "") {
+        $.ajax({
+            url: '@Url.Action("FlatBind", "Security")',
+            type: 'GET',
+            data: { WingId: Wingid },
+            success: function (data) {
+                console.log("Flats received:", data); // ✅ Confirm AJAX success
+
+                $('#Flats').empty().append('<option value="">--Select flats--</option>');
+                $.each(data, function (index, item) {
+                    $('#Flats').append('<option value="' + item.Value + '">' + item.Text + '</option>');
+                });
+
+                // Only Wing option
+               // $('#Flats').append('<option value="WINGONLY|' + Wingid + '">Only Wing</option>');
+            },
+            error: function () {
+
+            }
+        });
+    } else {
+        console.warn("Invalid Wing selected");
+        $('#Flats').empty().append('<option value="">--Select flats--</option>');
+    }
+});
+
+            </script>
+
+
+
+            <script>
+    $("#SelectedVehicleType").change(function () {
+    var typeid = $(this).val();
+        if (typeid) {
+        $.ajax({
+            url: '@Url.Action("GetPark", "Security")',
+            type: 'GET',
+            data: { typeid: typeid },
+            success: function (data) {
+                $('#ParkingCode').empty().append('<option value="">--Select parking--</option>');
+                $.each(data, function (index, item) {
+                    $('#ParkingCode').append('<option value="' + item.Value + '">' + item.Text + '</option>');
+                });
+            },
+            error: function () {
+                alert('Failed to fetch flats.');
+            }
+        });
+    } else {
+        $('#Flats').empty().append('<option value="">--Select flats--</option>');
+    }
+});
+            </script>
+            <!-- Vehicle Type Toggle -->
+            <script>
+                $(document).ready(function () {
+                    $('#SelectedVehicleType').change(function () {
+                        var selectedText = $("#SelectedVehicleType option:selected").text().toLowerCase();
+
+                        if (selectedText === "none") {
+                            $('#VehicleNumber').val('').prop('disabled', true).addClass('bg-light');
+                            $('#ParkingCode').val('').prop('disabled', true).addClass('bg-light');
+                        } else {
+                            $('#VehicleNumber').prop('disabled', false).removeClass('bg-light');
+                            $('#ParkingCode').prop('disabled', false).removeClass('bg-light');
+                        }
+                    });
+                });
+            </script>
+
+
+
+      
+    <script>
+            $(document).ready(function () {
+    $('#SelectedType').change(function () {
+        var selectedText = $("#SelectedType option:selected").text().toLowerCase();
+
+        // Reset fields
+        $('#VisitorNameDropdown').empty().append('<option value="">-- Select Visitor Name --</option>');
+        $('#VisitorNameTextbox').val('');
+        $('#VisitorContact').val('');
+        $('#WorkerShiftTiming').val('');
+        $('#VisitorReason').val('');
+
+        // Handle photo section visibility
+        $('#photoCaptureSection').show();
+        $('#workerPhotoDiv').hide();
+        $('#CapturedFile').val('');
+
+        if (selectedText === "worker") {
+            $('#workerShiftTimingDiv').show();
+            $('#WorkerShiftTiming').attr('required', 'required');
+
+            // Hide capture button and show worker photo for worker type
+            $('#photoCaptureSection').hide();
+            $('#workerPhotoDiv').show();
+        } else {
+            $('#workerShiftTimingDiv').hide();
+            $('#WorkerShiftTiming').removeAttr('required').val('');
+        }
+
+        if (selectedText === "vendor" || selectedText === "worker") {
+            $('#visitorNameTextboxDiv').hide();
+            $('#visitorNameDropdownDiv').show();
+
+            var url = selectedText === "vendor"
+                ? '@Url.Action("GetVendor", "Security")'
+                : '@Url.Action("GetWorkers", "Security")';
+
+            $.getJSON(url, function (data) {
+                $.each(data, function (i, item) {
+                    var option = $('<option>')
+                        .val(item.Value)
+                        .text(item.Text)
+                        .attr('data-contact', selectedText === "vendor" ? item.PhoneNumber : item.ContactNo)
+                        .attr('data-wing', selectedText === "worker" ? item.WingName : '')
+                        .attr('data-shift', selectedText === "worker" ? item.ShiftTiming : '')
+                        .attr('data-reason', selectedText === "worker" ? item.RoleName : item.ServiceProvide)
+                        .attr('data-photo', item.Document || ''); // Add photo path data attribute
+
+                    $('#VisitorNameDropdown').append(option);
+                });
+            });
+        } else {
+            $('#Wing').val('');
+            $('#Flats').empty().append('<option value="">--Select flats--</option>');
+            $('#FlatCodeFinal').val('');
+
+            $('#visitorNameDropdownDiv').hide();
+            $('#visitorNameTextboxDiv').show();
+        }
+    });
+
+    $('#VisitorNameDropdown').on('change', function () {
+        var selectedText = $("#SelectedType option:selected").text().toLowerCase();
+        var contactNo = $('#VisitorNameDropdown option:selected').data('contact');
+        var reasonText = $('#VisitorNameDropdown option:selected').data('reason');
+        $('#VisitorContact').val(contactNo || '');
+        $('#VisitorReason').val(reasonText || '');
+
+        if (selectedText === "worker") {
+            var wingName = $('#VisitorNameDropdown option:selected').data('wing');
+            var shiftTime = $('#VisitorNameDropdown option:selected').data('shift');
+            var Document = $('#VisitorNameDropdown option:selected').data('photo');
+
+            // Update worker photo link
+            if (Document) {
+                $('#workerPhotoLink')
+                    .attr('href', Document)
+                    .text('👤 View Photo')
+                    .removeClass('disabled');
+            } else {
+                $('#workerPhotoLink')
+                    .attr('href', '#')
+                    .text('No Photo Available')
+                    .addClass('disabled');
+            }
+
+            // Auto-select wing
+            if (wingName) {
+                $('#Wing option').each(function () {
+                    if ($(this).text().trim() === wingName.trim()) {
+                        $(this).prop('selected', true).trigger('change');
+                        return false;
+                    }
+                });
+            }
+
+            // Set shift timing
+            if (shiftTime) {
+                $('#WorkerShiftTiming').val(shiftTime).prop('readonly', true);
+            } else {
+                $('#WorkerShiftTiming').val('');
+            }
+        }
+    });
+
+    // Initial trigger
+    $('#SelectedType').trigger('change');
+});
+    </script>
+
+
+
+
+
+
+
+            <script>
+                $(function () {
+                    // Hook into form validation
+                    $("form").on("submit", function () {
+                        // Remove previous classes
+                        $(".form-control").removeClass("is-invalid");
+
+                        // Wait a little to let unobtrusive validation work
+                        setTimeout(function () {
+                            $(".input-validation-error").each(function () {
+                                $(this).addClass("is-invalid");
+                            });
+                        }, 100);
+                    });
+                });
+            </script>
+
+
+
+
+            <!-- Save form -->
+            <script>
+    $(document).ready(function () {
+        $('#saveButton').click(function () {
+            SaveVisitor();
+        });
+    });
+
+    function SaveVisitor() {
+        var form = $('#scheduleMeetingForm');
+
+        if (!form.valid()) {
+            return;
+        }
+
+        var formElement = form[0];
+        var formData = new FormData(formElement);
+
+        var selectedText = $("#SelectedType option:selected").text().toLowerCase();
+        var visitor = $("#VisitorNameDropdown option:selected").text().toLowerCase();
+        var visitorName = "";
+        var selectedwing = $("#Wing option:selected").val().toLowerCase();
+
+        if (selectedText === "vendor" || selectedText === "worker") {
+            visitorName = $('#VisitorNameDropdown').val();
+        } else {
+            visitorName = $('#VisitorNameTextbox').val();
+        }
+
+        // Get FlatId and FlatCode from dropdown value
+        var flatValue = $('#Flats').val(); // Value format: "123|A101"
+        var flatId = "";
+        var flatCode = "";
+
+        if (flatValue && flatValue.includes("|")) {
+            flatId = flatValue.split("|")[0];
+            flatCode = flatValue.split("|")[1];
+        }
+
+        formData.set("VisitorName", visitorName);
+        formData.append("selectedText", selectedText);
+        formData.append("visitor", visitor);
+        formData.append("visitorName", visitorName);
+        formData.append("selectedwing", selectedwing);
+        formData.append("FlatId", flatId);
+        formData.set("FlatCode", flatCode);
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "Do you want to save the visitor details?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, save it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $('#btnsubmit').prop('disabled', true);
+
+                $.ajax({
+                    url: '@Url.Action("Visitorcode", "Security")',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function () {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: 'Visitor added successfully.',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            window.location.href = '@Url.Action("VisitorDetailsAU", "Security")';
+                        });
+                    },
+                    error: function () {
+                        $('#btnsubmit').prop('disabled', false);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error occurred. Please try again.',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                });
+            }
+        });
+    }
+            </script>
+
+
+            <script>
+                // Bootstrap validation
+                (function () {
+                    'use strict';
+                    var forms = document.querySelectorAll('.needs-validation');
+
+                    Array.prototype.slice.call(forms).forEach(function (form) {
+                        form.addEventListener('submit', function (event) {
+                            if (!form.checkValidity()) {
+                                event.preventDefault();
+                                event.stopPropagation();
+                            }
+
+                            form.classList.add('was-validated');
+                        }, false);
+                    });
+                })();
+            </script>
+
+
+            <script>
+                function setFlatValues(sel) {
+                    let val = sel.value;
+                    if (val) {
+                        let parts = val.split('|');
+                        document.getElementById("FlatId").value = parts[0];
+                        document.getElementById("FlatCode").value = parts[1];
+                    } else {
+                        document.getElementById("FlatId").value = '';
+                        document.getElementById("FlatCode").value = '';
+                    }
+                }
+            </script>
+
+
+            <script>
+                $(document).ready(function () {
+                    $('#Wing').on('change', function () {
+                        var selectedValue = $(this).val();      // Get selected Wing value
+                        var lastOptionValue = $('#Wing option:last').val(); // Get last Wing option's value
+
+                        if (selectedValue === lastOptionValue) {
+                            $('#Flats').prop('disabled', true);
+                        } else {
+                            $('#Flats').prop('disabled', false);
+                        }
+                    });
+                });
+            </script>
+            <script>
+                let stream = null;
+
+                function startFullscreenCamera() {
+                    const container = document.getElementById("cameraContainer");
+                    const video = document.getElementById("videoFull");
+                    const previewBox = document.getElementById('smallPreview');
+
+                    previewBox.style.display = "none"; // preview initially hide
+
+                    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                        .then(function (mediaStream) {
+                            stream = mediaStream;
+                            video.srcObject = stream;
+                            container.style.display = "flex";
+
+                            if (container.requestFullscreen) {
+                                container.requestFullscreen();
+                            } else if (container.webkitRequestFullscreen) {
+                                container.webkitRequestFullscreen();
+                            } else if (container.msRequestFullscreen) {
+                                container.msRequestFullscreen();
+                            }
+                        })
+                        .catch(function (err) {
+                            alert("Camera not accessible: " + err);
+                        });
+                }
+
+                function captureAndShowPreview() {
+                    const canvas = document.getElementById('canvas');
+                    const video = document.getElementById('videoFull');
+                    const previewBox = document.getElementById('smallPreview');
+                    const previewImg = document.getElementById('photoPreviewMini');
+
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    const context = canvas.getContext('2d');
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                    const dataURL = canvas.toDataURL('image/png');
+                    previewImg.src = dataURL;
+                    previewBox.style.display = "block";
+                }
+
+                function confirmPhoto() {
+                    const canvas = document.getElementById('canvas');
+
+                    canvas.toBlob(function (blob) {
+                        const file = new File([blob], `Visitor_${Date.now()}.png`, { type: "image/png" });
+                        const dt = new DataTransfer();
+                        dt.items.add(file);
+                        document.getElementById('CapturedFile').files = dt.files;
+                    }, 'image/png');
+
+                    stopCamera();
+                    document.getElementById('cameraContainer').style.display = "none";
+                }
+
+                function retakePhoto() {
+                    document.getElementById('smallPreview').style.display = "none";
+                }
+
+                function cancelCamera() {
+                    stopCamera();
+                    document.getElementById('cameraContainer').style.display = "none";
+                    retakePhoto();
+                }
+
+                function stopCamera() {
+                    if (stream) {
+                        stream.getTracks().forEach(track => track.stop());
+                    }
+
+                    if (document.fullscreenElement) {
+                        document.exitFullscreen();
+                    }
+                }
+
+            </script>
+
+
+
+
+
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+

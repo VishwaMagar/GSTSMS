@@ -1,0 +1,45 @@
+﻿
+@model List<GSTSMSLibrary.AccountManager.AccountManager>
+
+@if (Model != null && Model.Any())
+{
+    var first = Model.First();
+    decimal total = 0;
+
+    <div class="card mx-auto" style="max-width: 600px; padding: 20px;">
+        <h4 class="text-center mb-3">Maintenance Payment Summary</h4>
+
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+            <b>Date</b>
+            <span>@(first.PaidDate.HasValue ? first.PaidDate.Value.ToString("dd-MM-yyyy") : "-")</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+            <b>Time</b>
+            <span>@(first.PaidDate.HasValue ? first.PaidDate.Value.ToString("hh:mm tt") : "-")</span>
+        </div>
+
+        <div class="d-flex justify-content-between mb-2"><b>Name</b><span>@first.FullName</span></div>
+        <div class="d-flex justify-content-between mb-3"><b>Flat Type</b><span>@first.FlatType</span></div>
+
+        @foreach (var item in Model)
+        {
+            total += item.ChargeAmount;
+            <div class="d-flex justify-content-between mb-1">
+                <b>@item.MaintenanceId</b>
+                <span>₹ @item.ChargeAmount.ToString("0.00")</span>
+            </div>
+        }
+
+        <hr />
+        <div class="d-flex justify-content-between mt-3 font-weight-bold">
+            <span>Total</span>
+            <span>₹ @total.ToString("0.00")</span>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-warning text-center">
+        No maintenance details found.
+    </div>
+}

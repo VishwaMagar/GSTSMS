@@ -1,0 +1,954 @@
+﻿@{
+    ViewBag.Title = "Reports";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- CSS & Required Libraries -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
+<link href="~/Content/modules/datatables/datatables.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link href="~/Content/css/StyleCSSSP.css" rel="stylesheet" />
+
+
+
+
+<div class="main-content">
+    <section class="section">
+        <div class="container-fluid">
+
+            <div class="form-group row align-items-end">
+                <div class="col-md-4">
+                    <label>Select Date</label><br />
+                    <a href="javascript:;" class="btn btn-primary daterange-btn icon-left btn-icon">
+                        <i class="fas fa-calendar"></i> <span>Select Date</span>
+                    </a>
+
+                    <!-- Hidden inputs -->
+                    <input type="hidden" id="fromDate1" />
+                    <input type="hidden" id="toDate1" />
+                </div>
+
+                <div class="col-md-3">
+                    <label for="ReportType">Report Type</label>
+                    <select class="form-select form-control" id="ReportType">
+                        <option value="daily">Daily</option>
+                        <option value="monthly" selected>Monthly</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+
+                <!-- Maintenance Chart -->
+                <div class="col-md-6">
+                    <div class="chart-box card shadow-sm p-3">
+                        <div class="chart-header">
+                            <div class="row g-2 align-items-center">
+
+
+                            </div>
+                        </div>
+                        <div id="maintenanceBarChart" class="chart-area"></div>
+                    </div>
+                </div>
+
+
+                <!-- Complaint Chart -->
+                <div class="col-md-6">
+                    <div class="chart-box card shadow-sm p-3">
+                        <div class="chart-header">
+                            <div class="row g-2 align-items-center">
+
+                            </div>
+                        </div>
+
+
+                        <div id="complaintBarChart" class="chart-area"></div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <!-- Visitor Chart -->
+                <div class="col-md-6">
+                    <div class="chart-box card shadow-sm p-3">
+                        <div class="chart-header">
+                            <div class="row g-2 align-items-center">
+
+
+                            </div>
+                        </div>
+                        <div id="visitorTypePieChart" class="chart-area"></div>
+                    </div>
+                </div>
+
+                <!-- Parking Chart -->
+                <div class="col-md-6">
+                    <div class="chart-box card shadow-sm p-3">
+                        <div class="chart-header">
+
+                            <div class="row g-2 align-items-center">
+
+
+                            </div>
+                        </div>
+
+                        <!-- ✅ Add this LEGEND section here -->
+                        <div class="d-flex gap-3 mt-3">
+                            <div><span class="slot-card lagendsp allocated myallocated"></span> Allocated</div>
+                            <div><span class="slot-card  lagendsp unallocated myunalocated"></span> Unallocated</div>
+                        </div>
+
+                        <!-- ✅ Cards will render here -->
+                        <div id="parkingSlotMatrix" class="mt-lg-4"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-4">
+                <!-- Expense Chart -->
+
+                <div class="col-md-12">
+                    <div class="chart-box card shadow-sm p-3">
+                        <div class="chart-header">
+                            <div class="row g-2 align-items-center">
+
+
+                            </div>
+                        </div>
+                        <div id="expenseBarChart" class="chart-area"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+    </section>
+</div>
+
+
+
+@*Complaint Modal*@
+
+<div class="modal fade" id="ComplaintModal" tabindex="-1" role="dialog" aria-labelledby="ComplaintModalLabel" aria-hidden="true">
+    <div class="modal-dialog custom-modal-lg " role="document">
+        <div class="modal-content s" id="ComplaintListContainer"></div>
+    </div>
+</div>
+
+
+
+@*VisitorList Modal*@
+<div class="modal fade" id="VisitorModal" tabindex="-1" role="dialog" aria-labelledby="VisitorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" id="VisitorListContainer"></div>
+    </div>
+</div>
+
+@*Parking Modal*@
+<div class="modal fade" id="ParkingModal" tabindex="-1" role="dialog" aria-labelledby="ParkingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" id="ParkingListContainer"></div>
+    </div>
+</div>
+
+@*Maintenance Modal*@
+<div class="modal fade" id="MaintenanceModal" tabindex="-1" role="dialog" aria-labelledby="MaintenanceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" id="MaintenanceListContainer"></div>
+    </div>
+</div>
+
+@*Expnese Modal*@3
+<div class="modal fade" id="expenseDetailsModal" tabindex="-1" role="dialog" aria-labelledby="ExpenseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" id="expenseDetailContainer"></div>
+    </div>
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="~/Content/modules/bootstrap-daterangepicker/daterangepicker.js"></script>
+
+<script>
+
+
+    $(document).ready(function () {
+
+        initializeDateRangePicker();
+
+        $('#fromDate1, #toDate1').on('input change', function () {
+
+            loadVisitorChart();
+        });
+
+        $('#fromDate1, #toDate1').on('input change', function () {
+
+            loadMaintenanceChart();
+        });
+        $('#fromDate1, #toDate1, #ReportType').on('input change', function () {
+
+            const fromDateStr = $('#fromDate1').val();
+            const toDateStr = $('#toDate1').val();
+            const filterType = $('#ReportType').val();
+
+            const fromDate = moment(fromDateStr);
+            const toDate = moment(toDateStr);
+
+            const diffDays = toDate.diff(fromDate, 'days');
+            const diffMonths = toDate.diff(fromDate, 'months', true);
+            const diffYears = toDate.diff(fromDate, 'years', true);
+
+            if (filterType === 'daily' && diffDays > 15) {
+                iziToast.warning({ title: 'Warning', message: 'Daily report allows only a 15-day range.', position: 'topCenter' });
+                return;
+            }
+            if (filterType === 'monthly' && diffMonths > 6) {
+                iziToast.warning({ title: 'Warning', message: 'Monthly report allows only a 6-month range.', position: 'topCenter' });
+                return;
+            }
+            if (filterType === 'yearly' && diffYears > 6) {
+                iziToast.warning({ title: 'Warning', message: 'Yearly report allows only a 6-year range.', position: 'topCenter' });
+                return;
+            }
+            loadComplaintChart();
+            loadExpenseChart();
+            loadParkingChart();
+        });
+
+        loadComplaintChart();
+        loadMaintenanceChart();
+        loadVisitorChart();
+        loadParkingChart();
+        loadExpenseChart();
+
+
+
+    });
+
+
+    function initializeDateRangePicker() {
+        $('.daterange-btn').daterangepicker({
+            locale: {
+                format: 'YYYY-MM-DD'
+            },
+            ranges: {
+                'Today': [moment(), moment()],
+                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            },
+            startDate: moment().startOf('month'),
+            endDate: moment(),
+            maxDate: moment(), // ✅ Prevent future date selection
+            opens: 'right'
+        }, function (start, end) {
+            var displayFormat = 'YYYY-MM-DD';
+            var today = moment();
+
+           if (start.isAfter(end, 'day')) {
+                alert("From Date should not be after To Date.");
+                return;
+            }
+
+            if (end.isAfter(today, 'day')) {
+                alert("To Date cannot be a future date.");
+                return;
+            }
+
+            $('.daterange-btn span').html(start.format(displayFormat) + ' - ' + end.format(displayFormat));
+            $('#fromDate1').val(start.format(displayFormat));
+            $('#toDate1').val(end.format(displayFormat));
+
+            loadComplaintChart();
+            loadMaintenanceChart();
+            loadVisitorChart();
+            loadParkingChart();
+            loadExpenseChart();
+        });
+
+        // Initial value setup
+        var displayFormat = 'YYYY-MM-DD';
+        $('#fromDate1').val(moment().startOf('month').format(displayFormat));
+        $('#toDate1').val(moment().format(displayFormat));
+        $('.daterange-btn span').html(moment().startOf('month').format(displayFormat) + ' - ' + moment().format(displayFormat));
+    }
+
+
+
+
+    function loadComplaintChart() {
+        const fromDate = $('#fromDate1').val();
+        const toDate = $('#toDate1').val();
+        const filter = $("#ReportType").val();
+
+
+    $.ajax({
+        url: '@Url.Action("GetComplaintDataSP", "Secretary")',
+        type: 'GET',
+        data: { fromDate, toDate, filterType: filter },
+        dataType: 'json',
+        success: function (data) {
+            const categories = [], Solve = [], Pending = [], Inprogress = [], Escalate = [];
+
+            data.forEach(item => {
+                let label = item.Dates;
+
+
+                const dateObj = new Date(item.Dates);
+
+                if (filter === 'daily') {
+                    label = dateObj.toLocaleDateString('en-GB', {
+                        day: '2-digit',
+                        month: "long",
+                        year: 'numeric'
+                    });
+                } else if (filter === 'monthly') {
+                    label = dateObj.toLocaleDateString('en-GB', {
+                        month: 'short',
+                        year: 'numeric'
+                    });
+                } else if (filter === 'yearly') {
+                    label = dateObj.getFullYear().toString();
+                }
+
+                categories.push(label);
+                Solve.push(item.Solve);
+                Pending.push(item.Pending);
+                Inprogress.push(item.Inprogress);
+                Escalate.push(item.Escalate);
+            });
+
+            Highcharts.chart('complaintBarChart', {
+                accessibility: {
+                    enabled: false
+                },
+                chart: {
+                    type: 'column',
+                    options3d: {
+                        enabled: true,
+                        alpha: 15,
+                        beta: 15,
+                        depth: 50,
+                        viewDistance: 25
+                    }
+                },
+                credits: {
+                    enabled: false
+                },
+                title: { text: 'Complaint Report ' },
+                xAxis: {
+                    categories: categories,
+                    title: { text: 'Time Range' }
+                },
+                yAxis: {
+                    min: 0,
+                    title: { text: 'Number of Complaints' }
+                },
+                plotOptions: {
+                    column: {
+                        depth: 25
+                    },
+                    series: {
+                        cursor: 'pointer',
+                        point: {
+                            events: {
+                                click: function () {
+                                    var filterType = $('#ReportType').val();
+                                    var dateLabel = this.category;
+                                    var statusName = this.series.name;
+                                    openComplaintPopup(filterType, dateLabel, statusName);
+                                }
+                            }
+                        }
+                    }
+                },
+                series: [
+                    {
+                        name: 'Solved',
+                        data: Solve,
+                        color: {
+                            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                            stops: [
+                                [0, '#28a745'],    // top color
+                                [1, '#218838']     // bottom color
+                            ]
+                        }
+                    },
+                    {
+                        name: 'Pending',
+                        data: Pending,
+                        color: {
+                            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                            stops: [
+                                [0, '#ffc107'],
+                                [1, '#e0a800']
+                            ]
+                        }
+                    },
+                    {
+                        name: 'In Progress',
+                        data: Inprogress,
+                        color: {
+                            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                            stops: [
+                                [0, '#17a2b8'],
+                                [1, '#117a8b']
+                            ]
+                        }
+                    },
+                    {
+                        name: 'Escalated',
+                        data: Escalate,
+                        color: {
+                            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                            stops: [
+                                [0, '#dc3545'],
+                                [1, '#bd2130']
+                            ]
+                        }
+                    }
+                ]
+
+            });
+
+        }
+    });
+ }
+
+
+    function openComplaintPopup(filterType, dateLabel, statusName) {
+
+        $.ajax({
+
+            url: '/Secretary/_GetComplaintListByFilterSP',
+            type: 'GET',
+            data: {
+                filterType: filterType,
+                dateLabel: dateLabel,
+                statusName: statusName
+            },
+            dataType: 'html',
+            success: function (response) {
+
+                $("#ComplaintListContainer").html(response);
+                $('#complainttitle').text(` List of  ${statusName} Complaint  `);
+
+                $("#ComplaintModal").modal("show");
+
+
+                if ($.fn.DataTable.isDataTable('#table-1')) {
+                    $('#table-1').DataTable().destroy();
+                }
+
+
+            },
+            error: function () {
+                alert("Failed to load complaint list for " + statusName);
+            }
+        });
+    }
+
+    function loadMaintenanceChart() {
+
+
+        const container = $('#maintenanceBarChart').closest('.col-md-12');
+        var fromDate = $('#fromDate1').val();
+        var toDate = $('#toDate1').val();
+
+        $.ajax({
+            url: '/Secretary/GetMaintenanceDataSP',
+            type: 'GET',
+            data: { fromDate, toDate },
+            success: function (data) {
+                const categories = data.map(x => x.Dates);
+
+                Highcharts.chart('maintenanceBarChart', {
+                    accessibility: {
+                        enabled: false
+                    },
+                    chart: {
+                        type: 'column'
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    title: {
+                        text: 'Maintenance Report'
+                    },
+                    xAxis: {
+                        categories: categories,
+                        title: { text: 'Month' }
+                    },
+                    yAxis: {
+                        min: 0,
+                        title: { text: 'Amount (₹)' }
+                    },
+                    tooltip: {
+                        shared: true,
+                        useHTML: true,
+                        formatter: function () {
+                            let tooltip = `<b>${this.x}</b><br/>`;
+                            this.points.forEach(point => {
+                                const count = point.series.name === 'Paid Maintenance'
+                                    ? point.point.paidCount
+                                    : point.point.unpaidCount;
+                                tooltip += `
+                                <span style="color:${point.color}">\u25CF</span>
+                                ${point.series.name}: <b>₹${point.y}</b><br/>
+                                Members: <b>${count ?? '-'}</b><br/>
+                            `;
+                            });
+                            return tooltip;
+                        }
+                    },
+                    legend: {
+                        shadow: false
+                    },
+                    plotOptions: {
+                        column: {
+                            grouping: false,
+                            shadow: false,
+                            borderWidth: 0
+                        },
+                        series: {
+                            cursor: 'pointer',
+                            point: {
+                                events: {
+                                    click: function () {
+                                        const dateLabel = this.category;
+                                        const statusName = this.series.name;
+                                        loadMaintenanceDetails(dateLabel, statusName);
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    series: [
+                        {
+                            name: 'Paid Maintenance',
+                            data: data.map(x => ({
+                                y: x.PaidMaintenance,
+                                paidCount: x.PaidMembers
+                            })),
+                            color: {
+                                linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                                stops: [
+                                    [0, '#4facfe'],  // Top color (light blue)
+                                    [1, '#00f2fe']   // Bottom color (cyan)
+                                ]
+                            },
+                            pointPadding: 0.3,
+                            pointPlacement: -0.2
+                        },
+                        {
+                            name: 'Unpaid Maintenance',
+                            data: data.map(x => ({
+                                y: x.UnPaidMaintenance,
+                                unpaidCount: x.UnPaidMembers
+                            })),
+                            color: {
+                                linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                                stops: [
+                                    [0, '#f5576c'],  // Top color (pink-red)
+                                    [1, '#f093fb']   // Bottom color (light pink)
+                                ]
+                            },
+                            pointPadding: 0.4,
+                            pointPlacement: -0.2
+                        }
+                    ]
+
+                });
+            }
+        });
+    }
+
+
+    function loadMaintenanceDetails(dateLabel, statusName) {
+
+
+        $.ajax({
+            url: '/Secretary/_MaintenanceListPartialSP',
+            type: 'GET',
+            data: {
+
+                dateLabel: dateLabel,
+                statusName: statusName
+            },
+            success: function (html) {
+
+                $("#MaintenanceListContainer").html(html);
+                $('#maintenancetitle').text(` List of ${statusName}`);
+                var modal = new bootstrap.Modal(document.getElementById('MaintenanceModal'));
+                modal.show();
+
+                if ($.fn.DataTable.isDataTable('#maintenance-table')) {
+                    $('#maintenance-table').DataTable().destroy();
+                }
+
+
+            }
+        });
+    }
+    function loadVisitorChart() {
+
+
+        var fromDate = $('#fromDate1').val();
+        var toDate = $('#toDate1').val();
+
+    $.ajax({
+        url: '@Url.Action("GetVisitorDataSP", "Secretary")',
+        type: 'GET',
+        data: { fromDate, toDate },
+        dataType: 'json',
+        success: function (data) {
+            const values = [0, 0, 0, 0]; // Delivery, Guest, Worker, Vendor
+
+            data.forEach(item => {
+                values[0] += item.Delivery;
+                values[1] += item.Guest;
+                values[2] += item.Worker;
+                values[3] += item.Vendor;
+            });
+
+            Highcharts.chart('visitorTypePieChart', {
+                accessibility: {
+                    enabled: false
+                },
+                chart: {
+                    type: 'pie',
+                    options3d: {
+                        enabled: true,
+                        alpha: 45,
+                        beta: 0
+                    }
+                },
+                credits: {
+                    enabled: false
+                },
+                title: { text: 'Visitor Report ' },
+                tooltip: { pointFormat: '{series.name}: <b>{point.y}</b>' },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        depth: 35,
+                        dataLabels: {
+                            enabled: true,
+                            format: '<b>{point.name}</b>: {point.y}'
+                        },
+                        point: {
+                            events: {
+                                click: function () {
+                                    let visitorType = this.name;
+                                    OpenVisitorList(visitorType, fromDate, toDate);
+                                }
+                            }
+                        }
+                    }
+                },
+                series: [{
+                    name: 'Visitors',
+                    data: [
+                        {
+                            name: 'Delivery',
+                            y: values[0],
+                            color: {
+                                linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
+                                stops: [
+                                    [0, '#36A2EB'],
+                                    [1, '#004080']
+                                ]
+                            }
+                        },
+                        {
+                            name: 'Guest',
+                            y: values[1],
+                            color: {
+                                linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
+                                stops: [
+                                    [0, '#FFCE56'],
+                                    [1, '#996600']
+                                ]
+                            }
+                        },
+                        {
+                            name: 'Worker',
+                            y: values[2],
+                            color: {
+                                linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
+                                stops: [
+                                    [0, '#FF6384'],
+                                    [1, '#990033']
+                                ]
+                            }
+                        },
+                        {
+                            name: 'Vendor',
+                            y: values[3],
+                            color: {
+                                linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
+                                stops: [
+                                    [0, '#28a745'],
+                                    [1, '#0b3d0b']
+                                ]
+                            }
+                        }
+                    ]
+                }]
+            });
+        }
+    });
+}
+
+
+
+    function OpenVisitorList(visitorType, fromDate, toDate) {
+
+
+        $.ajax({
+              url: '@Url.Action("_VisitorListSP", "Secretary")',
+              type: 'GET',
+              data: {
+                  visitorType: visitorType,
+              fromDate: fromDate,
+              toDate: toDate,
+
+               },
+              success: function (result) {
+                  $('#VisitorListContainer').html(result);
+                  $('#visitortitle').text(` List Of ${visitorType}`);
+
+                  $('#VisitorModal').modal('show');
+
+
+                  if ($.fn.DataTable.isDataTable('#Visitortable')) {
+                      $('#Visitortable').DataTable().destroy();
+                  }
+
+
+                 }
+               });
+    }
+
+
+    function loadExpenseChart() {
+        const fromDate = $('#fromDate1').val();
+        const toDate = $('#toDate1').val();
+        const filter = $("#ReportType").val();
+
+        debugger;
+        $.ajax({
+            url: '/Secretary/GetExpenseDataSP',
+            type: 'GET',
+            data: { fromDate: fromDate, toDate: toDate, filterType: filter },
+            success: function (data) {
+                const dates = data.map(d => d.Dates);
+                const paidExpenseValues = data.map(d => d.PaidExpense);
+                const unpaidExpenseValues = data.map(d => d.UnpaidExpense);
+
+                Highcharts.chart('expenseBarChart', {
+                    accessibility: { enabled: false },
+                    chart:{
+                        type: 'line'
+                    },
+                    credits: { enabled: false },
+                    title: {
+                        text: 'Expense Report'
+                    },
+                    xAxis: {
+                        categories: dates,
+                        title: {
+                            text: 'Date'
+                        }
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Expense Amount (₹)'
+                        }
+                    },
+                    tooltip: {
+                        shared: true,
+                        crosshairs: true,
+                        valuePrefix: '₹'
+                    },
+                    plotOptions: {
+                        series: {
+                            cursor: 'pointer',
+                            point: {
+                                events: {
+                                    click: function () {
+                                        const selectedDate = this.category;
+                                        const filterType = $('#ReportType').val();
+                                        const statusName = this.series.name;
+                                        $.ajax({
+                                            url: '/Secretary/_ExpenseDetailsPartialSP',
+                                            type: 'GET',
+                                            data: {
+                                                selectedDate: selectedDate,
+                                                statusName: statusName,
+                                                filterType: filterType
+                                            },
+                                            success: function (partialViewHtml) {
+                                                $('#expenseDetailContainer').html(partialViewHtml);
+                                                $('#Expensetitle').text(`  List of ${statusName}  `);
+                                                $('#expenseDetailsModal').modal('show');
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    series: [
+                        {
+                            name: 'Paid Expense',
+                            data: paidExpenseValues,
+                            color: '#28a745'
+                        },
+                        {
+                            name: 'Unpaid Expense',
+                            data: unpaidExpenseValues,
+                            color: '#dc3545'
+                        }
+                    ]
+                });
+            }
+
+        });
+
+    }
+
+
+
+    function loadParkingChart() {
+
+        var fromDate = $('#fromDate1').val();
+        var toDate = $('#toDate1').val();
+    const filter = $(".filterParking").val();
+
+    $.ajax({
+        url: '/Secretary/ParkingDataSP',
+        type: 'GET',
+        data: {
+            fromDate: fromDate,
+            toDate: toDate,
+            filterType: filter
+        },
+        success: function (data) {
+            $("#parkingSlotMatrix").empty();
+            $("#parkingListContainer").empty(); // clear previous partial
+
+            data.forEach(function (slot) {
+                const cardClass = slot.SlotStatus === 'Allocated' ? 'allocated' : 'unallocated';
+                const card = `<div class="slot-card SlotCardMain ${cardClass}" data-type="${slot.SlotStatus}" data-code="${slot.ParkingCode}">
+                                ${slot.ParkingCode}
+                              </div>`;
+                $("#parkingSlotMatrix").append(card);
+            });
+
+            // Bind click handler after rendering
+            $(".slot-card").off('click').on('click', function () {
+                const status = $(this).data('type');       // 'Allocated' or 'Unallocated'
+                const code = $(this).data('code');         // 'PARK001', 'PARK002', etc.
+                loadParkingListPartial(status, fromDate, toDate, code); // ✅ send code here
+            });
+
+
+        },
+        error: function (err) {
+            console.error("Error loading parking slots:", err);
+        }
+    });
+}
+
+
+    function loadParkingListPartial(status, fromDate, toDate,code) {
+        debugger;
+        $.ajax({
+            url: '/Secretary/_ParkingListPartialSP',
+            type: 'GET',
+            data: {
+                status: status,
+                fromDate: fromDate,
+                toDate: toDate,
+                code:code
+            },
+            success: function (html) {
+                $("#ParkingListContainer").html(html);
+                $('#parkingtitle').text(`List of ${status} Parking `);
+
+                $("#ParkingModal").modal('show'); // Show the modal
+
+
+
+                if ($.fn.DataTable.isDataTable('#parkingtable')) {
+                    $('#parkingtable').DataTable().destroy();
+                }
+                var table = $('#parkingtable').DataTable({
+                    paging: true,
+                    ordering: true,
+                    info: true,
+                    pageLength: 5,
+                    searching: true,
+                    responsive: true,
+                    destroy: true,
+                    dom: 'Bfrtip',
+                    select: {
+                        style: 'multi'   // Enables multiple row selection
+                    },
+                    dom: '<"row mb-3"' +
+                        '<"col-md-6 d-flex gap-2 align-items-center" B>' +           // Buttons - left
+                        '<"col-md-6 d-flex align-items-center justify-content-end" f>' + // Search - right, vertically centered
+                        '>rtip',
+                    buttons: [
+                        {
+                            extend: 'csv',
+                            text: '<img src="/Content/img/icons8-csv-64 (1).png" title="CSV" alt="CSV" height="30" width="30"/>',
+                            titleAttr: 'CSV'
+                        },
+                        {
+                            extend: 'excel',
+                            text: '<img src="/Content/img/icons8-xls-64 (1).png" title="xls" alt="xls" height="30" width="30" />',
+                            titleAttr: 'Excel'
+                        },
+                        {
+                            extend: 'pdf',
+                            text: '<img src="/Content/img/icons8-pdf-64 (1).png" title="pdf" alt="pdf" height="30" width="30" />',
+                            title: 'Parking List',
+                            orientation: 'landscape'
+                        },
+                        {
+                            extend: 'print',
+                            text: '<img src="/Content/img/icons8-print-64 (1).png" title="Print" alt="Print" height="30" width="30" />',
+                            titleAttr: 'Print'
+                        }
+                    ]
+                });
+
+
+            },
+            error: function (err) {
+                console.error("Error loading partial view:", err);
+            }
+        });
+    }
+
+
+</script>
+

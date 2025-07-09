@@ -1,0 +1,173 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+
+
+    <!-- Toastr CSS -->
+    <link rel="stylesheet" href="~/Content/modules/izitoast/css/iziToast.min.css" />
+
+    <style>
+        :root {
+            --sidebar-gradient: linear-gradient(#1e1e1e, #dcd6f7);
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .main-navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #ffffff !important;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+            border-bottom: 1px solid #f0f0f0;
+            padding: 10px 20px;
+            z-index: 1050;
+        }
+
+        .main-wrapper {
+            display: flex;
+            padding-top: 80px; /* navbar height */
+            min-height: 100vh;
+        }
+
+        .main-sidebar {
+            width: 250px;
+            min-height: 100vh;
+            background-color: #BCC0C3;
+            position: fixed;
+            top: 80px;
+            left: 0;
+            z-index: 100;
+            overflow-y: auto;
+        }
+
+        .main-content {
+            margin-left: 10px;
+            padding: 30px;
+            flex: 1;
+        }
+
+        .main-footer {
+            background-color: #f8f9fa;
+            padding: 15px;
+            text-align: center;
+            margin-top: 30px;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .navbar-nav .nav-link {
+            color: #333 !important;
+            font-weight: 500;
+        }
+    </style>
+
+    <link rel="stylesheet" href="~/Content/modules/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="~/Content/modules/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="~/Content/css/style.css">
+    <link rel="stylesheet" href="~/Content/css/components.css">
+
+    @RenderSection("Styles", required: false)
+</head>
+
+<body>
+    @{
+        var profilePic = Session["ProfilePic"] != null && !string.IsNullOrEmpty(Session["ProfilePic"].ToString()) && !Session["ProfilePic"].ToString().Contains("default-profile.png")
+                            ? Url.Content(Session["ProfilePic"].ToString())
+                            : "";
+        var staffName = Session["StaffName"] != null ? Session["StaffName"].ToString() : "User";
+        var initialLetter = !string.IsNullOrEmpty(staffName) ? staffName.Substring(0, 1).ToUpper() : "";
+        var showProfilePic = !string.IsNullOrEmpty(profilePic);
+        var colors = new string[] { "#29abe2", "#f0ad4e", "#8e44ad", "#27ae60", "#d35400" };
+        var colorIndex = !string.IsNullOrEmpty(initialLetter) ? ((int)initialLetter[0] % colors.Length) : 0;
+        var initialBgColor = colors[colorIndex];
+    }
+
+    <!-- Top Navbar -->
+    <nav class="navbar navbar-expand-lg main-navbar fixed-top d-flex justify-content-between align-items-center px-3">
+        <div class="d-flex align-items-center">
+            <ul class="navbar-nav mr-3">
+                <li><a href="#" data-toggle="sidebar" class="nav-link nav-link-lg"><i class="fas fa-bars"></i></a></li>
+            </ul>
+            <div class="breadcrumb-wrapper d-none d-sm-inline-block ml-3">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb bg-transparent p-2 m-0">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active">@ViewBag.Title</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        <ul class="navbar-nav navbar-right d-flex align-items-center">
+            <li class="pt-2 px-2">
+                <a href="#" class="nav-link nav-link-lg" title="Calendar"><i class="fas fa-calendar-alt"></i></a>
+            </li>
+            <li class="dropdown d-flex align-items-center px-2">
+                <a href="#" data-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user d-flex align-items-center">
+                    <div class="rounded-circle mr-2" style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-size: 18px;
+                        @if (!showProfilePic) { @Html.Raw("background-color: " + initialBgColor + "; color: white;") }">
+                        @if (showProfilePic)
+                        {
+                            <img alt="image" src="@profilePic" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" />
+                        }
+                        else
+                        {
+                            @initialLetter
+                        }
+                    </div>
+                    <span class="d-none d-sm-inline text-dark font-weight-medium">@staffName</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <div class="dropdown-title">Logged in</div>
+                    <a href="#" class="dropdown-item has-icon"><i class="far fa-user"></i> Profile</a>
+                    <a href="#" class="dropdown-item has-icon"><i class="fas fa-bolt"></i> Policy</a>
+                    <a href="#" class="dropdown-item has-icon text-danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Layout -->
+    <div class="main-wrapper">
+        <!-- Sidebar -->
+        <div class="main-sidebar sidebar-style-2">
+            <aside id="sidebar-wrapper">
+                <div class="sidebar-brand">
+                    <a href="#">Society Management System</a>
+                </div>
+                @Html.Partial("_Sidebar")
+            </aside>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            @RenderBody()
+
+            <footer class="main-footer">
+                <div class="footer-left">
+                    &copy; 2025 <a href="http://gayasofttech.com/" target="_blank">Gaya Software Technology</a>
+                </div>
+                <div class="footer-right"></div>
+            </footer>
+        </div>
+    </div>
+
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+
+    @RenderSection("Scripts", required: false)
+
+
+    <!-- Toastr JS -->
+    <script src="~/Content/modules/izitoast/js/iziToast.min.js"></script>
+
+</body>
+</html>

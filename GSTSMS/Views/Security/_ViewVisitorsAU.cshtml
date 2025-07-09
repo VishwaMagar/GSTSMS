@@ -1,0 +1,118 @@
+﻿@model GSTSMSLibrary.Security.Security
+
+
+<html>
+<head>
+    <link href="~/Content/css/VisitorManagementAU.css" rel="stylesheet" />
+    </head>
+
+
+<body>
+    <div class="modal-content shadow-lg rounded-4">
+        <div class="modal-header bg-primary text-white rounded-top-4">
+            <h4 class="modal-title" id="myModalLabel">Visitor  Details</h4>
+
+            <button type="button" class="close" id="btnClosePopup" data-dismiss="modal" aria-hidden="true">×</button>
+
+            <button type="button" class="btn-close text-white" id="studentdetailspopup" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+
+
+        <div class="modal-body">
+            <dl class="row gx-3 gy-2">
+
+                <dt class="col-sm-4 fw-bold">Visitor Name</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.VisitorName)</dd>
+
+
+                <dt class="col-sm-4 fw-bold">Visitor Type</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.SubType)</dd>
+
+                <dt class="col-sm-4 fw-bold">Visitor Count</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.VisitorCount)</dd>
+
+
+
+                <dt class="col-sm-4 fw-bold">Wing Name</dt>
+                <dd class="col-sm-8">
+                    @(string.IsNullOrEmpty(Model.WingName) ? "-" : Model.WingName)
+                </dd>
+
+                <dt class="col-sm-4 fw-bold">Flat No</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.FlatCode)</dd>
+
+                <dt class="col-sm-4 fw-bold">Floor Name</dt>
+                <dd class="col-sm-8">
+                    @(string.IsNullOrEmpty(Model.FloorName) ? "-" : Model.FloorName)
+                </dd>
+
+
+                <dt class="col-sm-4 fw-bold">Vehicle Type</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.VehicleType)</dd>
+
+
+
+                <dt class="col-sm-4 fw-bold">Vehicle Number</dt>
+                <dd class="col-sm-8">
+                    @(string.IsNullOrEmpty(Model.VehicleNumber) ? "-" : Model.VehicleNumber)
+                </dd>
+
+                <dt class="col-sm-4 fw-bold">Alloted Parking</dt>
+                <dd class="col-sm-8">
+                    @(string.IsNullOrEmpty(Model.ParkingCode) ? "-" : Model.ParkingCode)
+                </dd>
+
+                <dt class="col-sm-4 fw-bold">Check-In</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.CheckIn)</dd>
+
+
+                <dt class="col-sm-4 fw-bold">Check-Out</dt>
+                <dd class="col-sm-8">
+                    @(Model.CheckOut.HasValue ? Model.CheckOut.Value.ToString("dd-MM-yyyy hh:mm:ss tt") : "-")
+                </dd>
+
+
+                @*<dt class="col-sm-4 fw-bold">Date</dt>
+                    <dd class="col-sm-8">@Html.DisplayFor(model => model.Date)</dd>*@
+
+                <dt class="col-sm-4 fw-bold">Status</dt>
+                <dd class="col-sm-8">@Html.DisplayFor(model => model.Status)</dd>
+
+                <dt class="col-sm-4 fw-bold">Document</dt>
+                <dd class="col-sm-8">
+                    @if (!string.IsNullOrEmpty(Model.Document))
+                    {
+                        <a href="@Url.Content(Model.Document)" target="_blank">View Document</a>
+                    }
+                    else
+                    {
+                        <span>No document uploaded</span>
+                    }
+                </dd>
+            </dl>
+        </div>
+
+
+        <div class="modal-footer bg-light rounded-bottom-4">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-hidden="true">Close</button>
+        </div>
+    </div>
+
+
+    <script>
+        function closebtn() {
+            $('#studentdetailspopup').hide();
+        }</script>
+
+
+    <script>
+        $(document).ready(function () {
+            $('#btnClosePopup').on('click', function () {
+                // Hide the modal manually
+                $('.modal').modal('hide');
+            });
+        });
+    </script>
+    </body>
+</html>

@@ -1,0 +1,296 @@
+﻿@{
+    ViewBag.Title = "Complaint Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Required Styles -->
+<link href="~/Content/modules/datatables/datatables.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link href="~/Content/css/StyleCSSSP.css" rel="stylesheet" />
+
+<div class="main-content">
+    <section class="section">
+        <!-- Summary Cards -->
+        <div class="row my-4">
+            <div class="col-md-3">
+                <div class="card text-white bg-success shadow-sm p-3">
+                    <div class="card-body">
+                        <h5><i class="bi bi-check-circle-fill"></i> Solved</h5>
+                        <h3 id="card-solved">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-dark bg-warning shadow-sm p-3">
+                    <div class="card-body">
+                        <h5><i class="bi bi-hourglass-split"></i> Pending</h5>
+                        <h3 id="card-pending">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-info shadow-sm p-3">
+                    <div class="card-body">
+                        <h5><i class="bi bi-tools"></i> In Progress</h5>
+                        <h3 id="card-inprogress">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-danger shadow-sm p-3">
+                    <div class="card-body">
+                        <h5><i class="bi bi-exclamation-triangle-fill"></i> Escalated</h5>
+                        <h3 id="card-escalated">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <a href="javascript:;" class="btn btn-outline-primary daterange-btn">
+                    <i class="fas fa-calendar-alt"></i> <span>Select Date</span>
+                </a>
+                <input type="hidden" id="fromDate1" />
+                <input type="hidden" id="toDate1" />
+            </div>
+            <div class="col-md-3">
+                <select class="form-control" id="ReportType">
+                    <option value="daily">Daily</option>
+                    <option value="monthly" selected>Monthly</option>
+                    <option value="yearly">Yearly</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Chart -->
+        <div class="card shadow-sm p-4 mb-4">
+            <div id="complaintBarChart" style="height: 400px;"></div>
+        </div>
+        </section>
+    </div>
+        <!-- Modal -->
+        <div class="modal fade" id="ComplaintModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content" id="ComplaintListContainer"></div>
+            </div>
+        </div>
+
+        <!-- Scripts -->
+        <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+        <script src="https://code.highcharts.com/highcharts.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+        <script src="~/Content/modules/bootstrap-daterangepicker/daterangepicker.js"></script>
+
+        <script>
+    $(function () {
+        initializeDateRangePicker();
+        $('#ReportType').change(loadComplaintChart);
+        loadComplaintChart();
+    });
+
+    function initializeDateRangePicker() {
+        $('.daterange-btn').daterangepicker({
+            locale: { format: 'YYYY-MM-DD' },
+            startDate: moment().startOf('month'),
+            endDate: moment(),
+            ranges: {
+                'Today': [moment(), moment()],
+                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            }
+        }, function (start, end) {
+            var today = moment();
+
+            if (start.isAfter(end, 'day')) {
+                alert("From Date should not be after To Date.");
+                return;
+            }
+
+            if (end.isAfter(today, 'day')) {
+                alert("To Date cannot be a future date.");
+                return;
+            }
+            $('#fromDate1').val(start.format('YYYY-MM-DD'));
+            $('#toDate1').val(end.format('YYYY-MM-DD'));
+            $('.daterange-btn span').html(start.format('DD MMM YYYY') + ' - ' + end.format('DD MMM YYYY'));
+            loadComplaintChart();
+        });
+
+        $('#fromDate1').val(moment().startOf('month').format('YYYY-MM-DD'));
+        $('#toDate1').val(moment().format('YYYY-MM-DD'));
+
+    }
+
+            function loadComplaintChart() {
+                const fromDateStr = $('#fromDate1').val();
+                const toDateStr = $('#toDate1').val();
+                const filterType = $('#ReportType').val();
+
+                const fromDate = moment(fromDateStr);
+                const toDate = moment(toDateStr);
+
+                const diffDays = toDate.diff(fromDate, 'days');
+                const diffMonths = toDate.diff(fromDate, 'months', true);
+                const diffYears = toDate.diff(fromDate, 'years', true);
+
+                if (filterType === 'daily' && diffDays > 15) {
+                    iziToast.warning({ title: 'Warning', message: 'Daily report allows only a 15-day range.', position: 'topCenter' });
+                    return;
+                }
+                if (filterType === 'monthly' && diffMonths > 6) {
+                    iziToast.warning({ title: 'Warning', message: 'Monthly report allows only a 6-month range.', position: 'topCenter' });
+                    return;
+                }
+                if (filterType === 'yearly' && diffYears > 6) {
+                    iziToast.warning({ title: 'Warning', message: 'Yearly report allows only a 6-year range.', position: 'topCenter' });
+                    return;
+                }
+
+                $.ajax({
+                    url: '/Secretary/GetComplaintDataSP',
+                    type: 'GET',
+                    data: {
+                        fromDate: fromDateStr,
+                        toDate: toDateStr,
+                        filterType: filterType
+                    },
+                    success: function (data) {
+                        const categories = [], Solve = [], Pending = [], Inprogress = [], Escalate = [];
+                        let totalS = 0, totalP = 0, totalI = 0, totalE = 0;
+
+                        data.forEach(item => {
+                            let dateObj = new Date(item.Dates);
+                            let label = (filterType === 'daily') ? moment(dateObj).format("DD MMM YYYY") :
+                                (filterType === 'monthly') ? moment(dateObj).format("MMM YYYY") :
+                                    moment(dateObj).format("YYYY");
+
+                            categories.push(label);
+                            Solve.push(item.Solve); totalS += item.Solve;
+                            Pending.push(item.Pending); totalP += item.Pending;
+                            Inprogress.push(item.Inprogress); totalI += item.Inprogress;
+                            Escalate.push(item.Escalate); totalE += item.Escalate;
+                        });
+
+                        $('#card-solved').text(totalS);
+                        $('#card-pending').text(totalP);
+                        $('#card-inprogress').text(totalI);
+                        $('#card-escalated').text(totalE);
+
+                        Highcharts.chart('complaintBarChart', {
+                            title: {
+                                text: 'Complaint Report Overview'
+                            },
+                            xAxis: {
+                                categories: categories
+                            },
+                            yAxis: {
+                                title: {
+                                    text: 'Number of Complaints'
+                                }
+                            },
+                            tooltip: {
+                                shared: true
+                            },
+                            plotOptions: {
+                                column: {
+                                    borderRadius: '25%'
+                                },
+                                series: {
+                                    cursor: 'pointer',
+                                    point: {
+                                        events: {
+                                            click: function () {
+                                                var dateLabel = this.category;
+                                                var statusName = this.series.name;
+                                                openComplaintPopup(filterType, dateLabel, statusName);
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            series: [
+                                {
+                                    type: 'column',
+                                    name: 'Solved',
+                                    data: Solve,
+                                    color: '#28a745'
+                                },
+                                {
+                                    type: 'column',
+                                    name: 'Pending',
+                                    data: Pending,
+                                    color: '#ffc107'
+                                },
+                                {
+                                    type: 'column',
+                                    name: 'In Progress',
+                                    data: Inprogress,
+                                    color: '#17a2b8'
+                                },
+                                {
+                                    type: 'column',
+                                    name: 'Escalated',
+                                    data: Escalate,
+                                    color: '#dc3545'
+                                },
+                                {
+                                    type: 'line',
+                                    name: 'Total',
+                                    data: Solve.map((_, i) => Solve[i] + Pending[i] + Inprogress[i] + Escalate[i]),
+                                    color: '#343a40',
+                                    marker: {
+                                        lineWidth: 2,
+                                        lineColor: '#343a40',
+                                        fillColor: 'white'
+                                    }
+                                }
+                            ],
+                            credits: {
+                                enabled: false
+                            }
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Failed to load data: " + error);
+                    }
+                });
+            }
+
+            function openComplaintPopup(filterType, dateLabel, statusName) {
+
+                $.ajax({
+
+                    url: '/Secretary/_GetComplaintListByFilterSP',
+                    type: 'GET',
+                    data: {
+                        filterType: filterType,
+                        dateLabel: dateLabel,
+                        statusName: statusName
+                    },
+                    dataType: 'html',
+                    success: function (response) {
+
+                        $("#ComplaintListContainer").html(response);
+                        $('#complainttitle').text(`List of ${statusName} Complaint  `);
+
+                        $("#ComplaintModal").modal("show");
+
+
+                        if ($.fn.DataTable.isDataTable('#table-1')) {
+                            $('#table-1').DataTable().destroy();
+                        }
+
+
+                    },
+                    error: function () {
+                        alert("Failed to load complaint list for " + statusName);
+                    }
+                });
+            }
+        </script>

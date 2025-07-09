@@ -1,0 +1,335 @@
+﻿@model GSTSMSLibrary.Secretary.Secretary
+
+<link href="~/Content/modules/datatables/datatables.css" rel="stylesheet" />
+<link href="~/Content/modules/datatables/datatables.min.css" rel="stylesheet" />
+<link href="~/Content/css/MaintenanceManagementVK.css" rel="stylesheet" />
+<link href="~/Content/modules/izitoast/css/iziToast.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="~/Content/modules/bootstrap-daterangepicker/daterangepicker.css" />
+<link rel="stylesheet" href="~/Content/css/style.css" />
+<link rel="stylesheet" href="~/Content/css/components.css" />
+<link rel="stylesheet" href="~/Content/css/custom-style.css" />
+<div class="card">
+    <div class="card-header">Schedule Maintenance</div>
+    <div class="card-body">
+        <div class="table-responsive">
+            @Html.HiddenFor(m => m.StaffCode, new { id = "staffcode-hidden" })
+
+            <table class="table table-bordered table-striped" id="shedulemaintenace">
+                <thead class="table-light text-center" style="background-color:lightsteelblue; color:black;">
+                    <tr>
+                        <th>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="checkbox-allmaintenace" />
+                                <label class="form-check-label" for="checkbox-allmaintenace">&nbsp;</label>
+                            </div>
+                        </th>
+                        <th>SR no.</th>
+                        <th>Maintenance Name</th>
+                        <th>Total Amount</th>
+                        <th>Maintenance Per Resident</th>
+                        <th>Start Date</th>
+                        <th>Complete Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int i = 0;
+                    }
+                    @foreach (var item in Model.List)
+                    {
+                        i++;
+                        <tr>
+                            <td class="text-center">
+                                <div class="form-check custom-checkbox custom-contro">
+                                    <input class="form-check-input row-checkboxmaintenace" type="checkbox"
+                                           id="checkbox-@item.ID" name="SelectedIds" value="@item.ID" data-amount="@item.Amount" />
+                                    <label class="form-check-label" for="checkbox-@item.ID">&nbsp;</label>
+                                </div>
+                            </td>
+                            <td>@i</td>
+                            <td>@item.MaintanceNamae</td>
+                            <td class="text-center">₹ @item.Amount.00</td>
+                            <td class="text-center">₹ @item.TotalMainAmount.00</td>
+                            <td>
+                                @(DateTime.TryParse(item.CreateDates?.ToString(), out var cd) ? cd.ToString("yyyy-MM-dd") : "Invalid Date")
+                            </td>
+                            <td>
+                                @(DateTime.TryParse(item.CompleteDates?.ToString(), out var dd) ? dd.ToString("yyyy-MM-dd") : "Pending")
+                            </td>
+                            <td class="text-center">
+                                <a href="javascript:void(0);" class="btn btn-sm btn-info detail-btn" data-id="@item.ID" data-staffcode="@item.StaffCode"><i class="fas fa-eye"></i></a>
+                                <a href="javascript:void(0);" class="btn btn-sm btn-success open-schedule-meeting edit  " data-id="@item.ID" data-staffcode="@item.StaffCode"><i class="fas fa-edit"></i></a>
+                                <a href="javascript:void(0);" class="btn btn-sm btn-danger deletemaintenance" data-id="@item.MaintenanceCode" data-staffcode="@item.StaffCode"><i class="fas fa-trash"></i></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="~/Content/modules/datatables/datatables.js"></script>
+<script src="~/Content/modules/datatables/datatables.min.js"></script>
+<script src="~/Content/modules/izitoast/js/iziToast.min.js"></script>
+<script src="~/Content/js/page/modules-toastr.js"></script>
+<script src="~/Content/modules/bootstrap-daterangepicker/daterangepicker.js"></script>
+<script src="~/Content/js/page/forms-advanced-forms.js"></script>
+<script src="~/Content/js/scripts.js"></script>
+<script src="~/Content/js/custom.js"></script>
+<script>
+    $(document).ready(function () {
+
+        initializeDateRangePicker();
+        var table = $('#shedulemaintenace').DataTable({
+            paging: true,
+            pageLength: 10,
+            lengthChange: false,
+            autoWidth: false,
+            order: [[1, 'asc']]
+        });
+
+        // Checkbox check/uncheck all
+        $('#checkbox-allmaintenace').on('change', function () {
+            $('.row-checkboxmaintenace').prop('checked', this.checked);
+        });
+
+        $(document).on('change', '.row-checkboxmaintenace', function () {
+            var total = $('.row-checkboxmaintenace').length;
+            var checked = $('.row-checkboxmaintenace:checked').length;
+            $('#checkbox-allmaintenace').prop('checked', total === checked);
+        });
+
+        if ($.fn.DataTable.isDataTable('#shedulemaintenace')) {
+            $('#shedulemaintenace').DataTable().destroy();
+        }
+        var paidTable = $('#shedulemaintenace').DataTable(getTableOptions('Schedule Maintenance'));
+
+        function getTableOptions(titlePrefix) {
+            return {
+                paging: true,
+                ordering: true,
+                info: true,
+                pageLength: 5,
+                searching: true,
+                responsive: true,
+                autoWidth: false,
+                dom: '<"row mb-3"<"col-md-6 d-flex gap-2 align-items-center"B><"col-md-6 d-flex align-items-center justify-content-end"f>>rtip',
+                buttons: [
+                    {
+                        extend: 'csv',
+                        text: '<img src="/Content/img/icons8-csv-64 (1).png" title="CSV" alt="CSV" height="30" width="30"/>',
+                        title: titlePrefix,
+                        titleAttr: 'CSV',
+                        action: function (e, dt, button, config) {
+                            if ($('.row-checkboxmaintenace:checked').length === 0) {
+                                iziToast.warning({
+                                    title: 'Warning',
+                                    message: 'Please select at least one row to export.',
+                                    position: 'topCenter',
+                                    timeout: 5000,
+                                });
+                                return;
+                            }
+                            $.fn.dataTable.ext.buttons.csvHtml5.action.call(this, e, dt, button, config);
+                        },
+                        exportOptions: {
+                            columns: ':not(:last-child)',
+                            rows: function (idx, data, node) {
+                                return $(node).find('.row-checkboxmaintenace').is(':checked');
+                            }
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        text: '<img src="/Content/img/icons8-xls-64 (1).png" title="Excel" alt="Excel" height="30" width="30"/>',
+                        title: titlePrefix,
+                        titleAttr: 'Excel',
+                        action: function (e, dt, button, config) {
+                            if ($('.row-checkboxmaintenace:checked').length === 0) {
+                                iziToast.warning({
+                                    title: 'Warning',
+                                    message: 'Please select at least one row to export.',
+                                    position: 'topCenter',
+                                    timeout: 5000,
+                                });
+                                return;
+                            }
+                            $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
+                        },
+                        exportOptions: {
+                            columns: ':not(:last-child)',
+                            rows: function (idx, data, node) {
+                                return $(node).find('.row-checkboxmaintenace').is(':checked');
+                            }
+                        }
+                    },
+                    {
+                        extend: 'pdf',
+                        text: '<img src="/Content/img/icons8-pdf-64 (1).png" title="PDF" alt="PDF" height="30" width="30"/>',
+                        titleAttr: 'PDF',
+                        title: function () {
+                            let date = new Date();
+                            return `${titlePrefix} - Saved on ${date.toLocaleDateString('en-GB')}`;
+                        },
+                        orientation: 'landscape',
+                        customize: function (doc) {
+                            var now = new Date();
+                            var jsDate = now.getDate() + '-' + (now.getMonth() + 1) + '-' + now.getFullYear();
+                            doc.content.splice(0, 0, {
+                                text: 'Saved Date: ' + jsDate,
+                                margin: [0, 0, 0, 12],
+                                alignment: 'right',
+                                fontSize: 10
+                            });
+                        },
+                        action: function (e, dt, button, config) {
+                            if ($('.row-checkboxmaintenace:checked').length === 0) {
+                                iziToast.warning({
+                                    title: 'Warning',
+                                    message: 'Please select at least one row to export.',
+                                    position: 'topCenter',
+                                    timeout: 5000,
+                                });
+                                return;
+                            }
+                            $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+                        },
+                        exportOptions: {
+                            columns: ':not(:last-child)',
+                            rows: function (idx, data, node) {
+                                return $(node).find('.row-checkboxmaintenace').is(':checked');
+                            }
+                        }
+                    }
+                ]
+            };
+        }
+        // DELETE ACTION
+        $('.deletemaintenance').on('click', function () {
+            var id = $(this).data('id');
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'This will permanently delete this maintenance record.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '@Url.Action("DeleteMainteanaceVK", "Secretary")',
+                        type: 'POST',
+                        data: { id: id },
+                        success: function (data) {
+                            Swal.fire('Deleted!', 'Record deleted successfully.', 'success').then(() => {
+                                location.reload(); // or use DataTable row remove
+                            });
+                        },
+                        error: function () {
+                            Swal.fire('Error', 'Could not delete record.', 'error');
+                        }
+                    });
+                }
+            });
+        });
+
+        // DETAIL VIEW
+        $('.detail-btn').on('click', function () {
+            var id = $(this).data('id');
+            var staffcode = $(this).data("staffcode") || 0;
+            var message = "schedulemaintenance";
+
+            $.ajax({
+                url: '@Url.Action("DetailsVK", "Secretary")',
+                type: 'GET',
+                data: { id: id, staffcode: staffcode, message: message },
+                beforeSend: function () {
+                    $('#myModalContent').html('<div class="text-center p-4"><div class="spinner-border text-primary" role="status"></div></div>');
+                },
+                success: function (data) {
+                    $('#myModalContent').html(data);
+                    $('#myModal').modal('show');
+                },
+                error: function () {
+                    Swal.fire('Error', 'Could not load details.', 'error');
+                }
+            });
+        });
+
+        // EDIT ACTION
+        $('.edit').on('click', function () {
+            var id = $(this).data('id');
+            var staffcode = $(this).data("staffcode") || 0;
+
+            $.ajax({
+                url: '@Url.Action("EditMainteanaceVK", "Secretary")',
+                type: 'GET',
+                data: { id: id, staffcode: staffcode },
+                beforeSend: function () {
+                    $('#myModalContent').html('<div class="text-center p-4"><div class="spinner-border text-primary" role="status"></div></div>');
+                },
+                success: function (data) {
+                    $('#myModalContent').html(data);
+                    $('#myModal').modal('show');
+                },
+                error: function () {
+                    Swal.fire('Error', 'Could not load edit form.', 'error');
+                }
+            });
+        });
+
+        // ✅ Modern Date Range Picker Filter
+        $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+            if (settings.nTable.id !== 'shedulemaintenace') return true;
+
+            var dateColumnIndex = 5; // "Start Date" is the 6th column (0-based index)
+
+            var dateStr = data[dateColumnIndex];
+            if (!dateStr || dateStr === "Invalid Date" || dateStr === "Pending") return false;
+
+            var from = $('#fromDate1').val();
+            var to = $('#toDate1').val();
+
+            var rowDate = moment(dateStr, 'YYYY-MM-DD');
+            var fromDate = from ? moment(from, 'YYYY-MM-DD') : null;
+            var toDate = to ? moment(to, 'YYYY-MM-DD') : null;
+
+            if (!rowDate.isValid()) return false;
+            if (fromDate && rowDate.isBefore(fromDate, 'day')) return false;
+            if (toDate && rowDate.isAfter(toDate, 'day')) return false;
+
+            return true;
+        });
+        function initializeDateRangePicker() {
+            var displayFormat = 'YYYY-MM-DD';
+            debugger
+            $('.daterange-btn').daterangepicker({
+                locale: { format: displayFormat },
+              
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                },
+                startDate: moment().startOf('month'),
+                endDate: moment()
+            }, function (start, end) {
+                $('#fromDate1').val(start.format(displayFormat));
+                $('#toDate1').val(end.format(displayFormat));
+                $('.daterange-btn span').html(start.format(displayFormat) + ' - ' + end.format(displayFormat));
+                $('#shedulemaintenace').DataTable().draw();
+            });
+
+            // Set initial values
+        
+        }
+    });
+
+
+</script>

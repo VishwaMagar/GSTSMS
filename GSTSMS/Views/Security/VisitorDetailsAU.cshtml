@@ -1,0 +1,487 @@
+﻿@model GSTSMSLibrary.Security.Security
+@{
+    ViewBag.Title = "VisitorDetailsAU";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
+    <title>Modules &rsaquo; DataTables &mdash; Stisla</title>
+
+    <!-- General CSS Files -->
+    <link rel="stylesheet" href="~/Content/modules/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="~/Content/modules/fontawesome/css/all.min.css">
+
+    <!-- CSS Libraries -->
+    <link rel="stylesheet" href="~/Content/modules/datatables/datatables.min.css">
+    <link rel="stylesheet" href="~/Content/modules/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="~/Content/modules/datatables/Select-1.2.4/css/select.bootstrap4.min.css">
+
+    <!-- Template CSS -->
+    <link rel="stylesheet" href="~/Content/css/style.css">
+
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.css">
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js"></script>
+
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+
+  
+    <link href="~/Content/css/VisitorManagementAU.css" rel="stylesheet" />
+
+
+</head>
+
+<body>
+
+
+
+
+
+
+    <div class="main-content">
+        <!-- Bar Chart Section -->
+        <section class="section">
+
+
+            <button type="submit" href="javascript:void(0);" class="btn btn-info btn-primary middle-button anchorDetail"> + Add Visitors</button>
+
+
+
+            <form id="filterForm" method="get" action="@Url.Action("VisitorDetailsAU", "Security")">
+
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label>From:</label>
+                        <input type="date" name="StartDate" id="StartDate" class="form-control"
+                               value="@ViewBag.StartDate"
+                               placeholder="dd-mm-yyyy"
+                               max="@DateTime.Now.ToString("yyyy-MM-dd")"
+                               onchange="validateEndDate()" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>To:</label>
+                        <input type="date" name="EndDate" id="endDate" class="form-control"
+                               value="@ViewBag.EndDate"
+                               placeholder="dd-mm-yyyy"
+                               max="@DateTime.Now.ToString("yyyy-MM-dd")"
+                               onchange="validateEndDate()" />
+                        <span id="dateError" style="color:red; display:none;">Please select today's date or earlier only.</span>
+                    </div>
+
+                    <div class="col-md-3 d-flex align-items-end">
+
+                        <a href="@Url.Action("VisitorDetailsAU", "Security")" class="btn btn-secondary">Reset</a>
+                    </div>
+                </div>
+
+
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped" id="table-1">
+                                        <thead>
+                                            <tr>
+
+
+                                                <th><input type="checkbox" id="selectAll"></th> <!-- Master checkbox -->
+                                                <th>Sr. No</th>
+                                                <th>Visitor Name</th>
+                                                <th>Visitor Type</th>
+                                                <th>VisitorCount</th>
+                                                <th>Wing Name</th>
+                                                @*<th>Flats No</th>*@
+                                                <th>VehicleType</th>
+                                                <th>Vehicle Number</th>
+                                                <th>Alloted Parking</th>
+                                                <th>Check in</th>
+                                                <th>Check out</th>
+                                                @*<th>Date</th>*@
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        @{
+                                            int serialNumber = 1;  
+                                        }
+                                        <tbody>
+
+                                            @foreach (var user in Model.LstOfWorker)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        <input type="checkbox" class="rowCheckbox" value="@user.VisitorName" />
+                                                    </td>
+                                                    <td>@serialNumber</td>
+                                                    <td>@user.VisitorName</td>
+                                                    <td>@user.SubType</td>
+                                                    <td>@user.VisitorCount</td>
+                                                    <td>@user.WingName</td>
+                                                    @*<td>@user.FlatCode</td>*@
+
+                                                    <td>@user.VehicleType</td>
+                                                    <td>@(string.IsNullOrEmpty(user.VehicleNumber) ? "-" : user.VehicleNumber)</td>
+                                                    <td>@(string.IsNullOrEmpty(user.ParkingCode) ? "-" : user.ParkingCode)</td>
+                                                    <td>@user.CheckIn</td>
+
+
+
+
+                                                    <td class="checkout-time">
+                                                        @(user.CheckOut.HasValue ? user.CheckOut.Value.ToString("dd-MM-yyyy hh:mm:ss tt") : "-")
+                                                    </td>
+
+
+                                                    @*<td>@user.Date</td>*@
+                                                    <td>@user.Status</td>
+
+
+                                                    <td class="text-center">
+                                                        <div class="action-buttons-vertical">
+                                                            <a href="javascript:void(0);" class="btn btn-info btn-sm anchorDetails" data-id="@user.VisitorId">
+                                                                <i class="fas fa-eye"></i> View
+                                                            </a>
+
+                                                            @if (!(user.CheckOut.HasValue))
+                                                            {
+                                                                <a href="javascript:void(0);" class="btn btn-warning btn-sm checkout-link" data-id="@user.VisitorId">
+                                                                    <i class="fas fa-sign-out-alt"></i> Check Out
+                                                                </a>
+                                                            }
+                                                        </div>
+                                                    </td>
+
+
+                                                </tr>
+
+                                                serialNumber++;
+                                            }
+
+
+                                        </tbody>
+                                    </table>
+
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="collectedMaintenanceModalLabel" aria-hidden="true">
+        <div class="modal-dialog " style="max-width:700px" role="document">
+            <div class="modal-content" id="myModalContent">
+            </div>
+        </div>
+    </div>
+
+    <script src="~/Content/modules/datatables/datatables.min.js"></script>
+
+    <script src="~/Content/modules/datatables/datatables.js"></script>
+
+
+    <!-- General JS Scripts -->
+    <script src="~/Content/modules/jquery.min.js"></script>
+    <script src="~/Content/modules/popper.js"></script>
+    <script src="~/Content/modules/tooltip.js"></script>
+    <script src="~/Content/modules/bootstrap/js/bootstrap.min.js"></script>
+    <script src="~/Content/modules/nicescroll/jquery.nicescroll.min.js"></script>
+    <script src="~/Content/modules/moment.min.js"></script>
+    <script src="~/Content/js/stisla.js"></script>
+
+    <!-- JS Libraies -->
+    <script src="~/Content/modules/datatables/datatables.min.js"></script>
+    <script src="~/Content/modules/datatables/DataTables-1.10.16/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/Content/modules/datatables/Select-1.2.4/js/dataTables.select.min.js"></script>
+    <script src="~/Content/modules/jquery-ui/jquery-ui.min.js"></script>
+
+    <!-- Page Specific JS File -->
+    <!-- Template JS File -->
+    <script src="~/Content/js/scripts.js"></script>
+    <script src="~/Content/js/custom.js"></script>
+
+
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+
+
+
+
+    <script>
+        $(document).on("click", ".anchorDetail", function () {
+
+            debugger
+            $.ajax({
+                url: '@Url.Action("_AddVisitorsAU", "Security")',
+                type: 'GET',
+
+                success: function (data) {
+                    $("#myModalContent").html(data);
+                    var modal = new bootstrap.Modal(document.getElementById('myModal'));
+                    modal.show();
+
+                },
+                error: function () {
+                    alert("Error loading details.");
+                }
+            });
+        });
+    </script>
+
+
+
+
+
+
+    <script>
+           debugger;
+        $(document).on("click", ".anchorDetails", function () {
+            var VisitorId = $(this).data("id"); // Get WorkerId from data attribute
+
+            $.ajax({
+                url: '@Url.Action("_ViewVisitorsAU", "Security")', // URL to call
+                type: 'GET', // Method type
+                data: { VisitorId: VisitorId }, // Data to send
+                success: function (data) {
+                    $("#myModalContent").html(data); // Insert returned HTML into the modal
+                    $("#myModal").modal("show"); // Show the modal
+                },
+                error: function () {
+                    alert("Error loading details."); // Error message
+                }
+            });
+        });
+    </script>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+   
+
+    <script>
+    // Visitor Checkout Confirmation
+    $(document).on("click", ".checkout-link", function (e) {
+        e.preventDefault();
+        var $btn = $(this);
+        var visitorId = $btn.data("id");
+
+        Swal.fire({
+            title: "Are you sure?",
+            text: "Do you want to check out this visitor?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#28a745",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, check out"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '@Url.Action("CheckOut", "Security")',
+                    type: 'POST',
+                    data: { id: visitorId },
+                    success: function (response) {
+                        if (response.success) {
+                            $btn.remove();
+                            var $row = $btn.closest("tr");
+                            $row.find(".checkout-time").text(response.checkoutTime);
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Checked Out!',
+                                text: response.message,
+                                showConfirmButton: false,
+                                timer: 1500,
+                                willClose: () => {
+                                    window.location.href = response.redirectUrl;
+                                }
+                            });
+                        } else {
+                            Swal.fire("Error", response.message, "error");
+                        }
+                    },
+                    error: function () {
+                        Swal.fire("Error", "An error occurred during checkout.", "error");
+                    }
+                });
+            }
+        });
+    });
+
+    // DataTable Initialization
+    $(document).ready(function () {
+        var table = $('#table-1').DataTable({
+            paging: true,
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    extend: 'copyHtml5',
+                    text: 'Copy',
+                    exportOptions: {
+                        columns: ':not(:last-child)', // Exclude Action column
+                        rows: function (idx, data, node) {
+                            return $(node).find('.rowCheckbox').is(':checked');
+                        }
+                    },
+                    action: function (e, dt, button, config) {
+                        if (!hasSelection(dt)) {
+                            alert("Please select at least one row to export.");
+                            return;
+                        }
+                        $.fn.dataTable.ext.buttons.copyHtml5.action.call(this, e, dt, button, config);
+                    }
+                },
+                {
+                    extend: 'csvHtml5',
+                    text: 'CSV',
+                    exportOptions: {
+                        columns: ':not(:last-child)',
+                        rows: function (idx, data, node) {
+                            return $(node).find('.rowCheckbox').is(':checked');
+                        }
+                    },
+                    action: function (e, dt, button, config) {
+                        if (!hasSelection(dt)) {
+                            alert("Please select at least one row to export.");
+                            return;
+                        }
+                        $.fn.dataTable.ext.buttons.csvHtml5.action.call(this, e, dt, button, config);
+                    }
+                },
+                {
+                    extend: 'excelHtml5',
+                    text: 'Excel',
+                    exportOptions: {
+                        columns: ':not(:last-child)',
+                        rows: function (idx, data, node) {
+                            return $(node).find('.rowCheckbox').is(':checked');
+                        }
+                    },
+                    action: function (e, dt, button, config) {
+                        if (!hasSelection(dt)) {
+                            alert("Please select at least one row to export.");
+                            return;
+                        }
+                        $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
+                    }
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: 'PDF',
+                    exportOptions: {
+                        columns: ':not(:last-child)',
+                        rows: function (idx, data, node) {
+                            return $(node).find('.rowCheckbox').is(':checked');
+                        }
+                    },
+                    customize: function (doc) {
+                        doc.content.splice(0, 0, {
+                            text: 'Visitor Record',
+                            alignment: 'center',
+                            fontSize: 14,
+                            bold: true,
+                            margin: [0, 0, 0, 12]
+                        });
+
+                        var now = new Date();
+                        var formatted = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+                        doc.footer = function () {
+                            return {
+                                columns: [
+                                    { text: '' },
+                                    { text: formatted, alignment: 'right', margin: [0, 0, 10, 0] }
+                                ]
+                            };
+                        };
+                    },
+                    action: function (e, dt, button, config) {
+                        if (!hasSelection(dt)) {
+                            alert("Please select at least one row to export.");
+                            return;
+                        }
+                        $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+                    }
+                },
+                {
+                    extend: 'print',
+                    text: 'Print',
+                    exportOptions: {
+                        columns: ':not(:last-child)',
+                        rows: function (idx, data, node) {
+                            return $(node).find('.rowCheckbox').is(':checked');
+                        }
+                    },
+                    customize: function (win) {
+                        $(win.document.body).prepend(
+                            '<h3 style="text-align:center">Visitor Record</h3>'
+                        );
+                        $(win.document.body).append(
+                            '<div style="text-align:right; font-size:10px;">' + new Date().toLocaleString() + '</div>'
+                        );
+                    },
+                    action: function (e, dt, button, config) {
+                        if (!hasSelection(dt)) {
+                            alert("Please select at least one row to export.");
+                            return;
+                        }
+                        $.fn.dataTable.ext.buttons.print.action.call(this, e, dt, button, config);
+                    }
+                }
+            ]
+        });
+
+        // Check if any row is selected
+        function hasSelection(dt) {
+            return dt.rows().nodes().to$().find('.rowCheckbox:checked').length > 0;
+        }
+
+        // Master checkbox: select/deselect all
+        $('#selectAll').on('change', function () {
+            var isChecked = $(this).is(':checked');
+            table.rows().every(function () {
+                var row = this.node();
+                $(row).find('.rowCheckbox').prop('checked', isChecked);
+            });
+        });
+
+        // Sync master checkbox if user manually selects/deselects rows
+        $('#table-1 tbody').on('change', '.rowCheckbox', function () {
+            var all = table.rows().nodes().to$().find('.rowCheckbox').length;
+            var checked = table.rows().nodes().to$().find('.rowCheckbox:checked').length;
+            $('#selectAll').prop('checked', all === checked);
+        });
+    });
+    </script>
+
+
+
+
+
+</body>
+</html>
+

@@ -1,0 +1,305 @@
+﻿@model IEnumerable<GSTSMSLibrary.AccountManager.AccountManager>
+
+@{
+    ViewBag.Title = "MaintenanceManagementSY";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2 class="section-title">Maintenance Member List</h2>
+
+<div class="card">
+    <div class="card-body">
+        <!-- Stisla Date Range Picker -->
+        <div class="form-group mb-3 col-md-4">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <div class="input-group-text"><i class="fas fa-calendar"></i></div>
+                </div>
+                <input type="text" class="form-control daterange-cus" id="customDateRange" placeholder="Select Date Range">
+                <input type="hidden" id="fromDate1" />
+                <input type="hidden" id="toDate1" />
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="mb-3" id="exportButtons"></div>
+
+        <div class="table-responsive">
+            <table class="table table-striped" id="maintenanceTable">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAll" /></th>
+                        <th>Sr No</th>
+                        <th>Wing</th>
+                        <th>Flat Type</th>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Total Amount</th>
+                        <th>Paid Amount</th>
+                        <th>PaidDate</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><input type="checkbox" class="selectRow" data-member-code="@item.MemberCode" /></td>
+                            <td>@item.SrNo</td>
+                            <td>@item.WingName</td>
+                            <td>@item.FlatType</td>
+                            <td>@item.FullName</td>
+                            <td>@item.Email</td>
+                            <td>@item.TotalAmount.ToString("0.00")</td>
+                            <td>@item.PaidAmount.ToString("0.00")</td>
+                            <td>
+                                @(item.PaidDate.HasValue ? item.PaidDate.Value.ToString("dd-MM-yyyy") : "-")
+                            </td>
+                            <td>
+                                @if (item.Status == "Completed")
+                                {
+                                    <div class="badge badge-success">@item.Status</div>
+                                }
+                                else
+                                {
+                                    <div class="badge badge-danger">@item.Status</div>
+                                }
+                            </td>
+                            <td>
+                                @if (item.Status == "Completed")
+                                {
+                                    <a href="javascript:void(0);"
+                                       onclick="showMaintenanceModal('@item.MemberCode', @(item.MaintananceTypeId ?? 0), '@item.EntityCode')"
+                                       class="btn btn-icon btn-info btn-sm"
+                                       data-bs-toggle="tooltip"
+                                       data-bs-placement="top"
+                                       title="View Maintenance">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">N/A</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="maintenanceModal" tabindex="-1" aria-labelledby="maintenanceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Maintenance Details</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modalMaintenanceContent">
+                <!-- Partial view will load here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/Content/modules/bootstrap-daterangepicker/daterangepicker.css" />
+    <link rel="stylesheet" href="~/Content/css/style.css" />
+    <link rel="stylesheet" href="~/Content/css/components.css" />
+    <link rel="stylesheet" href="~/Content/css/custom-style.css" />
+}
+
+@section Scripts {
+    <script src="~/Content/modules/moment.min.js"></script>
+    <script src="~/Content/modules/bootstrap-daterangepicker/daterangepicker.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            function initializeDateRangePicker() {
+                var displayFormat = 'DD-MM-YYYY';
+                $('#customDateRange').daterangepicker({
+                    locale: { format: displayFormat },
+                    drops: 'down',
+                    autoUpdateInput: true,
+                    opens: 'right',
+                    ranges: {
+                        'Today': [moment(), moment()],
+                        'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                        'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                        'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                        'This Month': [moment().startOf('month'), moment().endOf('month')],
+                        'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                    },
+                    startDate: moment().startOf('month'),
+                    endDate: moment()
+                }, function (start, end) {
+                    $('#customDateRange').val(start.format(displayFormat) + ' - ' + end.format(displayFormat));
+                    $('#fromDate1').val(start.format(displayFormat));
+                    $('#toDate1').val(end.format(displayFormat));
+                    $('#maintenanceTable').DataTable().draw();
+                });
+
+                // Apply default current month
+                $('#fromDate1').val(moment().startOf('month').format(displayFormat));
+                $('#toDate1').val(moment().format(displayFormat));
+                $('#customDateRange').val(moment().startOf('month').format(displayFormat) + ' - ' + moment().format(displayFormat));
+                $('#maintenanceTable').DataTable().draw();
+
+                // Apply Bootstrap 5 styles to buttons
+                $('#customDateRange').on('show.daterangepicker', function () {
+                    setTimeout(function () {
+                        $('.daterangepicker .btn').addClass('btn-sm');
+                        $('.daterangepicker .applyBtn').addClass('btn-primary').removeClass('btn-success');
+                        $('.daterangepicker .cancelBtn').addClass('btn-secondary');
+                    }, 10);
+                });
+            }
+
+            // Date filter logic
+            $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+                var min = $('#fromDate1').val();
+                var max = $('#toDate1').val();
+                var dateStr = data[8]; // PaidDate column
+
+                if (!min && !max) return true;
+                if (!dateStr) return false;
+
+                var rowDate = moment(dateStr, 'DD-MM-YYYY');
+                var minDate = min ? moment(min, 'DD-MM-YYYY') : null;
+                var maxDate = max ? moment(max, 'DD-MM-YYYY') : null;
+
+                if (!rowDate.isValid()) return false;
+                if (minDate && rowDate.isBefore(minDate, 'day')) return false;
+                if (maxDate && rowDate.isAfter(maxDate, 'day')) return false;
+
+                return true;
+            });
+
+            var table = $('#maintenanceTable').DataTable({
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        text: '<i class="fas fa-file-excel"></i> Excel',
+                        className: 'btn btn-success btn-sm',
+                        exportOptions: {
+                            rows: function (idx, data, node) {
+                                return $(node).find('input.selectRow').is(':checked');
+                            },
+                            columns: ':visible:not(:first-child):not(:last-child)'
+                        },
+                        action: function (e, dt, button, config) {
+                            if ($('.selectRow:checked').length === 0) {
+                                alert('Please select at least one row to export.');
+                                return;
+                            }
+                            $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
+                        }
+                    },
+                    {
+                        extend: 'csvHtml5',
+                        text: '<i class="fas fa-file-csv"></i> CSV',
+                        className: 'btn btn-warning btn-sm',
+                        exportOptions: {
+                            rows: function (idx, data, node) {
+                                return $(node).find('input.selectRow').is(':checked');
+                            },
+                            columns: ':visible:not(:first-child):not(:last-child)'
+                        },
+                        action: function (e, dt, button, config) {
+                            if ($('.selectRow:checked').length === 0) {
+                                alert('Please select at least one row to export.');
+                                return;
+                            }
+                            $.fn.dataTable.ext.buttons.csvHtml5.action.call(this, e, dt, button, config);
+                        }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        text: '<i class="fas fa-file-pdf"></i> PDF',
+                        className: 'btn btn-danger btn-sm',
+                        orientation: 'landscape',
+                        pageSize: 'A4',
+                        exportOptions: {
+                            rows: function (idx, data, node) {
+                                return $(node).find('input.selectRow').is(':checked');
+                            },
+                            columns: ':visible:not(:first-child):not(:last-child)'
+                        },
+                        action: function (e, dt, button, config) {
+                            if ($('.selectRow:checked').length === 0) {
+                                alert('Please select at least one row to export.');
+                                return;
+                            }
+                            $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+                        }
+                    }
+                ],
+                pageLength: 10,
+                lengthChange: true,
+                searching: true,
+                ordering: true,
+                autoWidth: false,
+                responsive: true
+            });
+
+            // Sr No
+            table.on('order.dt search.dt draw.dt', function () {
+                var pageInfo = table.page.info();
+                table.column(1, { search: 'applied', order: 'applied', page: 'current' })
+                    .nodes().each(function (cell, i) {
+                        cell.innerHTML = pageInfo.start + i + 1;
+                    });
+            }).draw();
+
+            table.buttons().container().appendTo('#exportButtons');
+
+            $('#selectAll').on('change', function () {
+                var rows = table.rows({ search: 'applied' }).nodes();
+                $('input.selectRow', rows).prop('checked', this.checked);
+            });
+
+            $('[data-bs-toggle="tooltip"]').tooltip();
+            initializeDateRangePicker();
+        });
+
+        function showMaintenanceModal(memberCode, maintainanceTypeId, EntityCode) {
+            if (!memberCode || maintainanceTypeId === 0) {
+                alert("Invalid MemberCode or MaintananceTypeId.");
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("MemberMaintenanceDetailsSY", "AccountManager")',
+                type: 'POST',
+                data: {
+                    memberCode: memberCode,
+                    maintainanceTypeId: maintainanceTypeId,
+                    EntityCode: EntityCode
+                },
+                success: function (result) {
+                    $("#modalMaintenanceContent").html(result);
+                    var modal = new bootstrap.Modal(document.getElementById("maintenanceModal"));
+                    modal.show();
+                },
+                error: function (xhr) {
+                    alert("Failed to load maintenance details.\n" + xhr.responseText);
+                }
+            });
+        }
+    </script>
+}

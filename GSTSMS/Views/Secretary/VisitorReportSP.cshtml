@@ -1,0 +1,211 @@
+﻿@{
+    ViewBag.Title = "Visitor Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Styles -->
+<link href="~/Content/css/StyleCSSSP.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" rel="stylesheet" />
+
+<link href="~/Content/modules/datatables/datatables.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+
+<div class="main-content">
+    <section class="section">
+        <!-- Date Range Filter -->
+        <div class="form-group">
+            <a href="javascript:;" class="btn btn-primary daterange-btn icon-left btn-icon">
+                <i class="fas fa-calendar"></i> <span>Select Date</span>
+            </a>
+            <input type="hidden" id="fromDate1" />
+            <input type="hidden" id="toDate1" />
+        </div>
+
+        <!-- Total + Present Cards -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="card bg-info text-white p-3 shadow">
+                    <h5>Total Visitors: <span id="totalVisitorCount">0</span></h5>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card bg-success text-white p-3 shadow">
+                    <h5>Present Now: <span id="presentVisitorCount">0</span></h5>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart Area -->
+        <div class="card p-3 shadow-sm">
+
+            <div id="visitorCombinedChart" class="chart-area"></div>
+        </div>
+    </section>
+</div>
+
+@*VisitorList Modal*@
+<div class="modal fade" id="VisitorModal" tabindex="-1" role="dialog" aria-labelledby="VisitorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" id="VisitorListContainer"></div>
+    </div>
+</div>
+
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+<script src="~/Content/modules/bootstrap-daterangepicker/daterangepicker.js"></script>
+
+<script>
+    $(document).ready(function () {
+        initDatePicker();
+        loadVisitorReport();
+        $('#fromDate1, #toDate1').on('change', loadVisitorReport);
+    });
+
+    function initDatePicker() {
+        const format = 'YYYY-MM-DD';
+        $('.daterange-btn').daterangepicker({
+            locale: { format: format },
+            startDate: moment().startOf('month'),
+            endDate: moment(),
+            ranges: {
+                'Today': [moment(), moment()],
+                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            }
+        }, function (start, end) {
+            var today = moment();
+
+            if (start.isAfter(end, 'day')) {
+                alert("From Date should not be after To Date.");
+                return;
+            }
+
+            if (end.isAfter(today, 'day')) {
+                alert("To Date cannot be a future date.");
+                return;
+            }
+
+            $('#fromDate1').val(start.format(format));
+            $('#toDate1').val(end.format(format));
+            $('.daterange-btn span').text(start.format(format) + ' - ' + end.format(format));
+            loadVisitorReport();
+        });
+
+        $('#fromDate1').val(moment().startOf('month').format(format));
+        $('#toDate1').val(moment().format(format));
+        $('.daterange-btn span').text(moment().startOf('month').format(format) + ' - ' + moment().format(format));
+    }
+
+    function loadVisitorReport() {
+        const fromDate = $('#fromDate1').val();
+        const toDate = $('#toDate1').val();
+
+        $.ajax({
+            url: '@Url.Action("GetVisitorDataSP", "Secretary")',
+            type: 'GET',
+            data: { fromDate, toDate },
+            dataType: 'json',
+            success: function (res) {
+                if (res.length > 0) {
+                    const data = res[0];
+
+                    $('#totalVisitorCount').text(data.Total + data.Present);
+                    $('#presentVisitorCount').text(data.Present);
+
+                    Highcharts.chart('visitorCombinedChart', {
+                        chart: { type: 'column' },
+                        title: { text: 'Visitor Report' },
+                        xAxis: { categories: ['Delivery', 'Guest', 'Worker', 'Vendor'] },
+                        yAxis: {
+                            min: 0,
+                            title: { text: 'Visitor Count' },
+                            stackLabels: {
+                                enabled: true,
+                                style: { fontWeight: 'bold', color: 'gray' }
+                            }
+                        },
+                        tooltip: {
+                            pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+                        },
+                        plotOptions: {
+                            column: {
+                                stacking: 'normal',
+                                dataLabels: { enabled: true }
+                            },
+                            series: {
+                                cursor: 'pointer',
+                                point: {
+                                    events: {
+                                        click: function () {
+                                            const serisename = this.series.name;
+                                            OpenVisitorList(this.name, fromDate, toDate, serisename);
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        series: [
+                            {
+                                name: 'Checkout',
+                                data: [
+                                    { y: data.Delivery, name: 'Delivery' },
+                                    { y: data.Guest, name: 'Guest' },
+                                    { y: data.Worker, name: 'Worker' },
+                                    { y: data.Vendor, name: 'Vendor' }
+                                ],
+                                color: '#007bff'
+                            },
+                            {
+                                name: 'CheckIn',
+                                data: [
+                                    { y: data.PresentDelivery, name: 'Delivery' },
+                                    { y: data.PresentGuest, name: 'Guest' },
+                                    { y: data.PresentWorker, name: 'Worker' },
+                                    { y: data.PresentVendor, name: 'Vendor' }
+                                ],
+                                color: '#28a745'
+                            }
+                        ]
+                    });
+                }
+                else {
+                    $('#totalVisitorCount').text(0);
+                    $('#presentVisitorCount').text(0);
+                    $('#visitorCombinedChart').empty(); // This clears the old chart
+                    alert("No data found for selected date range.");
+                }
+            }
+
+        });
+    }
+
+    function OpenVisitorList(visitorType, fromDate, toDate,serisename) {
+        $.ajax({
+            url: '@Url.Action("_VisitorListSP", "Secretary")',
+            type: 'GET',
+            data: { visitorType, fromDate, toDate, serisename },
+            success: function (result) {
+                $('#VisitorListContainer').html(result);
+                $('#visitortitle').text(` List Of ${visitorType}`);
+                $('#VisitorModal').modal('show');
+            },
+            error: function () {
+                alert('Failed to load visitor list.');
+            }
+        });
+    }
+</script>

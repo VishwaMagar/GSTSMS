@@ -1,0 +1,79 @@
+﻿@model GSTSMSLibrary.AccountManager.AccountManager
+
+<div class="modal fade" id="expenseDetailsModal" tabindex="-1" role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="detailsModalLabel">Expense Details</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+
+                <section class="mb-3">
+                    <h5 class="section-title">Vendor Information</h5>
+                    <div class="info-group">
+                        <p><strong>Vendor Name:</strong> @(string.IsNullOrEmpty(Model.VendorName) ? "Not Available" : Model.VendorName)</p>
+                        <p><strong>Email:</strong> @(string.IsNullOrEmpty(Model.Email) ? "Not Available" : Model.Email)</p>
+                        <p><strong>Phone:</strong> @(string.IsNullOrEmpty(Model.PhoneNumber) ? "Not Available" : Model.PhoneNumber)</p>
+                        <p><strong>Address:</strong> @(string.IsNullOrEmpty(Model.Address) ? "Not Available" : Model.Address)</p>
+                    </div>
+                </section>
+
+                <hr />
+
+                <section class="mb-3">
+                    <h5 class="section-title">Expense Information</h5>
+                    <div class="info-group">
+                        <p><strong>Name:</strong> @Model.ExpenseName</p>
+                        <p><strong>Description:</strong> @Model.Description</p>
+                        <p><strong>Added Date:</strong> @Model.AddedDate.ToString("dd-MM-yyyy hh:mm tt")</p>
+                    </div>
+                </section>
+
+                <hr />
+
+                <section>
+                    <h5 class="section-title">Transaction Information</h5>
+                    <div class="info-group">
+                        <p><strong>Amount:</strong> ₹@Model.TransactionAmount</p>
+                        <p><strong>Payment Mode:</strong> @Model.PaymentMode</p>
+                        <p><strong>Paid Date:</strong> @(Model.PaidDate.HasValue ? Model.PaidDate.Value.ToString("dd-MM-yyyy") : "Not Paid")</p>
+
+                        <p><strong>Paid Date:</strong> @(Model.PaidDate.HasValue ? Model.PaidDate.Value.ToString("dd-MM-yyyy") : "Not Paid")</p>
+
+                        <p>
+                            <strong>Attachment:</strong>
+                            @if (!string.IsNullOrEmpty(Model.Document))
+                            {
+                                <a href="@Url.Content(Model.Document)" target="_blank">View Attachment</a>
+                            }
+                            else
+                            {
+                                <span>Not Available</span>
+                            }
+                        </p>
+
+
+
+                        @*<a href="@Url.Content("~/Content/Documents/" + Model.Document)"
+           target="_blank"
+           onerror="this.outerHTML='<span>Not Available</span>';">
+            @Model.Document
+        </a>*@
+
+
+
+
+                    </div>
+                </section>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section Styles {
+    <link href="~/Content/css/Expense.css" rel="stylesheet" />
+}

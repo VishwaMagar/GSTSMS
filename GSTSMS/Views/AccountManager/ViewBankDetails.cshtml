@@ -1,0 +1,240 @@
+﻿@model GSTSMSLibrary.AccountManager.AccountManager
+
+@{
+    ViewBag.Title = "ViewBankDetails";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- STISLA CSS -->
+<link rel="stylesheet" href="~/Content/css/style.css" />
+<link rel="stylesheet" href="~/Content/css/components.css" />
+<link rel="stylesheet" href="~/Content/css/custom-style.css" />
+<link rel="stylesheet" href="~/Content/modules/bootstrap-daterangepicker/daterangepicker.css" />
+<link rel="stylesheet" href="~/Content/modules/datatables/datatables.min.css" />
+<link rel="stylesheet" href="~/Content/modules/datatables/dataTables.bootstrap4.min.css" />
+
+<div class="section mainviewbank">
+    <div class="section-header">
+        <h1>Bank Account Details</h1>
+    </div>
+
+    <div class="section-body">
+        <div class="row">
+            <div class="col-12">
+                <!-- Bank Summary -->
+                <div class="card card-primary">
+                    <div class="card-header"><h4>Bank Summary</h4></div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6"><strong>Bank Name:</strong> @Model.BankName</div>
+                            <div class="col-md-6"><strong>Account No:</strong> @Model.AccountNo</div>
+                            <div class="col-md-6"><strong>Holder Name:</strong> @Model.BankHolderName</div>
+                            <div class="col-md-6"><strong>IFSC Code:</strong> @Model.IFSCCode</div>
+                            <div class="col-md-6"><strong>Branch:</strong> @Model.Branch</div>
+                            <div class="col-md-6"><strong>Current Balance:</strong> ₹@Model.OpeningBalance.ToString("N2")</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transaction Table -->
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h4>Transaction Statement</h4>
+                        <div class="card-header-form">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Search transactions..." id="searchBox" />
+                                <div class="input-group-btn">
+                                    <button class="btn btn-primary" type="button"><i class="fas fa-search"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <button id="exportCsv" class="btn btn-warning btn-sm"><i class="fas fa-file-csv"></i> CSV</button>
+                            <button id="exportExcel" class="btn btn-success btn-sm"><i class="fas fa-file-excel"></i> Excel</button>
+                            <button id="exportPdf" class="btn btn-danger btn-sm"><i class="fas fa-file-pdf"></i> PDF</button>
+                            <a href="javascript:;" class="btn btn-primary daterange-btn icon-left btn-icon ml-2">
+                                <i class="fas fa-calendar"></i> <span>Select Date</span>
+                            </a>
+                            <input type="hidden" id="fromDate1" />
+                            <input type="hidden" id="toDate1" />
+                        </div>
+
+                        @if (Model.TransactionList != null && Model.TransactionList.Count > 0)
+                        {
+                            <div class="table-responsive">
+                                <table id="txnTable" class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center">
+                                                <div class="custom-checkbox custom-control">
+                                                    <input type="checkbox" id="checkbox-all" class="custom-control-input" />
+                                                    <label for="checkbox-all" class="custom-control-label">&nbsp;</label>
+                                                </div>
+                                            </th>
+                                            <th>Sr. No</th>
+                                            <th>Sender / Receiver</th>
+                                            <th>Date</th>
+                                            <th>Amount ₹</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            int sr = 1;
+                                            foreach (var txn in Model.TransactionList)
+                                            {
+                                                <tr>
+                                                    <td class="text-center">
+                                                        <div class="custom-checkbox custom-control">
+                                                            <input type="checkbox" class="custom-control-input checkbox-item" id="checkbox-@sr" />
+                                                            <label for="checkbox-@sr" class="custom-control-label">&nbsp;</label>
+                                                        </div>
+                                                    </td>
+                                                    <td>@sr</td>
+                                                    <td>@txn.PaymentByName</td>
+                                                    <td>
+                                                        @(txn.PaidDate != null ? txn.PaidDate.Value.ToString("dd-MM-yyyy") : "-")
+                                                    </td>
+                                                    <td>₹@txn.Amount.ToString("N0")</td>
+                                                    <td>
+                                                        <div class="badge badge-info">@txn.Status</div>
+                                                    </td>
+                                                </tr>
+                                                sr++;
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning text-center">No transactions found.</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JS FILES -->
+<script src="~/Content/modules/moment.min.js"></script>
+<script src="~/Content/modules/bootstrap-daterangepicker/daterangepicker.js"></script>
+<script src="~/Content/modules/datatables/datatables.min.js"></script>
+<script src="~/Content/modules/datatables/dataTables.bootstrap4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        const displayFormat = "DD-MM-YYYY";
+
+        // Initialize daterange picker
+        $('.daterange-btn').daterangepicker({
+            locale: { format: displayFormat },
+            startDate: moment().startOf('month'),
+            endDate: moment()
+        }, function (start, end) {
+            $('#fromDate1').val(start.format(displayFormat));
+            $('#toDate1').val(end.format(displayFormat));
+            $('.daterange-btn span').html(start.format(displayFormat) + ' - ' + end.format(displayFormat));
+            table.draw();
+        });
+
+        $('#fromDate1').val(moment().startOf('month').format(displayFormat));
+        $('#toDate1').val(moment().format(displayFormat));
+        $('.daterange-btn span').html(moment().startOf('month').format(displayFormat) + ' - ' + moment().format(displayFormat));
+
+        // Custom date range filtering
+        $.fn.dataTable.ext.search.push(function (settings, data) {
+            var min = moment($('#fromDate1').val(), displayFormat);
+            var max = moment($('#toDate1').val(), displayFormat);
+            var date = moment(data[3], displayFormat);
+            return (!min.isValid() || !max.isValid() || !date.isValid()) || (date.isSameOrAfter(min) && date.isSameOrBefore(max));
+        });
+
+        const table = $('#txnTable').DataTable({
+            "columnDefs": [{ "orderable": false, "targets": [0] }],
+            "pageLength": 10,
+            "ordering": true,
+            "searching": true,
+            "lengthChange": true,
+            "language": {
+                "search": "",
+                "searchPlaceholder": "Search transactions...",
+                "paginate": {
+                    "previous": "<i class='fas fa-angle-left'></i>",
+                    "next": "<i class='fas fa-angle-right'></i>"
+                }
+            },
+            "initComplete": function () {
+                $("#txnTable_filter").remove(); // remove duplicate search
+            }
+        });
+
+        $('#searchBox').on('keyup', function () {
+            table.search(this.value).draw();
+        });
+
+        // Select-all across all pages
+        $('#checkbox-all').on('change', function () {
+            var checked = this.checked;
+            $('.checkbox-item').prop('checked', checked);
+        });
+
+        function getSelectedRows() {
+            return $('.checkbox-item:checked').closest('tr');
+        }
+
+        $('#exportCsv').click(function () {
+            const rows = getSelectedRows();
+            if (rows.length === 0) return alert("Please select transactions.");
+            let csv = "Sr. No,Sender/Receiver,Date,Amount,Status\n";
+            rows.each(function () {
+                const data = $(this).find('td').map((i, el) => $(el).text().trim()).get().slice(1);
+                csv += data.join(",") + "\n";
+            });
+            const blob = new Blob([csv], { type: "text/csv" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "Transaction_Statement.csv";
+            link.click();
+        });
+
+        $('#exportExcel').click(function () {
+            const rows = getSelectedRows();
+            if (rows.length === 0) return alert("Please select transactions.");
+            const data = [["Sr. No", "Sender/Receiver", "Date", "Amount", "Status"]];
+            rows.each(function () {
+                const row = $(this).find('td').map((i, el) => $(el).text().trim()).get().slice(1);
+                data.push(row);
+            });
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Transactions");
+            XLSX.writeFile(wb, "Transaction_Statement.xlsx");
+        });
+
+        $('#exportPdf').click(function () {
+            const rows = getSelectedRows();
+            if (rows.length === 0) return alert("Please select transactions.");
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const data = [];
+            rows.each(function () {
+                const row = $(this).find('td').map((i, el) => $(el).text().trim()).get().slice(1);
+                data.push(row);
+            });
+            doc.autoTable({
+                head: [["Sr. No", "Sender/Receiver", "Date", "Amount", "Status"]],
+                body: data
+            });
+            doc.save("Transaction_Statement.pdf");
+        });
+    });
+</script>

@@ -1,0 +1,156 @@
+﻿button.btn-sm {
+    font-size: 0.9rem;
+    padding: 6px 12px;
+}
+
+.card {
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    background-color: #ffffff;
+}
+
+.btn {
+    padding: 0.6rem 1.5rem;
+    font-weight: 500;
+}
+
+label.form-label {
+    font-weight: 500;
+}
+
+.capture-btn {
+    background-color: #007bff;
+    color: #fff;
+    font-size: 13px;
+    padding: 4px 12px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    line-height: 1;
+    height: 30px;
+}
+
+    .capture-btn:hover {
+        background-color: #0056b3;
+    }
+
+.camera-container {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: black;
+    z-index: 9999;
+}
+
+.camera-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.preview-box {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: none;
+}
+
+.preview-image {
+    width: 120px;
+    height: auto;
+    border: 2px solid white;
+    border-radius: 6px;
+}
+
+.preview-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.bottom-button-container {
+    position: absolute;
+    bottom: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    width: 100%;
+}
+
+.hidden-canvas,
+.hidden-input {
+    display: none;
+}
+
+#workerPhotoLink.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+#workerPhotoLink {
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+
+.dataTables_length {
+    display: none !important;
+}
+
+
+
+dl.row dt {
+    color: #0d6efd;
+    font-weight: 600;
+}
+
+.modal-content {
+    border-radius: 1rem;
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.btn-close {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+}
+
+
+.modal-title {
+    text-align: center;
+    width: 100%;
+}
+
+
+
+.action-buttons-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* center horizontally */
+    gap: 8px; /* spacing between buttons */
+}
+
+
+
+.anchorDetail {
+    background: linear-gradient(to right, #00b09b, #96c93d);
+    color: #fff;
+    border: none;
+}

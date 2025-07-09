@@ -1,0 +1,82 @@
+﻿@model IEnumerable<GSTSMSLibrary.Secretary.Secretary>
+@{
+    ViewBag.Title = "Policies";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="~/Content/modules/bootstrap/css/bootstrap.min.css">
+<link rel="stylesheet" href="~/Content/modules/fontawesome/css/all.min.css">
+<link rel="stylesheet" href="~/Content/css/style.css">
+<link rel="stylesheet" href="~/Content/css/components.css">
+<link href="~/Content/css/Policy Terms&Condition and Profile settingPC.css" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link href="~/Content/css/Policy Terms&Condition and Profile settingPC.css" rel="stylesheet" />
+
+
+<div class="main-content">
+    <section class="section">
+        <div class="section-header">
+            <h1>Policies And Terms</h1>
+        </div>
+        <div class="row">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="policy-card-container">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4>@item.PolicyName</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="description-section">
+                                        <p>
+                                            <span title="@item.Description">
+                                                @((item.Description != null && item.Description.Length > 100) ? item.Description.Substring(0, 100) + "..." : item.Description)
+                                            </span>
+                                        </p>
+
+                                        @if (item.TermsAndConditions != null && item.TermsAndConditions.Any())
+                                        {
+                                            <div class="terms-section">
+                                                <h5>Terms and Conditions</h5>
+                                                <ul>
+                                                    @foreach (var term in item.TermsAndConditions)
+                                                    {
+                                                        <li>
+                                                            <strong>@term.Title:</strong> @term.Description
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="no-terms-message">
+                                                No specific terms and conditions for this policy.
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle" style="margin-right: 0.5rem;"></i>
+                        No policies found.
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+</div>
+
+<script src="~/Content/modules/jquery.min.js"></script>
+<script src="~/Content/modules/bootstrap/js/bootstrap.min.js"></script>

@@ -1,0 +1,242 @@
+﻿@model GSTSMSLibrary.Secretary.Secretary
+
+@{
+    Layout = null;
+}
+
+@using (Html.BeginForm("_EditSH", "Secretary", FormMethod.Post, new { @class = "form-horizontal", enctype = "multipart/form-data" }))
+{
+    <div class="card p-4 shadow-sm" style="max-width: 700px; margin: auto; position: relative;">
+        <button class="close-button" onclick="goBack()" title="Close">&times;</button>
+        <h3 class="text-center mb-4">Update Notice</h3>
+        <hr />
+
+        @Html.HiddenFor(model => model.NoticeId)
+
+        <div class="form-group mb-3">
+            @Html.LabelFor(m => m.NoticeTitle)
+            @Html.TextBoxFor(m => m.NoticeTitle, new
+            {
+                @class = "form-control",
+                placeholder = "Enter title without numbers",
+                maxlength = "30",
+                pattern = "^[A-Za-z\\s]{1,30}$",
+                title = "Only letters and spaces allowed. Max 30 characters.",
+                oninput = "validateNoticeTitle(this)",
+                id = "NoticeTitle",
+                required = "required"
+            })
+            <span class="text-danger field-validation-error" id="NoticeTitleError"></span>
+        </div>
+
+
+        <div class="mb-3">
+            @Html.LabelFor(m => m.Description)
+            @Html.TextAreaFor(m => m.Description, new
+            {
+                @class = "form-control",
+                rows = 3,
+                maxlength = 500,
+                placeholder = "Enter a brief description...",
+                id = "Description",
+                required = "required",
+                oninput = "checkDescriptionLength(this)"
+            })
+            <small id="descCount" class="text-muted"></small>
+            @Html.ValidationMessageFor(m => m.Description, "", new { @class = "text-danger" })
+        </div>
+
+
+        @*<div class="form-group mb-3">
+                @Html.LabelFor(model => model.StartDate, htmlAttributes: new { @class = "form-label" })
+                @Html.TextBoxFor(model => model.StartDate, new { @class = "form-control", type = "date", Value = Model.StartDate.ToString("yyyy-MM-dd") })
+                @Html.ValidationMessageFor(model => model.StartDate, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group mb-3">
+                @Html.LabelFor(model => model.DeadLineDate)
+                @Html.TextBoxFor(model => model.DeadLineDate, new { @class = "form-control", @type = "date", Value = Model.DeadLineDate.ToString("yyyy-MM-dd") })
+                @Html.ValidationMessageFor(model => model.DeadLineDate)
+
+            </div>*@
+
+
+        <div class="form-group mb-3">
+            @Html.LabelFor(model => model.StartDate, htmlAttributes: new { @class = "form-label" })
+            @Html.TextBoxFor(model => model.StartDate, new
+            {
+                @class = "form-control",
+                type = "date",
+                id = "StartDate",
+                Value = Model.StartDate.ToString("yyyy-MM-dd")
+            })
+            @Html.ValidationMessageFor(model => model.StartDate, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="form-group mb-3">
+            @Html.LabelFor(model => model.DeadLineDate)
+            @Html.TextBoxFor(model => model.DeadLineDate, new
+            {
+                @class = "form-control",
+                type = "date",
+                id = "DeadLineDate", 
+                Value = Model.DeadLineDate.ToString("yyyy-MM-dd")
+            })
+            @Html.ValidationMessageFor(model => model.DeadLineDate, "", new { @class = "text-danger" })
+        </div>
+
+
+        <div class="form-group mb-4">
+            @Html.LabelFor(model => model.NoticeType, htmlAttributes: new { @class = "form-label" })
+            @Html.DropDownListFor(model => model.SelectedNoticeType, Model.NoticeType, "-- Select SubType --", new
+            {
+                @class = "form-control",
+                id = "SelectedNoticeType",
+                required = "required"
+            })
+            @Html.ValidationMessageFor(model => model.SelectedNoticeType, "", new { @class = "text-danger" })
+        </div>
+
+
+
+
+        <div class="text-center">
+            <input type="submit" value="Update" class="btn btn-primary px-5" />
+        </div>
+    </div>
+}
+<link href="~/Content/css/NoticeAndEmailSH.css" rel="stylesheet" />
+
+
+
+
+<script>
+
+    function showViewButton() {
+        const fileInput = document.getElementById('Attachment');
+        const file = fileInput.files[0];
+        const viewLink = document.getElementById('viewFileLink');
+        const existingLink = document.getElementById('existingFileLink');
+
+        if (file) {
+            const fileURL = URL.createObjectURL(file);
+            viewLink.href = fileURL;
+            viewLink.innerHTML = `🔗 View: ${file.name}`;
+            viewLink.style.display = 'inline-block';
+            if (existingLink) existingLink.style.display = 'none';
+        } else {
+            viewLink.href = '#';
+            viewLink.style.display = 'none';
+            if (existingLink) existingLink.style.display = 'inline-block';
+        }
+    }
+
+    function goBack() {
+        window.history.back();
+    }
+
+    // ✅ Description Validation
+    function checkDescriptionLength(textarea) {
+        const maxLength = 500;
+        const currentLength = textarea.value.length;
+        const countDisplay = document.getElementById("descCount");
+
+        if (currentLength > maxLength) {
+            textarea.value = textarea.value.substring(0, maxLength);
+            countDisplay.innerText = "Maximum 500 characters allowed.";
+            countDisplay.style.color = "red";
+        } else {
+            countDisplay.innerText = `${currentLength} / ${maxLength} characters`;
+            countDisplay.style.color = "#6c757d";
+        }
+
+        const validationSpan = document.querySelector(".field-validation-error[data-valmsg-for='Description']");
+        if (textarea.value.trim() === "") {
+            if (validationSpan) validationSpan.innerText = "Please enter description.";
+        } else {
+            if (validationSpan) validationSpan.innerText = "";
+        }
+    }
+
+    // ✅ NoticeTitle Validation
+    function validateNoticeTitle(input) {
+        const value = input.value;
+        const errorSpan = document.getElementById("NoticeTitleError");
+
+        input.value = value.replace(/[^A-Za-z ]/g, '');
+
+        if (input.value.trim() === "") {
+            errorSpan.innerText = "Please enter notice title.";
+        } else {
+            errorSpan.innerText = "";
+        }
+    }
+
+    // ✅ Dropdown Validation (NoticeType)
+    function validateDropdown() {
+        var dropdown = document.getElementById("SelectedNoticeType");
+        var selectedValue = dropdown.value;
+        var errorSpan = dropdown.nextElementSibling;
+
+        if (!selectedValue || selectedValue === "0") {
+            errorSpan.textContent = "Please select Notice Type.";
+            return false;
+        } else {
+            errorSpan.textContent = "";
+            return true;
+        }
+    }
+
+    // ✅ Dates Validation
+    function validateDates() {
+        const startDateInput = document.getElementById("StartDate");
+        const deadlineInput = document.getElementById("DeadLineDate");
+
+        const startDate = startDateInput.value;
+        const deadlineDate = deadlineInput.value;
+
+        const startDateError = startDateInput.nextElementSibling;
+        const deadlineError = deadlineInput.nextElementSibling;
+
+        startDateError.textContent = "";
+        deadlineError.textContent = "";
+
+        let isValid = true;
+
+        if (!startDate) {
+            startDateError.textContent = "Please select Start Date.";
+            isValid = false;
+        }
+
+        if (!deadlineDate) {
+            deadlineError.textContent = "Please select Deadline Date.";
+            isValid = false;
+        }
+
+        if (startDate && deadlineDate && new Date(deadlineDate) <= new Date(startDate)) {
+            deadlineError.textContent = "Deadline must be after Start Date.";
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    // ✅ Final Combined Submit Validation
+    document.querySelector("form").addEventListener("submit", function (e) {
+        let isValid = true;
+
+        if (!validateDropdown()) {
+            isValid = false;
+        }
+
+        if (!validateDates()) {
+            isValid = false;
+        }
+
+        if (!isValid) {
+            e.preventDefault(); // Stop submission if any validation fails
+        }
+    });
+
+</script>
+

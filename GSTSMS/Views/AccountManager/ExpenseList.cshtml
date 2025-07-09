@@ -1,0 +1,327 @@
+﻿@model IEnumerable<GSTSMSLibrary.AccountManager.AccountManager>
+@{
+    ViewBag.Title = "All Expenses";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/Content/modules/bootstrap-daterangepicker/daterangepicker.css" />
+    <style>
+        th.sorting:before,
+        th.sorting:after,
+        th.sorting_asc:before,
+        th.sorting_asc:after,
+        th.sorting_desc:before,
+        th.sorting_desc:after {
+            display: none !important;
+        }
+    </style>
+}
+
+
+<section class="section">
+    <div class="section-header">
+        <h1>All Expenses</h1>
+
+        <button class="btn btn-primary ml-auto" id="btnRegisterVendor">
+            <i class="fa fa-plus"></i> Register Vendor
+        </button>
+
+        <button class="btn btn-success ml-2" id="btnAddExpense">
+            <i class="fa fa-plus"></i> Add Expense
+        </button>
+    </div>
+
+    <div class="section-body">
+        <div class="form-group mb-3">
+            <a href="javascript:;" class="btn btn-primary daterange-btn icon-left btn-icon">
+                <i class="fas fa-calendar"></i> <span>Select Date</span>
+            </a>
+            <input type="hidden" id="fromDate" />
+            <input type="hidden" id="toDate" />
+        </div>
+
+        <div class="mb-3" id="exportButtons"></div>
+
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive">
+                <table id="expenseTable" class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="select-all" /></th>
+                            <th>Sr No.</th>
+                            <th>ExpenseCode</th>
+                            <th>Vendor Name</th>
+                            <th>Expense Type</th>
+                            <th>Status</th>
+                            <th>ExpenseName</th>
+                            <th>Wing Name</th>
+                            <th>Description</th>
+                            <th>AddedDate</th>
+                            <th>Amount</th>
+                            <th>IFSCCode</th>
+                            <th style="width: 115px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ var srNo = 1; }
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td><input type="checkbox" class="row-checkbox" /></td>
+                                <td class="sr-no">@srNo</td>
+                                <td>@item.ExpenseCode</td>
+                                <td>@item.VendorName</td>
+                                <td>@item.ExpenseType</td>
+                                <td>@item.StatusName</td>
+                                <td>@item.ExpenseName</td>
+                                <td>@item.WingName</td>
+                                <td>@item.Description</td>
+                                <td>@item.AddedDate.ToString("dd-MM-yyyy hh:mm tt")</td>
+                                <td>@item.Amount</td>
+                                <td>@item.IFSCCode</td>
+                                <td>
+                                    @if (item.StatusId == 10)
+                                    {
+                                        <a href="javascript:void(0);" onclick="viewExpenseDetails('@item.ExpenseCode')" title="View">
+                                            <i class="fa fa-eye"></i>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-sm btn-info" onclick="openIFSCModal('@item.ExpenseCode')">Pay</button>
+                                    }
+                                </td>
+                            </tr>
+                            srNo++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <p>No records found.</p>
+        }
+    </div>
+</section>
+
+
+<div id="ifscModalContainer"></div>
+<div id="expenseDetailsContainer"></div>
+<div class="modal fade" id="vendorModal" tabindex="-1" role="dialog"></div>
+<div class="modal fade" id="addExpenseModal" tabindex="-1" role="dialog"></div>
+
+@section Scripts {
+    <script src="~/Content/modules/moment.min.js"></script>
+    <script src="~/Content/modules/bootstrap-daterangepicker/daterangepicker.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Date filter
+            function initializeDateRangePicker() {
+                var displayFormat = 'DD-MM-YYYY';
+
+                $('.daterange-btn').daterangepicker({
+                    locale: { format: displayFormat },
+                    ranges: {
+                        'Today': [moment(), moment()],
+                        'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                        'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                        'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                        'This Month': [moment().startOf('month'), moment().endOf('month')],
+                        'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                    },
+                    startDate: moment().startOf('month'),
+                    endDate: moment()
+                }, function (start, end) {
+                    $('.daterange-btn span').html(start.format(displayFormat) + ' - ' + end.format(displayFormat));
+                    $('#fromDate').val(start.format(displayFormat));
+                    $('#toDate').val(end.format(displayFormat));
+                    $('#expenseTable').DataTable().draw();
+                });
+
+                $('#fromDate').val(moment().startOf('month').format(displayFormat));
+                $('#toDate').val(moment().format(displayFormat));
+                $('.daterange-btn span').html(moment().startOf('month').format(displayFormat) + ' - ' + moment().format(displayFormat));
+            }
+
+            // Custom date filter
+            $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+                var min = $('#fromDate').val();
+                var max = $('#toDate').val();
+                var dateStr = data[9];
+
+                if (!min && !max) return true;
+                if (!dateStr) return false;
+
+                var rowDate = moment(dateStr, 'DD-MM-YYYY hh:mm A');
+                var minDate = moment(min, 'DD-MM-YYYY');
+                var maxDate = moment(max, 'DD-MM-YYYY');
+
+                if (!rowDate.isValid()) return false;
+                if (minDate && rowDate.isBefore(minDate, 'day')) return false;
+                if (maxDate && rowDate.isAfter(maxDate, 'day')) return false;
+
+                return true;
+            });
+
+            var table = $('#expenseTable').DataTable({
+                dom: 'Bfrtip',
+                ordering: false,
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        text: '<i class="fas fa-file-excel"></i> Excel',
+                        className: 'btn btn-success btn-sm',
+                        exportOptions: {
+                            rows: function (idx, data, node) {
+                                return $(node).find('input.row-checkbox').is(':checked');
+                            },
+                            columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+                        },
+                        customizeData: function (data) {
+                            var sr = 1;
+                            data.body.forEach(function (row) { row[0] = sr++; });
+                        },
+                        action: function (e, dt, button, config) {
+                            if ($('.row-checkbox:checked').length === 0) {
+                                alert('Please select at least one row to export.');
+                                return;
+                            }
+                            $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
+                        }
+                    },
+                    {
+                        extend: 'csvHtml5',
+                        text: '<i class="fas fa-file-csv"></i> CSV',
+                        className: 'btn btn-info btn-sm',
+                        exportOptions: {
+                            rows: function (idx, data, node) {
+                                return $(node).find('input.row-checkbox').is(':checked');
+                            },
+                            columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+                        },
+                        customizeData: function (data) {
+                            var sr = 1;
+                            data.body.forEach(function (row) { row[0] = sr++; });
+                        },
+                        action: function (e, dt, button, config) {
+                            if ($('.row-checkbox:checked').length === 0) {
+                                alert('Please select at least one row to export.');
+                                return;
+                            }
+                            $.fn.dataTable.ext.buttons.csvHtml5.action.call(this, e, dt, button, config);
+                        }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        text: '<i class="fas fa-file-pdf"></i> PDF',
+                        className: 'btn btn-danger btn-sm',
+                        orientation: 'landscape',
+                        pageSize: 'A4',
+                        exportOptions: {
+                            rows: function (idx, data, node) {
+                                return $(node).find('input.row-checkbox').is(':checked');
+                            },
+                            columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+                        },
+                        customize: function (doc) {
+                            var sr = 1;
+                            for (var i = 1; i < doc.content[1].table.body.length; i++) {
+                                doc.content[1].table.body[i][0].text = sr.toString();
+                                sr++;
+                            }
+                        },
+                        action: function (e, dt, button, config) {
+                            if ($('.row-checkbox:checked').length === 0) {
+                                alert('Please select at least one row to export.');
+                                return;
+                            }
+                            $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+                        }
+                    }
+                ],
+                pageLength: 10,
+                responsive: true
+            });
+
+            table.buttons().container().appendTo('#exportButtons');
+
+            $('#select-all').on('click', function () {
+                const checked = this.checked;
+                $('.row-checkbox', table.rows({ search: 'applied' }).nodes()).each(function () {
+                    this.checked = checked;
+                });
+            });
+
+            initializeDateRangePicker();
+        });
+
+        function openIFSCModal(expenseCode) {
+            $.ajax({
+                url: '@Url.Action("GetIFSCDetails", "AccountManager")',
+                type: 'GET',
+                data: { expenseCode: expenseCode },
+                success: function (result) {
+                    $("#ifscModalContainer").html(result);
+                    $("#ifscModal").modal("show");
+                },
+                error: function () {
+                    alert("Error loading IFSC modal.");
+                }
+            });
+        }
+
+        function viewExpenseDetails(expenseCode) {
+            $.ajax({
+                url: '@Url.Action("GetExpenseDetails", "AccountManager")',
+                data: { expenseCode: expenseCode },
+                success: function (result) {
+                    $("#expenseDetailsContainer").html(result);
+                    $("#expenseDetailsModal").modal("show");
+                },
+                error: function () {
+                    alert("Unable to load expense details.");
+                }
+            });
+        }
+
+        $('#btnRegisterVendor').click(function () {
+            $.ajax({
+                url: '@Url.Action("RegisterVendor", "AccountManager")',
+                type: 'GET',
+                success: function (result) {
+                    $('#vendorModal').html(result);
+                    $('#vendorModal').modal('show');
+                },
+                error: function () {
+                    alert('Error loading vendor form.');
+                }
+            });
+        });
+
+        $('#btnAddExpense').click(function () {
+            $.ajax({
+                url: '@Url.Action("AddExpensePage", "AccountManager")',
+                type: 'GET',
+                success: function (result) {
+                    $('#addExpenseModal').html(result);
+                    $('#addExpenseModal').modal('show');
+                },
+                error: function () {
+                    alert('Error loading expense form.');
+                }
+            });
+        });
+    </script>
+}

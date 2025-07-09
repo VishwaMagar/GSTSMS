@@ -1,0 +1,286 @@
+﻿@{
+    ViewBag.Title = "Expense Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- CSS & JS Libraries -->
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+
+<!-- CSS Libraries --
+<!-- General CSS Files -->
+<!--/>
+<link href="~/Content/modules/fontawesome/css/all.min.css" rel="stylesheet" />-->
+<!-- CSS Libraries -->
+<!--<link href="~/Content/modules/izitoast/css/iziToast.css" rel="stylesheet" />-->
+<!-- Template CSS -->
+<!--<link href="~/Content/css/style.css" rel="stylesheet" />
+<link href="~/Content/css/components.css" rel="stylesheet" />-->
+
+<div class="main-content">
+    <section class="section">
+        <div class="container-fluid mt-3">
+            <h3 class="text-primary">Expense Report Dashboard</h3>
+
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <label>Select Date Range</label>
+                    <button class="btn btn-outline-primary btn-block daterange-btn">
+                        <i class="fa fa-calendar"></i> <span>Select Date</span>
+                    </button>
+                    <input type="hidden" id="fromDate1" />
+                    <input type="hidden" id="toDate1" />
+                </div>
+                <div class="col-md-2">
+                    <label>Report Type</label>
+                    <select class="form-control" id="ReportType">
+                        <option value="daily">Daily</option>
+                        <option value="monthly" selected>Monthly</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Progress Bar Section -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card p-3">
+                        <h5>Total Expense Progress</h5>
+                        <div id="progressSummary"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Combo and Donut Chart Section -->
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card p-3">
+                        <div id="comboExpenseChart" style="height: 400px;"></div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-3">
+                        <div id="donutExpenseChart" style="height: 400px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@*Expnese Modal*@
+<div class="modal fade" id="expenseDetailsModal" tabindex="-1" role="dialog" aria-labelledby="ExpenseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" id="expenseDetailContainer"></div>
+    </div>
+</div>
+
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+<script src="~/Content/modules/bootstrap-daterangepicker/daterangepicker.js"></script>
+
+
+<!--<script src="~/Content/modules/jquery.min.js"></script>
+<script src="~/Content/modules/popper.js"></script>
+<script src="~/Content/modules/tooltip.js"></script>
+<script src="~/Content/modules/bootstrap/js/bootstrap.min.js"></script>
+<script src="~/Content/modules/nicescroll/dist/jquery.nicescroll.min.js"></script>
+
+<script src="~/Content/modules/moment.min.js"></script>
+
+<script src="~/Content/js/stisla.js"></script>-->
+<!-- JS Libraies -->
+<!--<script src="~/Content/modules/izitoast/js/iziToast.min.js"></script>-->
+<!-- Page Specific JS File -->
+<!--<script src="~/Content/js/page/modules-toastr.js"></script>-->
+<!-- Template JS File -->
+<!--<script src="~/Content/js/scripts.js"></script>
+<script src="~/Content/js/custom.js"></script>-->
+<script>
+    $(document).ready(function () {
+        initializeDateRangePicker();
+        $('#ReportType').on('change', loadExpenseChart);
+
+
+        loadExpenseChart();
+    });
+
+    function initializeDateRangePicker() {
+        $('.daterange-btn').daterangepicker({
+            locale: { format: 'YYYY-MM-DD' },
+            startDate: moment().startOf('month'),
+            endDate: moment(),
+            ranges: {
+                'Today': [moment(), moment()],
+                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            }
+        }, function (start, end) {
+            var today = moment();
+
+            if (start.isAfter(end, 'day')) {
+
+                iziToast.warning({ title: 'Warning', message: 'From Date should not be after To Date.', position: 'topCenter', color: 'red' });
+
+                return;
+            }
+
+            if (end.isAfter(today, 'day')) {
+
+                iziToast.warning({ title: 'Warning', message: 'To Date cannot be a future date.', position: 'topCenter', color: 'red' });
+
+                return;
+            }
+            $('#fromDate1').val(start.format('YYYY-MM-DD'));
+            $('#toDate1').val(end.format('YYYY-MM-DD'));
+            $('.daterange-btn span').text(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD'));
+            loadExpenseChart();
+        });
+
+        let start = moment().startOf('month').format('YYYY-MM-DD');
+        let end = moment().format('YYYY-MM-DD');
+        $('#fromDate1').val(start);
+        $('#toDate1').val(end);
+        $('.daterange-btn span').text(start + ' - ' + end);
+    }
+
+
+
+
+    function loadExpenseChart() {
+        const fromDateStr = $('#fromDate1').val();
+        const toDateStr = $('#toDate1').val();
+        const filterType = $('#ReportType').val();
+
+        const fromDate = moment(fromDateStr);
+        const toDate = moment(toDateStr);
+
+        const diffDays = toDate.diff(fromDate, 'days');
+        const diffMonths = toDate.diff(fromDate, 'months', true);
+        const diffYears = toDate.diff(fromDate, 'years', true);
+
+        if (filterType === 'daily' && diffDays > 15) {
+            iziToast.warning({ title: 'Warning', message: 'Daily report allows only a 15-day range.', position: 'topCenter' });
+            return;
+        }
+        if (filterType === 'monthly' && diffMonths > 6) {
+            iziToast.warning({ title: 'Warning', message: 'Monthly report allows only a 6-month range.', position: 'topCenter' });
+            return;
+        }
+        if (filterType === 'yearly' && diffYears > 6) {
+            iziToast.warning({ title: 'Warning', message: 'Yearly report allows only a 6-year range.', position: 'topCenter' });
+            return;
+        }
+
+
+        $.ajax({
+            url: '/Secretary/GetExpenseDataSP',
+            type: 'GET',
+            data: { fromDate: fromDateStr, toDate: toDateStr, filterType: filterType },
+            success: function (data) {
+                const dates = data.map(x => x.Dates);
+                const paid = data.map(x => x.PaidExpense);
+                const unpaid = data.map(x => x.UnpaidExpense);
+                const total = data.map(x => x.TotalExpense);
+
+                // Combo Chart (Bar + Line)
+                Highcharts.chart('comboExpenseChart', {
+                    chart: { zoomType: 'xy' },
+                    title: { text: 'Expense Overview' },
+                    xAxis: [{ categories: dates }],
+                    yAxis: [{
+                        title: { text: 'Amount (₹)' }
+                    }],
+                    tooltip: {
+                        shared: true,
+                        valuePrefix: '₹'
+                    },
+                    plotOptions: {
+                        series: {
+                            cursor: 'pointer',
+                            point: {
+                                events: {
+                                    click: function () {
+                                        const selectedDate = this.category;
+                                        const filterType = $('#ReportType').val();
+                                        const statusName = this.series.name;
+                                        $.ajax({
+                                            url: '/Secretary/_ExpenseDetailsPartialSP',
+                                            type: 'GET',
+                                            data: {
+                                                selectedDate: selectedDate,
+                                                statusName: statusName,
+                                                filterType: filterType
+                                            },
+                                            success: function (partialViewHtml) {
+                                                $('#expenseDetailContainer').html(partialViewHtml);
+                                                $('#Expensetitle').text(`List of ${statusName}    `);
+                                                $('#expenseDetailsModal').modal('show');
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    series: [
+                        { type: 'column', name: 'Paid Expense', data: paid, color: 'rgba(165,170,217,1)' },
+                        { type: 'column', name: 'Unpaid Expense', data: unpaid, color: 'rgba(126,86,134,.9)' },
+                        { type: 'spline', name: 'Total', data: total, color: '#007bff' }
+                    ]
+                });
+
+                // Donut Chart (Latest Summary)
+                const lastIndex = data.length - 1;
+                Highcharts.chart('donutExpenseChart', {
+                    chart: { type: 'pie' },
+                    title: { text: 'Latest Expense Distribution' },
+                    plotOptions: {
+                        pie: {
+                            innerSize: '60%',
+                            dataLabels: {
+                                format: '<b>{point.name}</b>: ₹{point.y}'
+                            }
+                        }
+                    },
+                    series: [{
+                        name: 'Expense',
+                        data: [
+                            { name: 'Paid', y: paid[lastIndex], color: '#28a745' },
+                            { name: 'Unpaid', y: unpaid[lastIndex], color: '#dc3545' }
+                        ]
+                    }]
+                });
+
+                // Progress Bar Summary
+                let totalPaid = paid.reduce((a, b) => a + b, 0);
+                let totalUnpaid = unpaid.reduce((a, b) => a + b, 0);
+                let totalExpense = total.reduce((a, b) => a + b, 0);
+                let percentPaid = totalExpense > 0 ? (totalPaid / totalExpense * 100).toFixed(1) : 0;
+                let percentUnpaid = totalExpense > 0 ? (totalUnpaid / totalExpense * 100).toFixed(1) : 0;
+
+                $('#progressSummary').html(`
+                            <div class="mb-2">Paid: ₹${totalPaid} (${percentPaid}%)</div>
+                            <div class="progress mb-3">
+                                <div class="progress-bar bg-success" style="width:${percentPaid}%">${percentPaid}%</div>
+                                <div class="progress-bar bg-danger" style="width:${percentUnpaid}%">${percentUnpaid}%</div>
+                            </div>
+                            <div>Total: ₹${totalExpense}</div>
+                        `);
+            }
+        });
+    }
+
+</script>

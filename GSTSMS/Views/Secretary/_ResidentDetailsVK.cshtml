@@ -1,0 +1,122 @@
+﻿@model GSTSMSLibrary.Secretary.Secretary
+@{
+    Layout = null;
+}
+
+<link href="~/Content/css/MaintenanceManagementVK.css" rel="stylesheet" />
+
+<div class="modal-header bg-gradient-primary text-white rounded-top-4 mb-3"
+     style="background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);">
+    <h5 class="modal-title mb-0">
+        <i class="fas fa-info-circle me-2"></i>  Resident Maintenance
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close">X</button>
+</div>
+
+<div class="card-body">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        @Html.Label("Resident Name", new { @class = "form-label" })
+                        @Html.EditorFor(model => model.FullName, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                    </div>
+
+                    <div class="form-group mb-3">
+                        @Html.Label("Flat No.", new { @class = "form-label" })
+                        @Html.TextAreaFor(model => model.FlatCode, new { @class = "form-control", rows = 3, @readonly = "readonly" })
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            @Html.Label("Mobile Number", new { @class = "form-label" })
+                            @Html.EditorFor(model => model.MobailNo, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                        </div>
+                        <div class="form-group col-md-6">
+                            @Html.Label("Alternate Mobile", new { @class = "form-label" })
+                            @Html.EditorFor(model => model.AlterNo, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="card border-0 shadow-sm col-md-12">
+                    <div class="card-header bg-light text-center">
+                        <strong>Payment Status</strong>
+                    </div>
+                    <div class="card-body">
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label>Filter by Year:</label>
+                                <select id="yearFilter" class="form-select form-control-range">
+                                    <option value="">All</option>
+                                    @for (int y = DateTime.Now.Year; y >= DateTime.Now.Year - 10; y--)
+                                    {
+                                        <option value="@y">@y</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered display nowrap" id="recidenttable" style="width:100%;">
+                                <thead class="text-center" style="background-color: lightsteelblue; color: black;">
+                                    <tr>
+                                        <th>SR No.</th>
+                                        <th>Maintenance Name</th>
+                                        <th>Paid Amount</th>
+                                        <th>Paid Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.List != null)
+                                    {
+                                        int i = 0;
+                                        foreach (var item in Model.List)
+                                        {
+                                            i++;
+                                            <tr>
+                                                <td>@i</td>
+                                                <td>@item.MaintanceNamae</td>
+                                                <td class="text-center">₹ @item.Amount</td>
+                                                <td>@item.CreateDates</td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Content/modules/datatables/datatables.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#recidenttable').DataTable().destroy();
+        var table = $('#recidenttable').DataTable({
+            responsive: true,
+            autoWidth: false,
+            pageLength: 5,
+            lengthChange: true,
+            searching: true,
+            info: false,
+            ordering: true,
+            language: {
+                emptyTable: "No records found"
+            }
+        });
+
+        $('#yearFilter').on('change', function () {
+            var year = $(this).val();
+            table.columns(3).search(year).draw();
+        });
+    });
+</script>

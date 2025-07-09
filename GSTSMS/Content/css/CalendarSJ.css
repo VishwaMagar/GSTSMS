@@ -1,0 +1,336 @@
+﻿
+/* Root variables for theming - crucial to keep these for dark mode toggle */
+:root {
+    /* Calendar Wrapper & Background */
+    --calendar-wrapper-bg: linear-gradient(135deg, #e3f2fd, #ffffff);
+    --calendar-wrapper-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    /* Calendar Main */
+    --calendar-bg: #ffffff;
+    --calendar-border: none;
+    /* Header Toolbar */
+    --header-toolbar-bg: #e9ecef;
+    --header-toolbar-text: #333;
+    /* Buttons - Default State */
+    --button-bg: #ffffff;
+    --button-text: #495057;
+    --button-border: #ced4da;
+    --button-hover-bg: #f1f3f5;
+    /* Today Button */
+    --today-button-bg: #198754;
+    --today-button-text: #fff;
+    --today-button-border: #157347;
+    /* Day Today Cell (the date itself) */
+    --day-today-bg: #e3f2fd;
+    --day-today-border: #90caf9;
+    --day-today-text: blue; /* Keep this for today's date number's circular highlight */
+    /* Event Colors */
+    --event-meeting-bg: #2c8aff;
+    --event-event-bg: #17a2b8;
+    --event-holiday-bg: #f0ad4e;
+    --event-text-color: black;
+}
+
+/* Dark Theme Styles */
+body.dark-theme {
+    --calendar-wrapper-bg: linear-gradient(135deg, #343a40, #212529);
+    --calendar-wrapper-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    --calendar-bg: #2c2c2c;
+    --calendar-border: 1px solid #444;
+    --header-toolbar-bg: #3c3c3c;
+    --header-toolbar-text: #f0f0f0;
+    --button-bg: #444;
+    --button-text: #e0e0e0;
+    --button-border: #666;
+    --button-hover-bg: #555;
+    --today-button-bg: #0f5132;
+    --today-button-text: #fff;
+    --today-button-border: #0c4128;
+    --day-today-bg: #3a3a3a !important;
+    --day-today-border: #666 !important;
+    --day-today-text: #add8e6 !important;
+    --event-meeting-bg: #1e70bf;
+    --event-event-bg: #0e839e;
+    --event-holiday-bg: #cc9900;
+    --event-text-color: white;
+}
+
+/* Calendar Wrapper & Main Calendar */
+.calendar-wrapper {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 30px;
+    background: var(--calendar-wrapper-bg);
+    border-radius: 20px;
+    box-shadow: var(--calendar-wrapper-shadow);
+    transition: all 0.3s ease-in-out;
+}
+
+#calendar {
+    background-color: var(--calendar-bg);
+    padding: 20px;
+    border-radius: 15px;
+    border: var(--calendar-border);
+}
+
+/* Header Toolbar */
+.fc-header-toolbar {
+    background: var(--header-toolbar-bg);
+    border-radius: 10px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.fc-toolbar-title {
+    font-size: 1.6rem;
+    font-weight: 500;
+    color: var(--header-toolbar-text);
+}
+
+/* Default Button Styles (for general buttons in the toolbar) */
+.fc-header-toolbar .fc-button {
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: 1px solid var(--button-border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0 5px;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+    .fc-header-toolbar .fc-button:hover {
+        background-color: var(--button-hover-bg);
+        color: var(--header-toolbar-text);
+        border-color: var(--button-border);
+    }
+
+    /* Today Button specific styles with gradient */
+    .fc-header-toolbar .fc-button.fc-today-button {
+        background-image: linear-gradient(to right, #4e54c8 0%, #8f94fb 100%) !important; /* Royal Blue to Sky Blue */
+        color: white !important;
+        border: none !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+    }
+
+        .fc-header-toolbar .fc-button.fc-today-button:hover {
+            background-image: linear-gradient(to right, #8f94fb 0%, #4e54c8 100%) !important; /* Reverse gradient on hover */
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+/* Active View Button (dayGridMonth, timeGridWeek, etc.) - Teal to Purple Gradient */
+.fc-button-group .fc-button.fc-button-active {
+    background-image: linear-gradient(to right, #20c997 0%, #6f42c1 100%) !important;
+    color: #fff !important;
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Today's Date Cell (removing default FullCalendar highlight) */
+.fc-day-today {
+    background-color: transparent !important;
+    border: 1px solid #ddd !important;
+    font-weight: normal;
+    color: inherit !important;
+}
+
+    /* Circular highlight for today's day number */
+    .fc-day-today .fc-daygrid-day-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #e6f7ff;
+        color: blue; /* Today's date number is explicitly blue */
+        font-weight: bold;
+        border: 1px solid #add8e6;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
+    }
+
+/* This is the key change: Targets all day numbers and sets their color to blue */
+.fc-daygrid-day-number {
+    color: blue !important; /* Ensures all day numbers are blue */
+}
+
+/* Event Styling - Made Smaller */
+.fc-event {
+    font-size: 0.8rem; /* Smaller font size */
+    border-radius: 6px; /* Slightly smaller border radius */
+    padding: 3px 6px; /* Reduced padding */
+    margin-bottom: 2px; /* Reduced margin */
+    border: none !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); /* Lighter shadow */
+    color: var(--event-text-color);
+    /* Ensure event title text doesn't overflow */
+    white-space: nowrap; /* Keep text on one line */
+    overflow: hidden; /* Hide overflowing text */
+    text-overflow: ellipsis; /* Add ellipsis for hidden text */
+}
+
+    .fc-event:hover {
+        transform: scale(1.02);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        cursor: pointer;
+    }
+
+.fc-daygrid-event-dot {
+    margin-right: 4px; /* Reduced margin for the dot */
+    width: 6px; /* Smaller dot */
+    height: 6px; /* Smaller dot */
+}
+
+/* Apply event colors using data-type attributes */
+.fc-event[data-type="Meeting"] {
+    background-color: var(--event-meeting-bg);
+    border-color: var(--event-meeting-bg);
+}
+
+.fc-event[data-type="Event"] {
+    background-color: var(--event-event-bg);
+    border-color: var(--event-event-bg);
+}
+
+.fc-event[data-type="Holiday"] {
+    background-color: var(--event-holiday-bg);
+    border-color: var(--event-holiday-bg);
+}
+
+/* FullCalendar specific styling for text/headers */
+.fc .fc-toolbar-title {
+    color: var(--header-toolbar-text);
+}
+
+.fc-scrollgrid-sync-inner,
+.fc-col-header-cell,
+.fc-daygrid-body {
+    background-color: var(--calendar-bg);
+}
+
+/* Modal Styling */
+.modal-dialog {
+    max-width: 500px;
+    margin: 1.75rem auto;
+}
+
+.modal-content {
+    text-align: center;
+}
+
+.modal-header {
+    border-bottom: 1px solid #dee2e6;
+    padding: 1rem 1.5rem;
+    justify-content: center;
+}
+
+.modal-title {
+    margin-bottom: 0;
+    line-height: 1.5;
+    width: 100%;
+}
+
+.modal-body {
+    padding: 1.5rem;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    border-top: 1px solid #dee2e6;
+    padding: 1rem;
+    display: flex;
+    justify-content: center;
+}
+
+    .modal-footer .btn {
+        border-radius: 8px;
+        padding: 8px 16px;
+        margin-left: 0.5rem;
+    }
+
+.modal.fade .modal-dialog {
+    transform: translate(0, -50px);
+    transition: transform 0.3s ease-out;
+}
+
+.modal.show .modal-dialog {
+    transform: translate(0, 0);
+}
+
+.custom-close {
+    color: black;
+}
+
+.custom-modal-width {
+    max-width: 800px;
+    width: 90%;
+}
+
+@media (max-width: 768px) {
+    .custom-modal-width {
+        width: 95%;
+        margin: auto;
+    }
+}
+
+.custom-small-modal {
+    max-width: 400px;
+    margin: 1.75rem auto;
+}
+
+    .custom-small-modal .modal-body {
+        font-size: 0.9rem;
+        padding: 1rem;
+    }
+
+.modal-dialog.modal-sm {
+    max-width: 300px !important;
+}
+
+.my-custom-modal-wrapper .modal-dialog {
+    max-width: 300px !important;
+}
+
+#loadingSpinner {
+    display: none;
+}
+/* Styling for all Sunday date cells (the div containing the date number) */
+.fc-day-sun {
+    background-color: #ffe6e6 !important; /* Light red color */
+}
+
+    /* Optional: To make the day number in the Sunday cell also stand out */
+    /* This ensures the date number is visible against the light red background */
+    .fc-day-sun .fc-daygrid-day-number {
+        color: #cc0000 !important; /* A darker red for the date number */
+        font-weight: bold; /* Make the number bold */
+    }
+/* Styling for the entire header row containing the day names */
+.fc-col-header {
+    background-color: #e0f2f7 !important; /* Light blue color */
+}
+
+/* Optional: You might want to remove any individual cell background if it's conflicting */
+/* If you previously added .fc-col-header-cell, you can remove or modify its background */
+/* For instance, to ensure text is visible against the light blue */
+.fc-col-header-cell {
+    background-color: transparent !important; /* Make individual cells transparent */
+    border-right: 1px solid rgba(0, 0, 0, 0.05); /* Add a subtle divider between days */
+}
+
+    /* Ensure the last header cell doesn't have a right border */
+    .fc-col-header-cell:last-child {
+        border-right: none !important;
+    }
+
+/* Adjust text color of the day names for better contrast if needed */
+.fc-col-header-cell-cushion {
+    color: #333; /* Darker text for readability */
+}

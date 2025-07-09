@@ -1,0 +1,348 @@
+﻿/* CSS for VendorlistPG */
+
+table th, table td {
+    padding: 15px 20px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+}
+
+table {
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+    table tbody tr:hover {
+        background-color: #f9f9f9;
+    }
+
+.custom-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    text-decoration: none;
+    background: linear-gradient(to right, #00b09b, #96c93d);
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+    .custom-btn:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    .custom-btn i {
+        font-size: 18px;
+    }
+
+.btn-edit {
+    background: linear-gradient(to right, #6dd5ed, #2193b0);
+    color: white;
+}
+
+.btn-view {
+    background: linear-gradient(to right, #4a00e0, #8e2de2);
+    color: white;
+}
+
+.btn-delete {
+    background: linear-gradient(to right, #e35d5b, #e53935);
+    color: white;
+}
+
+.alert {
+    margin: 20px 0;
+}
+/* PDF Button - Red-Pink Gradient */
+.export-pdf-btn {
+    background: transparent !important;
+}
+
+
+    .export-pdf-btn i {
+        font-size: 24px;
+    }
+/* CSV Button - Green Gradient */
+.export-csv-btn {
+    background: transparent !important;
+}
+
+
+    .export-csv-btn i {
+        font-size: 24px;
+    }
+
+/* Excel Button - Teal-Green Gradient */
+.export-excel-btn {
+    background: transparent !important;
+}
+
+
+
+    .export-excel-btn i {
+        font-size: 24px;
+    }
+
+.export-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+    .export-container .btn {
+        margin-right: 4px; /* Reduce to 2px for ultra-tight spacing */
+        padding: 6px 8px; /* Tighter internal space (optional) */
+    }
+
+        .export-container .btn:last-child {
+            margin-right: 0; /* Remove margin from last button */
+        }
+
+
+.card-header-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.left-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.right-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.entries-dropdown {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+    .entries-dropdown select {
+        padding: 5px 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+@media (max-width: 768px) {
+    .card-header-controls {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .left-controls,
+    .right-controls {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+
+/* CSS For ViewDetailsPG */
+
+.vendor-detail-card {
+    border: none;
+    box-shadow: 0 8px 25px rgba(142, 45, 226, 0.1);
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.detail-row {
+    padding: 12px 0;
+    border-bottom: 1px solid #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+    .detail-row:hover {
+        background: linear-gradient(135deg, rgba(142, 45, 226, 0.05) 0%, rgba(74, 0, 224, 0.05) 100%);
+        border-radius: 8px;
+        padding-left: 10px;
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+.detail-label {
+    font-weight: 600;
+    color: #4a00e0;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-value {
+    color: #2c3e50;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.location-highlight {
+    background: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);
+    color: #8e2de2; /* Fallback color */
+    font-weight: 700;
+    font-size: 16px;
+    -webkit-background-clip:text;
+    -webkit-text-fill-color: transparent;
+}
+
+.map-container {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(142, 45, 226, 0.2);
+    border: 3px solid transparent;
+    background: linear-gradient(white, white) padding-box, linear-gradient(135deg, #8e2de2, #4a00e0) border-box;
+}
+
+.vendor-icon {
+    background: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    box-shadow: 0 4px 15px rgba(142, 45, 226, 0.3);
+}
+
+
+
+/* Enhanced date input styling */
+.date-input-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 80px;
+    position: relative;
+}
+
+    .date-input-group label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #495057;
+    }
+
+    .date-input-group input[readonly] {
+        background-color: #fff;
+        cursor: pointer;
+        padding: 10px 12px;
+        border: 2px solid #ced4da;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+        .date-input-group input[readonly]:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            outline: none;
+        }
+
+        .date-input-group input[readonly]:hover {
+            border-color: #667eea;
+        }
+
+    /* Add calendar icon */
+    .date-input-group::after {
+        content: '\f073';
+        font-family: 'Font Awesome 5 Free';
+        font-weight: 900;
+        position: absolute;
+        right: 12px;
+        top: 32px;
+        color: #6c757d;
+        pointer-events: none;
+    }
+
+/* Loading state */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 40%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .daterangepicker {
+        left: 0 !important;
+        right: 0 !important;
+        width: 30% !important;
+        max-width: none !important;
+    }
+
+    .date-input-group {
+        min-width: auto;
+        width: 40%;
+    }
+
+    .export-icon-btn img {
+        width: 20px;
+        height: 20px;
+        vertical-align: middle;
+    }
+
+    .daterange-btn {
+        min-width: 200px;
+        text-align: left;
+    }
+
+        .daterange-btn span {
+            font-weight: normal;
+        }
+
+    .view-btn {
+        background-color: #0dcaf0;
+        color: white;
+    }
+
+        .view-btn:hover {
+            background-color: lightgray !important;
+            color: #0dcaf0;
+        }
+
+    .thead th {
+        background-color: darkgray !important;
+        color: white !important;
+        font-weight: 600;
+        border: none !important;
+        padding: 15px 7px !important;
+    }
+
+    .tbody td {
+        color: black !important;
+        font-weight: 600;
+        border: none !important;
+        padding: 15px 7px !important;
+    }
+
+    .daterange-btn {
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+
+        .daterange-btn i {
+            margin-right: 8px;
+        }
+}

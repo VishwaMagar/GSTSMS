@@ -1,0 +1,302 @@
+﻿.chart-box {
+    background-color: #fff;
+    border-radius: 12px;
+    padding-top: 1px;
+    margin-bottom: 1.5rem;
+    margin-top: 10px !important;
+    border: 2px solid var(--footer-color);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+div.chart-box {
+    margin-top: 10px !important;
+}
+.chart-area {
+    height: 400px;
+}
+
+.custom-modal-lg {
+    max-width: 1000px;
+ 
+}
+#maindiv {
+    margin-top: 20px;
+}
+
+#parkingSlotMatrix {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    height:260px;
+    margin-top: 15px;
+}
+
+.SlotCardMain {
+    width: 90px !important;
+    height: 70px !important;
+    box-sizing: border-box; /* यामुळे padding height मध्ये धरली जाते */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    font-size: 13px;
+    padding: 8px;
+    margin: 2px !important;
+    border-radius: 12px;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+    /* Optional: Hover effect ठेवल्यास scale वापरू नका */
+.SlotCardMain:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+
+
+#parkingSlotMatrix > div {
+    font-weight: bold;
+}
+
+
+#parkingSlotMatrixWrapper {
+    background-color: #f8f9fa;
+}
+/* Parking Slot Matrix Container */
+#parkingSlotMatrixWrapper {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+/* Slot Card Styles */
+/*.slot-card {
+   
+}*/
+
+.SlotCardMain:hover {
+    transform: scale(1.07);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+    /* Slot Icons */
+.SlotCardMain i {
+    font-size: 20px;
+    margin-bottom: 4px;
+}
+/* Status Classes */
+.myallocated {
+    background: linear-gradient(135deg, #28a745, #a0f3b2); /* Green Gradient */
+}
+
+.myunalocated {
+    background: linear-gradient(135deg, #dc3545, #f8a2a2); /* Red Gradient */
+}
+
+.lagendsp {
+    display: inline-block !important;
+    width: 20px !important;
+    height: 20px !important;
+    border-radius: 4px !important;
+    margin-right: 5px !important;
+}
+
+
+
+.slotmain {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.slotcardSP {
+    width: 48px;
+    height: 48px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    cursor: default;
+}
+
+    .slotcardSP.allocated {
+        background: #28a745;
+        color: white;
+    }
+
+    .slotcardSP.unallocated {
+        background: #e0e0e0;
+        color: #444;
+    }
+#bikeParkingSlotMatrix {
+    max-height: 300px;
+    overflow-y: auto;
+    width: 350px;
+    margin: 50px 0 50px 70px;
+}
+
+#carParkingSlotMatrix {
+    max-height: 300px;
+    overflow-y: auto;
+    width: 350px;
+    margin: 50px 0 50px 70px;
+}
+
+
+/* Legend Styles */
+.legend-container {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-top: 10px;
+}
+
+    .legend-container span {
+        display: flex;
+        align-items: center;
+        font-size: 14px;
+        gap: 5px;
+    }
+
+.legend-box {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+}
+
+    .legend-box.allocated {
+        background-color: #1DFD4E;
+    }
+
+    .legend-box.unallocated {
+        background-color: #DB12BD;
+    }
+
+/* Section Titles */
+.section-title h6 {
+    font-weight: 600;
+    font-size: 16px;
+    color: #343a40;
+    margin: 0;
+}
+
+.modal-title
+{
+    text-align:center;
+}
+
+table th, table td {
+    padding: 15px 20px;
+}
+
+table th {
+    background: linear-gradient(45deg, #e0f7fa, #b2ebf2);
+    color: #004d66;
+    text-align: center;
+    font-weight: bold;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+table {
+   
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+    table tbody tr:hover {
+        background-color: #f9f9f9;
+    }
+
+    table td, table th {
+        font-size: 14px;
+        border: 1px solid #ddd;
+    }
+
+#maintenance-table {
+    width: 100%;
+}
+
+
+#bikeParkingSlotMatrix {
+    max-height: 300px;
+    overflow-y: auto;
+    width: 250px;
+    margin: 50px 0 0 250px;
+}
+#carParkingSlotMatrix {
+    max-height: 300px;
+    overflow-y: auto;
+    width: 250px;
+    margin: 50px 0 0 200px;
+}
+.section .section-title {
+    font-size: 18px;
+    color: #191d21;
+    font-weight: 600;
+    position: relative;
+    margin: 30px 0 25px 250px;
+}
+#complainttable
+{
+    width:100%;
+}
+
+
+.data-table-sb th {
+    background: linear-gradient(45deg, #e0f7fa, #b2ebf2);
+    color: #004d66;
+    text-align: center;
+    font-weight: bold;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.data-table-sb {
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+    .data-table-sb tbody tr:hover {
+        background-color: #f9f9f9;
+    }
+
+    .data-table-sb td,
+    .data-table-sb th {
+        font-size: 14px;
+        border: 1px solid #ddd;
+    }
+
+
+/* Button styles */
+button.btn-secondary {
+    background-color: white !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 5px !important;
+}
+
+    button.btn-secondary:hover {
+        background-color: #f0f0f0 !important;
+    }
+
+
+table.dataTable tr.odd.selected,
+table.dataTable tr.even.selected,
+table.dataTable tr.selected {
+    background-color: transparent !important;
+    color: gray;
+}
+
+
+table.dataTable.display tbody > tr.odd.selected > .sorting_1,
+table.dataTable.display tbody > tr.selected > .sorting_1 {
+    background-color: transparent !important;
+}
+
+
+table.dataTable tbody tr:hover {
+    background-color: transparent !important;
+    color: gray;
+}

@@ -1,0 +1,499 @@
+﻿@model GSTSMSLibrary.Secretary.Secretary
+
+@{
+    ViewBag.Title = "ProfilePC";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var profileExists = !string.IsNullOrEmpty(Model.ProfilePic) && !Model.ProfilePic.Contains("default-profile.png");
+}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link href="~/Content/css/Policy Terms&Condition and Profile settingPC.css" rel="stylesheet" />
+
+<div class="container-fluid">
+    <div class="profile-card">
+        <!-- Background Image Section with Title -->
+        <div class="background-section" style="display: flex; justify-content: center; align-items: center;">
+            <h2>Update Profile</h2>
+        </div>
+
+        <!-- Profile Picture Section - Positioned over the line -->
+        <div class="profile-section">
+            <div class="profile-pic-container">
+                <img id="previewImg" src="@Url.Content(Model.ProfilePic ?? "")" class="profile-pic" style="display:@(profileExists ? "block" : "none");" alt="Profile Picture" />
+                <div id="initialLetter" class="initial-placeholder" style="display:@(profileExists ? "none" : "flex");"></div>
+
+                <div class="upload-btn dropdown">
+                    <button class="btn" type="button" id="uploadDropdownBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa-solid fa-user-pen"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="uploadDropdownBtn">
+                        <a class="dropdown-item" href="#" id="addPictureBtn"><i class="fa-solid fa-camera mr-2"></i> Add Picture </a>
+                        @if (profileExists)
+                        {
+                            <a class="dropdown-item text-danger" href="#" id="removePictureBtn"><i class="fas fa-trash mr-2"></i> Remove Current</a>
+                        }
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#" id="selectGenderAvatarBtn"><i class="fas fa-user-circle mr-2"></i> Select Avatar</a>
+                       
+                    </div>
+                </div>
+
+                <!-- Avatar Selection Dropdowns -->
+                <div id="genderSelectionDropdown" style="display: none;">
+                    <div class="d-flex justify-content-around mb-2">
+                        <button type="button" class="btn btn-primary btn-sm" id="boyAvatarBtn"><i class="fas fa-male mr-2"></i> Boy </button>
+                        <button type="button" class="btn btn-info btn-sm" id="girlAvatarBtn"><i class="fas fa-female mr-2"></i> Girl </button>
+                    </div>
+                    <div id="avatarGrid" class="avatar-grid"></div>
+                    <div class="avatar-modal-footer">
+                        <button type="button" class="btn btn-success mt-2" id="confirmAvatarSelection" disabled>Add Avatar</button>
+                    </div>
+                </div>
+
+               
+            </div>
+        </div>
+
+        <!-- Horizontal Divider Line -->
+        <div class="horizontal-divider"></div>
+
+        <!-- Form Content Section -->
+        <div class="form-content">
+            @using (Html.BeginForm("ProfilePC", "Secretary", FormMethod.Post, new { enctype = "multipart/form-data", onsubmit = "return validateForm();" }))
+            {
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="AvatarUrl" id="AvatarUrl" value="@Model.ProfilePic" />
+                <input type="file" name="ProfilePic" id="ProfilePic" accept="image/*" style="display: none;" />
+
+                <div class="form-section">
+                    <!-- Full Name Row -->
+                    <div class="form-row-horizontal">
+                        <label class="form-label-horizontal" for="StaffName">
+                            Full Name
+                        </label>
+                        <div class="form-input-horizontal">
+                            <div class="input-with-icon">
+                                <input type="text" name="StaffName" id="StaffName" class="form-control-with-icon" value="@Model.StaffName" maxlength="50" oninput="validateNameLive(); updateInitial();" required />
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <div id="nameError" class="error-message-horizontal">Only letters and spaces allowed (Max 50 characters).</div>
+                        </div>
+                    </div>
+
+                    <!-- Email Row -->
+                    <div class="form-row-horizontal">
+                        <label class="form-label-horizontal" for="Email">
+                            Email Address
+                        </label>
+                        <div class="form-input-horizontal">
+                            <div class="input-with-icon">
+                                <input type="email" name="Email" id="Email" class="form-control-with-icon form-control-readonly" value="@Model.Email" readonly />
+                                <i class="fa-solid fa-envelope"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Password Row -->
+                    <div class="form-row-horizontal">
+                        <label class="form-label-horizontal" for="DisplayedOldPassword">
+                            Current Password
+                        </label>
+                        <div class="form-input-horizontal">
+                            <div class="password-container-horizontal">
+                                <input type="password" id="DisplayedOldPassword" class="form-control-with-icon password-field" value="@Model.Password" readonly style="cursor: pointer;" />
+
+                                <span class="toggle-password" onclick="togglePassword('DisplayedOldPassword', 'eyeIconDisplayedOld')">
+                                    <i class="fa-solid fa-eye-slash" id="eyeIconDisplayedOld"></i>
+                                </span>
+                            </div>
+                            <small class="form-text text-muted" style="margin-left: 3rem; margin-top: 0.5rem;">
+                                <i class="fas fa-info-circle mr-1"></i>Click the password field to change your password.
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Password Change Section - Initially Hidden -->
+                    <div id="passwordChangeSection" class="password-change-section">
+                        <!-- New Password Row -->
+                        <div class="form-row-horizontal">
+                            <label class="form-label-horizontal" for="NewPassword">
+                                New Password
+                            </label>
+                            <div class="form-input-horizontal">
+                                <div class="password-container-horizontal">
+                                    <input type="password" name="NewPassword" id="NewPassword" class="form-control-with-icon password-field" autocomplete="new-password" oninput="validatePasswordFields()" />
+
+                                    <span class="toggle-password" onclick="togglePassword('NewPassword', 'eyeIconNew')">
+                                        <i class="fa-solid fa-eye-slash" id="eyeIconNew"></i>
+                                    </span>
+                                </div>
+                                <div id="newPasswordError" class="error-message-horizontal">
+                                    Must be 8+ characters with uppercase, lowercase, digit, and special character.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Confirm Password Row -->
+                        <div class="form-row-horizontal">
+                            <label class="form-label-horizontal" for="ConfirmPassword">
+                                Confirm Password
+                            </label>
+                            <div class="form-input-horizontal">
+                                <div class="password-container-horizontal">
+                                    <input type="password" name="ConfirmPassword" id="ConfirmPassword" class="form-control-with-icon password-field" autocomplete="new-password" oninput="validatePasswordFields()" />
+
+                                    <span class="toggle-password" onclick="togglePassword('ConfirmPassword', 'eyeIconConfirm')">
+                                        <i class="fa-solid fa-eye-slash" id="eyeIconConfirm"></i>
+                                    </span>
+                                </div>
+                                <div id="confirmPasswordError" class="error-message-horizontal">New password and confirm password must match.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="btn-wrapper">
+                        <button type="submit" class="btn-gradient">
+                            <i class="fa-regular fa-bookmark mr-3"></i> Update Profile
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        let formTouched = false;
+        let selectedAvatarUrl = null;
+        let passwordChangeInitiated = false;
+
+        $(document).ready(function () {
+            // Mark form as touched if any input other than password fields (initially read-only) is changed
+            $("input:not(#DisplayedOldPassword, #NewPassword, #ConfirmPassword)").on("focus click input change", function () {
+                formTouched = true;
+            });
+
+            var successMessage = '@TempData["SuccessMessage"]';
+            var errorMessage = '@TempData["ErrorMessage"]';
+
+            if (successMessage) {
+                Swal.fire({
+                    title: 'Success!',
+                    text: successMessage,
+                    icon: 'success',
+                    showConfirmButton: false,
+                    timer: 3000
+                }).then(() => {
+                    // Optional: actions after success message closes
+                });
+            }
+
+            if (errorMessage) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: errorMessage,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+
+            // Handler for "Select Avatar" (Boy/Girl)
+            $('#selectGenderAvatarBtn').on('click', function (e) {
+                e.preventDefault();
+                $('#genderSelectionDropdown').toggle();
+                $('#flaticonSelectionDropdown').hide(); // Hide Flaticon section
+                $('#avatarGrid').empty();
+                $('#confirmAvatarSelection').prop('disabled', true);
+                selectedAvatarUrl = null;
+                $('.btn-gender').removeClass('active');
+                $('.dropdown-menu').removeClass('show'); // Hide dropdown after selection
+            });
+
+            // NEW: Handler for "Select Flaticon Avatar"
+            $('#selectFlaticonAvatarBtn').on('click', function (e) {
+                e.preventDefault();
+                $('#flaticonSelectionDropdown').toggle();
+                $('#genderSelectionDropdown').hide(); // Hide gender section
+                $('#flaticonAvatarGrid').empty(); // Clear previous icons
+                $('#confirmFlaticonSelection').prop('disabled', true);
+                selectedAvatarUrl = null;
+                loadFlaticonAvatars(); // Load simulated Flaticon avatars
+                $('.dropdown-menu').removeClass('show'); // Hide dropdown after selection
+            });
+
+            // Close dropdowns when clicking outside
+            $(document).on('click', function (e) {
+                if (!$(e.target).closest('.dropdown').length) {
+                    $('.dropdown-menu').removeClass('show');
+                }
+                if (!$(e.target).closest('#genderSelectionDropdown').length && !$(e.target).closest('#selectGenderAvatarBtn').length) {
+                    $('#genderSelectionDropdown').hide();
+                    $('.avatar-option').removeClass('selected');
+                    $('#confirmAvatarSelection').prop('disabled', true);
+                }
+                // NEW: Close Flaticon dropdown
+                if (!$(e.target).closest('#flaticonSelectionDropdown').length && !$(e.target).closest('#selectFlaticonAvatarBtn').length) {
+                    $('#flaticonSelectionDropdown').hide();
+                    $('.flaticon-avatar-option').removeClass('selected');
+                    $('#confirmFlaticonSelection').prop('disabled', true);
+                }
+            });
+
+            // Existing: Boy/Girl Avatar loading and selection
+            $('#boyAvatarBtn').on('click', function () {
+                loadAvatars('boy');
+                $(this).addClass('active').siblings().removeClass('active');
+            });
+
+            $('#girlAvatarBtn').on('click', function () {
+                loadAvatars('girl');
+                $(this).addClass('active').siblings().removeClass('active');
+            });
+
+            $('#avatarGrid').on('click', '.avatar-option', function () {
+                $('.avatar-option').removeClass('selected');
+                $(this).addClass('selected');
+                selectedAvatarUrl = $(this).data('avatar-url');
+                $('#confirmAvatarSelection').prop('disabled', false);
+            });
+
+            $('#confirmAvatarSelection').on('click', function () {
+                if (selectedAvatarUrl) {
+                    $('#previewImg').attr('src', selectedAvatarUrl).css('display', 'block');
+                    $('#initialLetter').css('display', 'none');
+                    $('#AvatarUrl').val(selectedAvatarUrl);
+                    $('#ProfilePic').val('');
+                    $('#genderSelectionDropdown').hide();
+                    $('.avatar-option').removeClass('selected');
+                    $('#confirmAvatarSelection').prop('disabled', true);
+                    formTouched = true;
+                }
+            });
+
+            // NEW: Flaticon Avatar selection and confirmation
+            $('#flaticonAvatarGrid').on('click', '.flaticon-avatar-option', function () {
+                $('.flaticon-avatar-option').removeClass('selected');
+                $(this).addClass('selected');
+                selectedAvatarUrl = $(this).data('avatar-url'); // Note: Reusing selectedAvatarUrl
+                $('#confirmFlaticonSelection').prop('disabled', false);
+            });
+
+            $('#confirmFlaticonSelection').on('click', function () {
+                if (selectedAvatarUrl) {
+                    $('#previewImg').attr('src', selectedAvatarUrl).css('display', 'block');
+                    $('#initialLetter').css('display', 'none');
+                    $('#AvatarUrl').val(selectedAvatarUrl); // Set the URL for submission
+                    $('#ProfilePic').val(''); // Clear any pending file upload
+                    $('#flaticonSelectionDropdown').hide();
+                    $('.flaticon-avatar-option').removeClass('selected');
+                    $('#confirmFlaticonSelection').prop('disabled', true);
+                    formTouched = true;
+                }
+            });
+
+
+            $('#addPictureBtn').on('click', function (e) {
+                e.preventDefault();
+                $('#ProfilePic').click();
+                $('#genderSelectionDropdown').hide(); // Hide gender section
+                $('#flaticonSelectionDropdown').hide(); // Hide Flaticon section
+                $('.dropdown-menu').removeClass('show'); // Hide dropdown after selection
+            });
+
+            $('#ProfilePic').on('change', function (e) {
+                const file = e.target.files[0];
+                if (file) {
+                    $('#previewImg').attr('src', URL.createObjectURL(file)).css('display', 'block');
+                    $('#initialLetter').css('display', 'none');
+                    $('#AvatarUrl').val('');
+                }
+                formTouched = true;
+            });
+
+            $('#removePictureBtn').on('click', function (e) {
+                e.preventDefault();
+
+                Swal.fire({
+                    title: 'Are you sure you want to remove your profile picture?',
+                    text: 'You will revert to showing your name initials or a default image.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, remove it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post('@Url.Action("RemoveProfilePic", "Secretary")', function (response) {
+                            if (response.success) {
+                                Swal.fire('Removed!', response.message, 'success').then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Error!', response.message, 'error');
+                            }
+                        }).fail(function () {
+                            Swal.fire('Error!', 'Could not connect to the server to remove picture.', 'error');
+                        });
+                    }
+                });
+                $('.dropdown-menu').removeClass('show');
+            });
+
+            $('#StaffName').on('input', validateNameLive);
+
+            $('#DisplayedOldPassword').on('click', function () {
+                $('#passwordChangeSection').show();
+                passwordChangeInitiated = true;
+                formTouched = true;
+                $('#NewPassword').focus();
+            });
+
+            $('#NewPassword, #ConfirmPassword').on('input', validatePasswordFields);
+
+            if (!(@profileExists.ToString().ToLower())) {
+                updateInitialLetterOnly();
+            }
+        });
+
+        function loadAvatars(gender) {
+            const avatarGrid = $('#avatarGrid');
+            avatarGrid.empty();
+            $('#confirmAvatarSelection').prop('disabled', true);
+
+            const baseUrl = 'https://avatar.iran.liara.run/public/';
+            const numAvatars = 9;
+
+            for (let i = 1; i <= numAvatars; i++) {
+                const avatarUrl = `${baseUrl}${gender}?username=${gender}${i}`;
+                const img = `<img src="${avatarUrl}" class="avatar-option" alt="${gender} Avatar" data-avatar-url="${avatarUrl}" />`;
+                avatarGrid.append(img);
+            }
+        }
+
+
+
+        function togglePassword(fieldId, iconId) {
+            const passwordInput = document.getElementById(fieldId);
+            const eyeIcon = document.getElementById(iconId);
+
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                eyeIcon.classList.remove("fa-eye-slash");
+                eyeIcon.classList.add("fa-eye");
+            } else {
+                passwordInput.type = "password";
+                eyeIcon.classList.remove("fa-eye");
+                eyeIcon.classList.add("fa-eye-slash");
+            }
+        }
+
+        function validateNameLive() {
+            const nameInput = document.getElementById("StaffName");
+            const nameError = document.getElementById("nameError");
+            const isValid = /^[A-Za-z\s]{1,50}$/.test(nameInput.value);
+            nameError.style.display = isValid ? "none" : "block";
+            return isValid;
+        }
+
+        function validatePasswordFields() {
+            const newPassword = document.getElementById("NewPassword").value;
+            const confirmPassword = document.getElementById("ConfirmPassword").value;
+
+            const newPasswordError = document.getElementById("newPasswordError");
+            const confirmPasswordError = document.getElementById("confirmPasswordError");
+
+            let isValidNewPassword = true;
+            let isConfirmPasswordMatch = true;
+
+            if (passwordChangeInitiated) {
+                isValidNewPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d\s]).{8,}$/.test(newPassword); // Corrected regex for special char
+                if (!isValidNewPassword) {
+                    newPasswordError.textContent = "Must be 8+ characters with uppercase, lowercase, digit, and special character.";
+                    newPasswordError.style.display = "block";
+                } else {
+                    newPasswordError.style.display = "none";
+                }
+
+                isConfirmPasswordMatch = (newPassword === confirmPassword);
+                if (!isConfirmPasswordMatch) {
+                    confirmPasswordError.textContent = "New password and confirm password must match.";
+                    confirmPasswordError.style.display = "block";
+                } else {
+                    confirmPasswordError.style.display = "none";
+                }
+            } else {
+                newPasswordError.style.display = "none";
+                confirmPasswordError.style.display = "none";
+            }
+
+            return isValidNewPassword && isConfirmPasswordMatch;
+        }
+
+        function updateInitialLetterOnly() {
+            const nameInput = document.getElementById("StaffName");
+            const initialDiv = document.getElementById("initialLetter");
+            const name = nameInput.value.trim();
+
+            if (name.length > 0) {
+                const firstLetter = name.charAt(0).toUpperCase();
+                initialDiv.textContent = firstLetter;
+
+                const colors = ["#29abe2", "#f0ad4e", "#8e44ad", "#27ae60", "#d35400"];
+                const colorIndex = firstLetter.charCodeAt(0) % colors.length;
+                initialDiv.style.backgroundColor = colors[colorIndex];
+                initialDiv.style.display = "flex";
+            } else {
+                initialDiv.textContent = "";
+                initialDiv.style.backgroundColor = "#6c757d";
+                initialDiv.style.display = "flex";
+            }
+        }
+
+        function validateForm() {
+            let nameValid = validateNameLive();
+            let passwordFieldsValid = true;
+
+            const passwordChangeAttempted = passwordChangeInitiated;
+
+            if (passwordChangeAttempted) {
+                passwordFieldsValid = validatePasswordFields();
+            }
+
+            if (!formTouched && !passwordChangeAttempted) {
+                Swal.fire("No Changes Detected", "Please make changes before saving.", "info");
+                return false;
+            }
+
+            if (!nameValid) {
+                Swal.fire("Validation Error", "Please correct your full name.", "error");
+                return false;
+            }
+
+            if (passwordChangeAttempted && !passwordFieldsValid) {
+                Swal.fire("Validation Error", "Please correct the errors in the password fields.", "error");
+                return false;
+            }
+
+            const newPassword = document.getElementById("NewPassword").value;
+            const confirmPassword = document.getElementById("ConfirmPassword").value;
+
+            if (passwordChangeAttempted && (newPassword.length === 0 || confirmPassword.length === 0)) {
+                Swal.fire("Validation Error", "To change your password, please fill in New Password and Confirm New Password.", "error");
+                validatePasswordFields(); // Re-run to show specific errors
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+}

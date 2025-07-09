@@ -1,0 +1,183 @@
+﻿@{
+    ViewBag.Title = "GetCalendarSJ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<link href="~/Content/css/CalendarSJ.css" rel="stylesheet" />
+
+
+<div class="main-content">
+    <div class="calendar-wrapper">
+        <div id="calendar"></div>
+    </div>
+</div>
+
+<div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="eventModalContent">
+            <div class="modal-dialog custom-small-modal">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="loadingSpinner" class="text-center mt-3">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script src="~/Content/js/index.global.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarEl = document.getElementById('calendar');
+        if (!calendarEl) return;
+
+        var currentYear = new Date().getFullYear();
+        var yearsToFetch = [currentYear - 2, currentYear - 1, currentYear, currentYear + 1, currentYear + 2];
+        var apiUrl = "https://calendarific.com/api/v2/holidays?&api_key=CIiIHrvbDfqiurPHjkwu4QIoqMGx7s7G&country=IN&year=";
+        var allHolidays = [];
+
+        function fetchHolidays(year) {
+            return $.ajax({
+                url: apiUrl + year,
+                type: 'GET',
+                dataType: 'json'
+            }).then(function (response) {
+                if (response?.response?.holidays) {
+                    allHolidays = allHolidays.concat(response.response.holidays);
+                }
+            }).catch(function () {
+                console.error('Failed to fetch holidays for year ' + year);
+            });
+        }
+
+        var eventsData = @Html.Raw(ViewBag.CalendarEvents ?? "[]");
+
+        var updatedEventsData = eventsData.map(event => {
+            if (event.type === 'Meeting') {
+                event.title = "📅 " + event.title;
+                event.backgroundColor = '#2c8aff'; // This will be used by FullCalendar
+                event.borderColor = '#2c8aff';
+            } else if (event.type === 'Event') {
+                event.title = "🎉 " + event.title;
+                event.backgroundColor = '#17a2b8'; // This will be used by FullCalendar
+                event.borderColor = '#17a2b8';
+            }
+            return event;
+        });
+
+        $('#loadingSpinner').show();
+
+        Promise.all(yearsToFetch.map(fetchHolidays)).then(function () {
+            $('#loadingSpinner').hide();
+
+            var holidayEvents = allHolidays.map(function (holiday) {
+                return {
+                    title: "🎈 " + holiday.name,
+                    start: holiday.date.iso,
+                    description: holiday.description || 'No description available',
+                    type: 'Holiday',
+                    backgroundColor: '#f0ad4e',
+                    borderColor: '#f0ad4e'
+                };
+            });
+
+            var allEventsData = updatedEventsData.concat(holidayEvents);
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                height: 'auto',
+                aspectRatio: 1.5,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
+                },
+                initialView: 'dayGridMonth',
+                navLinks: true,
+                editable: false,
+                selectable: false,
+                events: allEventsData,
+                eventDisplay: 'block',
+                eventTextColor: 'var(--event-text-color)', // Use CSS variable
+                windowResize: function () {
+                    calendar.updateSize();
+                },
+                eventClick: function (info) {
+                    const event = info.event;
+                    const eventType = event.extendedProps.type;
+                    const eventTitle = event.title;
+                    const eventStart = event.start.toLocaleDateString('en-IN', {
+                        year: 'numeric', month: 'long', day: 'numeric',
+                        hour: '2-digit', minute: '2-digit'
+                    });
+                    const eventEnd = event.end ? event.end.toLocaleDateString('en-IN', {
+                        year: 'numeric', month: 'long', day: 'numeric',
+                        hour: '2-digit', minute: '2-digit'
+                    }) : null;
+                    const location = event.extendedProps.location || 'N/A';
+                    const subType = event.extendedProps.subType || 'N/A';
+                    const description = event.extendedProps.description || 'N/A';
+                    const agenda = event.extendedProps.meetingAgenda || 'N/A';
+
+                    if (eventType === 'Holiday') {
+                        const modalHtml = `
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title font-weight-bold">${eventTitle}</h5>
+                                <button type="button" class="close custom-close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong>Description:</strong> ${description}</p>
+                                <p><strong>Date:</strong> ${eventStart}</p>
+                            </div>
+                        `;
+                        $('#eventModalContent').html(modalHtml);
+                        $('#eventModal').modal('show');
+                    } else {
+                        const modalContent = `
+                            <div class="modal-header bg-${eventType === 'Meeting' ? 'primary' : 'info'} text-white">
+                                <h5 class="modal-title font-weight-bold">${eventTitle}</h5>
+                                <button type="button" class="close custom-close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <dl class="row">
+                                    <dt class="col-sm-3">Type:</dt>
+                                    <dd class="col-sm-9">${eventType}</dd>
+                                    <dt class="col-sm-3">Start Time:</dt>
+                                    <dd class="col-sm-9">${eventStart}</dd>
+                                    ${eventEnd ? `
+                                        <dt class="col-sm-3">End Time:</dt>
+                                        <dd class="col-sm-9">${eventEnd}</dd>
+                                    ` : ''}
+                                    <dt class="col-sm-3">Location:</dt>
+                                    <dd class="col-sm-9">${location}</dd>
+                                    ${eventType === 'Event' ? `
+                                        <dt class="col-sm-3">Description:</dt>
+                                        <dd class="col-sm-9">${description}</dd>
+                                    ` : `
+                                        <dt class="col-sm-3">Agenda:</dt>
+                                        <dd class="col-sm-9">${agenda}</dd>
+                                    `}
+                                </dl>
+                            </div>
+                        `;
+                        $('#eventModalContent').html(modalContent);
+                        $('#eventModal').modal('show');
+                    }
+                }
+            });
+
+            calendar.render();
+        });
+    });
+</script>

@@ -1,0 +1,288 @@
+﻿@{
+    ViewBag.Title = "Maintenance Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- CSS & Required Libraries -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
+<link href="~/Content/modules/datatables/datatables.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link href="~/Content/css/StyleCSSSP.css" rel="stylesheet" />
+
+
+<div class="main-content">
+    <section class="section">
+
+
+        <!-- Filters -->
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label class="form-label">Select Range:</label>
+                <div class="input-group">
+                    <button class="btn btn-outline-primary daterange-btn"><i class="fa fa-calendar"></i> <span>Select</span></button>
+                </div>
+                <input type="hidden" id="fromDate">
+                <input type="hidden" id="toDate">
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card border-primary shadow-sm p-3">
+                    <h5>Total Maintenance</h5>
+                    <h3 id="card-total">₹0</h3>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-success shadow-sm p-3">
+                    <h5>Paid Amount</h5>
+                    <h3 id="card-paid">₹0</h3>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-danger shadow-sm p-3">
+                    <h5>Unpaid Amount</h5>
+                    <h3 id="card-unpaid">₹0</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card p-3 shadow-sm">
+                    <h6>Payment Progress</h6>
+                    <div class="progress" style="height: 25px;">
+                        <div id="progress-paid" class="progress-bar bg-success" style="width:0%">0%</div>
+                        <div id="progress-unpaid" class="progress-bar bg-danger" style="width:0%">0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Combo Chart -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card p-3 shadow-sm">
+                    <div id="maintenanceComboChart" style="height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+</div>
+@*Maintenance Modal*@
+<div class="modal fade" id="MaintenanceModal" tabindex="-1" role="dialog" aria-labelledby="MaintenanceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" id="MaintenanceListContainer"></div>
+    </div>
+</div>
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="~/Content/modules/bootstrap-daterangepicker/daterangepicker.js"></script>
+
+<script>
+    $(function () {
+        initializeDatePicker();
+        loadMaintenanceReport();
+        $('#fromDate, #toDate').on('change', loadMaintenanceReport);
+    });
+
+    function initializeDatePicker() {
+        $('.daterange-btn').daterangepicker({
+            locale: { format: 'YYYY-MM-DD' },
+            startDate: moment().startOf('month'),
+            endDate: moment(),
+            ranges: {
+                'Today': [moment(), moment()],
+                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            }
+        }, function (s, e) {
+
+            var today = moment();
+
+            if (s.isAfter(e, 'day')) {
+                alert("From Date should not be after To Date.");
+                return;
+            }
+
+            if (e.isAfter(today, 'day')) {
+                alert("To Date cannot be a future date.");
+                return;
+            }
+            $('#fromDate').val(s.format('YYYY-MM-DD'));
+            $('#toDate').val(e.format('YYYY-MM-DD'));
+            $('.daterange-btn span').text(s.format('DD MMM YYYY') + ' - ' + e.format('DD MMM YYYY'));
+            loadMaintenanceReport();
+        });
+        // initial pick
+        const start = moment().startOf('month'), end = moment();
+        $('#fromDate').val(start.format('YYYY-MM-DD'));
+        $('#toDate').val(end.format('YYYY-MM-DD'));
+        $('.daterange-btn span').text(start.format('DD MMM YYYY') + ' - ' + end.format('DD MMM YYYY'));
+    }
+
+    function loadMaintenanceReport() {
+        const from = $('#fromDate').val(), to = $('#toDate').val();
+        $.ajax({
+            url: '/Secretary/GetMaintenanceDataSP',
+            data: { fromDate: from, toDate: to },
+            success: function (data) {
+                // Totals
+                const totalPaid = data.reduce((s, x) => s + +x.PaidMaintenance, 0);
+                const totalUnpaid = data.reduce((s, x) => s + +x.UnPaidMaintenance, 0);
+                const total = totalPaid + totalUnpaid;
+
+                $('#card-total').html('₹' + total.toLocaleString());
+                $('#card-paid').html('₹' + totalPaid.toLocaleString());
+                $('#card-unpaid').html('₹' + totalUnpaid.toLocaleString());
+
+                let percPaid = total ? Math.round(100 * totalPaid / total) : 0;
+                $('#progress-paid').css('width', percPaid + '%').text(percPaid + '%');
+                $('#progress-unpaid').css('width', (100 - percPaid) + '%').text((100 - percPaid) + '%');
+
+                // Combo chart
+                const cats = data.map(x => x.Dates);
+                const paidSeries = data.map(x => +x.PaidMaintenance);
+                const unpaidSeries = data.map(x => +x.UnPaidMaintenance);
+
+
+
+                Highcharts.chart('maintenanceComboChart', {
+                    accessibility: { enabled: false },
+                    chart: { type: 'column' },
+                    credits: { enabled: false },
+                    title: { text: 'Maintenance Report' },
+                    xAxis: {
+                        categories: cats,
+                        title: { text: 'Month' }
+                    },
+                    yAxis: {
+                        min: 0,
+                        title: { text: 'Amount (₹)' }
+                    },
+                    tooltip: {
+                        shared: true,
+                        useHTML: true,
+                        formatter: function () {
+                            let tooltip = `<b>${this.x}</b><br/>`;
+                            this.points.forEach(point => {
+                                const count = point.series.name === 'Paid Maintenance'
+                                    ? point.point.paidCount
+                                    : point.point.unpaidCount;
+                                tooltip += `
+                                <span style="color:${point.color}">\u25CF</span>
+                                ${point.series.name}: <b>₹${point.y}</b><br/>
+                                Members: <b>${count ?? '-'}</b><br/>
+                            `;
+                            });
+                            return tooltip;
+                        }
+                    },
+                    legend: { shadow: false },
+                    plotOptions: {
+                        column: {
+                            grouping: false,
+                            shadow: false,
+                            borderWidth: 0
+                        },
+                        series: {
+                            cursor: 'pointer',
+                            point: {
+                                events: {
+                                    click: function () {
+                                        const dateLabel = this.category;
+                                        const statusName = this.series.name;
+                                        loadMaintenanceDetails(dateLabel, statusName);
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    series: [
+                        {
+                            name: 'Paid Maintenance',
+                            data: data.map(x => ({
+                                y: x.PaidMaintenance,
+                                paidCount: x.PaidMembers
+                            })),
+                            color: {
+                                linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                                stops: [
+                                    [0, '#4facfe'],
+                                    [1, '#00f2fe']
+                                ]
+                            },
+                            pointPadding: 0.3,
+                            pointPlacement: -0.2
+                        },
+                        {
+                            name: 'Unpaid Maintenance',
+                            data: data.map(x => ({
+                                y: x.UnPaidMaintenance,
+                                unpaidCount: x.UnPaidMembers
+                            })),
+                            color: {
+                                linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                                stops: [
+                                    [0, '#f5576c'],
+                                    [1, '#f093fb']
+                                ]
+                            },
+                            pointPadding: 0.4,
+                            pointPlacement: -0.2
+                        }
+                    ]
+                });
+            }
+        });
+    }
+
+
+
+
+    function loadMaintenanceDetails(dateLabel, statusName) {
+
+
+        $.ajax({
+            url: '/Secretary/_MaintenanceListPartialSP',
+            type: 'GET',
+            data: {
+
+                dateLabel: dateLabel,
+                statusName: statusName
+            },
+            success: function (html) {
+
+
+                $("#MaintenanceListContainer").html(html);
+                $('#maintenancetitle').text(`List of ${statusName} `);
+                var modal = new bootstrap.Modal(document.getElementById('MaintenanceModal'));
+                modal.show();
+
+
+                if ($.fn.DataTable.isDataTable('#maintenance-table')) {
+                    $('#maintenance-table').DataTable().destroy();
+                }
+
+
+            }
+        });
+    }
+</script>

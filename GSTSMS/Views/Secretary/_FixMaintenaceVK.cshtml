@@ -1,0 +1,185 @@
+﻿
+@model GSTSMSLibrary.Secretary.Secretary
+
+@{
+    Layout = null;
+
+}
+
+<link href="~/Content/modules/datatables/datatables.css" rel="stylesheet" />
+<link href="~/Content/modules/datatables/datatables.min.css" rel="stylesheet" />
+<link href="~/Content/css/MaintenanceManagementVK.css" rel="stylesheet" />
+
+<section>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="mt-3">
+                        <h6>Selected Maintenance Total Amount:</h6>
+                        <h7>₹<span id="amount">Amount</span></h7>
+                        <ul id="selectedItems" class="list-group"></ul>
+                    </div>
+
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                   
+                        <table class="table table-bordered table-striped" id="myTables">
+                            <thead style="background-color:lightsteelblue; color:black;">
+                                <tr>
+                                    <th class="text-center  " width="15px">
+                                        <div class="custom-checkbox d-inline-block custom-control">
+                                            <input type="checkbox" class="custom-control-input" id="checkbox-alls">
+                                            <label for="checkbox-alls" class="custom-control-label">&nbsp;</label>
+                                        </div>
+                                    </th>
+                                    <th width="15px">SR No.</th>
+                                    <th>Maintenance Name</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{ 
+                                    int i = 0;
+                                }
+
+                                @foreach (var item in Model.List)
+                                 { i++;
+                                    <tr>
+                                        <td>
+                                            <div class="custom-checkbox text-center custom-control ">
+                                                <input type="checkbox" class="custom-control-input row-checkboxs  "
+                                                       id="checkboxs-@item.ID"
+                                                       data-id="@item.ID"
+                                                       data-amount="@item.Amount">
+                                                <label for="checkboxs-@item.ID" class="custom-control-label">&nbsp;</label>
+                                            </div>
+                                        </td>
+                                        <td>@i</td>
+                                        <td>@item.MaintanceNamae</td>
+                                        <td class="text-center">₹ @item.Amount</td>
+                                    </tr>
+                                 }
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</section>
+
+<script src="~/Content/modules/datatables/datatables.js"></script>
+<script src="~/Content/modules/datatables/datatables.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+
+        var table = $('#myTables').DataTable({
+            "columnDefs": [
+                { "targets": 1, "visible": true }
+            ]
+        });
+
+
+        $('#checkbox-alls').on('change', function () {
+            var isChecked = $(this).prop("checked");
+
+
+            table.rows().every(function () {
+                var row = this.node();
+                $(row).find(".row-checkboxs").prop("checked", isChecked);
+            });
+
+            updateSelectedItems();
+        });
+
+
+        $('#myTables').on('change', '.row-checkboxs', function () {
+            var total = table.rows().nodes().to$().find('.row-checkboxs').length;
+            var checked = table.rows().nodes().to$().find('.row-checkboxs:checked').length;
+
+            $('#checkbox-alls').prop('checked', total === checked);
+            updateSelectedItems();
+        });
+
+
+        function updateSelectedItems() {
+            var selectedList = [];
+            let amount = 0;
+
+
+            table.rows().every(function () {
+                var row = this.node();
+                var checkbox = $(row).find(".row-checkboxs");
+
+                if (checkbox.prop("checked")) {
+                    var amo = parseFloat(checkbox.data("amount")) || 0;
+                    var id = checkbox.data("id");
+                    selectedList.push("<li class='list-group-item'>ID: " + id + " - ₹" + amo.toFixed(2) + "</li>");
+                    amount += amo;
+                }
+            });
+
+            $("#amount").html(amount.toFixed(2));
+
+            if (selectedList.length === 0) {
+                $("#selectedItems").html("<li class='list-group-item text-muted'>No records selected.</li>");
+            } else {
+                $("#selectedItems").html(selectedList.join(""));
+            }
+            $("#selectedItems").hide();
+        }
+
+
+        updateSelectedItems();
+
+
+        $(document).on("click", ".btnDetails", function () {
+            var id = $(this).data("id");
+
+            $.ajax({
+                url: '@Url.Action("Details", "Secretary")',
+                type: 'GET',
+                data: { id: id },
+                success: function (data) {
+                    $("#myModalContent").html(data);
+                    $("#myModal").modal("show");
+                },
+                error: function () {
+                    alert("Error loading details.");
+                }
+            });
+        });
+
+
+        $(document).on("click", ".btnDelete", function () {
+            var id = $(this).data("id");
+
+            if (confirm("Are you sure you want to delete this record?")) {
+                $.ajax({
+                    url: '@Url.Action("DeleteMaintenance", "Secretary")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.success) {
+                            location.reload();
+                        } else {
+                            alert("Delete failed.");
+                        }
+                    },
+                    error: function () {
+                        alert("Error during deletion.");
+                    }
+                });
+            }
+        });
+
+    });
+
+
+</script>

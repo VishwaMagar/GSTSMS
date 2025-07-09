@@ -1,0 +1,178 @@
+﻿
+@model GSTSMSLibrary.AccountManager.AccountManager
+
+<div class="modal fade" id="ifscModal" tabindex="-1" role="dialog" aria-labelledby="ifscModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="ifscModalLabel">Bank Details</h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="hdnExpenseCode" value="@Model.ExpenseCode" />
+
+                <label>Vendor Name</label>
+                <input type="text" id="txtVendor" class="form-control" value="@Model.VendorName" readonly />
+
+                <label>IFSC Code</label>
+                <input type="text" id="txtIFSC" class="form-control" value="@Model.IFSCCode" readonly />
+
+                <label>Branch Name</label>
+                <input type="text" id="txtBranchName" class="form-control" readonly />
+
+                <label>Bank Name</label>
+                <input type="text" id="txtBankName" class="form-control" readonly />
+
+
+                @*<label>Amount</label>
+                    <input type="text" id="txtAmount" class="form-control" value="@Model.Amount" readonly />*@
+
+                <label>Amount</label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">₹</span>
+                    </div>
+                    <input type="text" id="txtAmount" class="form-control" value="@Model.Amount" readonly />
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="confirmAndPay()">Confirm & Pay</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section Styles {
+    <link href="~/Content/css/Expense.css" rel="stylesheet" />
+}
+
+
+
+
+<script>
+    $(document).ready(function () {
+        const ifsc = $("#txtIFSC").val();
+        if (ifsc && ifsc.length >= 5) {
+            $.ajax({
+                url: "https://ifsc.razorpay.com/" + ifsc,
+                type: "GET",
+                success: function (data) {
+                    $("#txtBankName").val(data.BANK || "Not found");
+                    $("#txtBranchName").val(data.BRANCH || "Not found");
+                },
+                error: function () {
+                    $("#txtBankName").val("N/A");
+                    $("#txtBranchName").val("N/A");
+                }
+            });
+        }
+    });
+
+    function confirmAndPay() {
+        var expenseCode = $("#hdnExpenseCode").val();
+        var amount = $("#txtAmount").val();
+
+        var options = {
+            "key": "rzp_test_tnu8pNChRc5VBE", // 🔑 Replace with your Razorpay Key
+            "amount": parseFloat(amount) * 100, // in paise
+            "currency": "INR",
+            "name": "GSTSMS Society",
+            "description": "Expense Payment - " + expenseCode,
+            "handler": function (response) {
+                $.ajax({
+                    url: '@Url.Action("SavePayment", "AccountManager")',
+                    type: 'POST',
+                    data: {
+                        expenseCode: expenseCode,
+                        paymentId: response.razorpay_payment_id
+                    },
+
+
+                    //success: function (res) {
+                    //    if (res.success) {
+                    //        iziToast.success({
+                    //            title: 'Success',
+                    //            timeout: 15000,
+                    //            message: 'Payment saved successfully!',
+                    //            position: 'topRight'
+                    //        });
+                    //        $("#ifscModal").modal("hide");
+                    //        setTimeout(() => {
+                    //            location.reload();
+                    //        }, 1000);
+                    //    } else {
+                    //        iziToast.error({
+                    //            title: 'Error',
+                    //            message: 'Payment save failed.',
+                    //            timeout: 7000,
+                    //            position: 'topRight'
+                    //        });
+                    //    }
+                    //},
+
+
+                    success: function (res) {
+                        $("#ifscModal").modal("hide"); // ✅ Close modal immediately
+
+                        if (res.success) {
+                            iziToast.success({
+                                title: 'Success',
+                                message: 'Payment saved successfully!',
+                                position: 'topRight',
+                                timeout: 20000, // ✅ Show toast for 20 seconds
+                                progressBar: true
+                            });
+
+                            setTimeout(() => {
+                                location.reload();
+                            }, 2500); // ✅ Slight delay for user to read toast before page reload
+                        } else {
+                            iziToast.error({
+                                title: 'Error',
+                                message: 'Payment save failed.',
+                                timeout: 15000,
+                                position: 'topRight',
+                                progressBar: true
+                            });
+                        }
+                    },
+                    error: function () {
+                        iziToast.error({
+                            title: 'Server Error',
+                            message: 'Something went wrong while saving payment.',
+                            timeout: 15000,
+                            position: 'topRight'
+                        });
+                    }
+                });
+            },
+            "prefill": {
+                "email": "user@example.com",
+                "contact": "9999999999"
+            },
+            "theme": {
+                "color": "#3399cc"
+            },
+            "method": {
+                "upi": true,
+                "netbanking": true
+            }
+        };
+
+        var rzp = new Razorpay(options);
+        rzp.open();
+    }
+
+
+
+
+
+</script>

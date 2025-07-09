@@ -1,0 +1,405 @@
+﻿@{
+    var role = Session["RoleName"]?.ToString(); // e.g., "Secretary", "Security"
+    var currentAction = ViewContext.RouteData.Values["Action"].ToString();
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+
+    <style>
+
+         .main-sidebar {
+             background-color: #ffffff !important;
+             background-image: none !important;
+             position: relative;
+             overflow-y: auto;
+             scrollbar-width: thin; /* Firefox */
+             scrollbar-color: #aaa transparent;
+             width: 240px;
+         }
+             /* Hide scrollbar visually but keep it usable */
+             .main-sidebar::-webkit-scrollbar {
+                 width: 6px;
+             }
+
+             .main-sidebar::-webkit-scrollbar-thumb {
+                 background-color: #888; /* Scrollbar color */
+                 border-radius: 4px;
+             }
+
+             .main-sidebar::-webkit-scrollbar-track {
+                 background: transparent;
+             }
+
+         .sidebar-scroll-container {
+             height: 100%;
+             overflow-y: auto;
+         }
+
+         .main-sidebar::before,
+         .main-sidebar::after {
+             content: '';
+             position: fixed;
+             top: 0;
+             left: 0;
+             width: 243px;
+             height: 100%;
+             pointer-events: none;
+             z-index: -2;
+         }
+
+         .main-sidebar::before {
+             display: flex;
+             background-image: url('../../content/img/backgroundimg/sidebar1.jpg');
+             background-size: cover;
+             background-position: center;
+             background-repeat: no-repeat;
+             opacity: 1;
+             filter: none;
+             background-color: #fff;
+             border-right: 1px solid rgba(0, 0, 0, 0.12);
+         }
+
+         .main-sidebar::after {
+             background: rgba(0, 0, 0, 0.4);
+             z-index: -1;
+         }
+
+         body.sidebar-mini .main-sidebar, /* base layer   */
+         body.sidebar-mini .main-sidebar::before, /* photo layer  */
+         body.sidebar-mini .main-sidebar::after { /* dark overlay */
+             background-image: none !important;
+         }
+
+             body.sidebar-mini .main-sidebar::before,
+             body.sidebar-mini .main-sidebar::after {
+                 /* if you prefer to remove the pseudo-elements
+        completely instead of just clearing the image */
+                 display: none !important;
+             }
+
+         /* pick any fallback colour you like for the icon bar */
+         body.sidebar-mini .main-sidebar {
+             background-color: black !important; /* e.g. plain white */
+         }
+         /* Default state for all menu items - transparent background */
+         .sidebar-menu .nav-link {
+             background-color: transparent !important;
+             color: #ffffff !important;
+             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+             padding: 0.5rem 1rem;
+             margin: 0 22px 0 8px;
+             font-weight: 500;
+             display: block;
+             width: 100%;
+             border-radius: 6px;
+             transition: all 0.3s ease;
+         }
+
+             /* Hover effect for non-active menu items */
+             .sidebar-menu .nav-link:hover {
+                 background-color: rgba(255, 255, 255, 0.2) !important;
+                 color: #ffffff !important;
+             }
+
+         /* Active parent menu - only highlight if it's the current active menu */
+         .sidebar-menu .dropdown.active > .nav-link {
+             background-color: #ffffff !important;
+             color: #000000 !important;
+             font-weight: bold;
+             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+         }
+
+         /* Submenu container */
+         .sidebar-menu .dropdown-menu {
+             background-color: rgba(255, 255, 255, 0.08) !important;
+             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+             border: none !important;
+             padding: 0.25rem 0 !important;
+             border-radius: 6px;
+             margin-left: 12px;
+             margin-top: 4px;
+             position: relative !important;
+             z-index: 1;
+             width: auto;
+             min-width: 200px;
+         }
+
+             /* Default state for all submenu items - transparent background */
+             .sidebar-menu .dropdown-menu .nav-link {
+                 background-color: transparent !important;
+                 color: #ffffff !important;
+                 text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+                 padding: 8px 20px;
+                 font-weight: 500;
+                 display: block;
+                 width: 100%;
+                 border-radius: 6px !important;
+                 box-shadow: none !important;
+                 border-left: none !important;
+                 margin: 2px 8px;
+                 transition: all 0.3s ease;
+             }
+
+                 /* Hover effect for submenu items */
+                 .sidebar-menu .dropdown-menu .nav-link:hover {
+                     background-color: rgba(255, 255, 255, 0.1) !important;
+                     color: #ffffff !important;
+                 }
+
+                 /* Active submenu item - only highlight the currently active submenu */
+                 .sidebar-menu .dropdown-menu .nav-link.active-submenu {
+                     background-color: #ffffff !important;
+                     color: #000000 !important;
+                     font-weight: bold !important;
+                     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+                     border-left: 4px solid #000000 !important;
+                 }
+
+/*          Brand Styling */
+         .sidebar-brand a {
+             color: #ffffff !important;
+             font-weight: bold;
+             font-size: 18px;
+             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+         }
+
+
+
+
+
+         /* Ensure dropdown menus show/hide properly */
+         .dropdown-menu.show {
+             display: block !important;
+         }
+
+         .collapse:not(.show) {
+             display: none !important;
+         }
+
+         .sidebar-menu .collapse {
+             transition: all 0.3s ease;
+         }
+
+         /* Remove any background from non-active dropdowns */
+         .sidebar-menu .dropdown:not(.active) > .nav-link {
+             background-color: transparent !important;
+             color: white !important;
+         }
+
+         /* Ensure only active submenu items have white background */
+         .sidebar-menu .dropdown-menu .nav-link:not(.active-submenu) {
+             background-color: transparent !important;
+             color: white !important;
+         }
+
+         .main-sidebar {
+             position: fixed;
+             top: 0;
+             left: 0;
+             width: 243px;
+             height: 100vh;
+             overflow-y: auto;
+             background-color: #ffffff !important;
+             background-image: none !important;
+             z-index: 1000;
+             scrollbar-width: none;
+             -ms-overflow-style: none;
+         }
+
+             .main-sidebar::-webkit-scrollbar {
+                 width: 0;
+                 background: transparent;
+             }
+
+         .main-sidebar {
+             overflow-y: auto !important;
+             height: 100vh;
+             scrollbar-width: none; /* Firefox */
+             -ms-overflow-style: none; /* IE 10+ */
+         }
+
+             .main-sidebar::-webkit-scrollbar {
+                 width: 0px;
+                 background: transparent;
+             }
+
+         /* Active submenu item */
+         .sidebar-menu .dropdown-menu .nav-link.active-submenu {
+             background-color: #ffffff !important;
+             color: #000000 !important;
+             font-weight: bold !important;
+             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+             border-left: 4px solid #000000 !important;
+         }
+
+             /* Disable hover styling for active submenu item */
+             .sidebar-menu .dropdown-menu .nav-link.active-submenu:hover {
+                 background-color: #ffffff !important;
+                 color: #000000 !important;
+             }
+
+
+        /* Main menu item border */
+        .sidebar-menu > li {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* light white border */
+        }
+
+        /* Submenu item border */
+        .sidebar-menu .dropdown-menu .nav-link {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* submenu border */
+        }
+
+    </style>
+
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
+    <title>@ViewBag.Title - Housing Society Management System</title>
+
+    <!-- General CSS Files -->
+    <link rel="stylesheet" href="~/Content/modules/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="~/Content/modules/fontawesome/css/all.min.css">
+
+    <!-- CSS Libraries -->
+    <link rel="stylesheet" href="~/Content/modules/jqvmap/dist/jqvmap.min.css">
+    <link rel="stylesheet" href="~/Content/modules/summernote/summernote-bs4.css">
+    <link rel="stylesheet" href="~/Content/modules/owlcarousel2/dist/assets/owl.carousel.min.css">
+    <link rel="stylesheet" href="~/Content/modules/owlcarousel2/dist/assets/owl.theme.default.min.css">
+
+    <!-- Template CSS -->
+    <link rel="stylesheet" href="~/Content/css/style.css">
+    <link rel="stylesheet" href="~/Content/css/components.css">
+
+</head>
+
+<body>
+    <div class="sidebar-scroll-container">
+        <aside id="sidebar-wrapper">
+
+            @if (role == "Accountant")
+            {
+                <ul class="sidebar-menu">
+                    @* Dashboard *@
+                    <li class="dropdown">
+                        <a href="javascript:void(0);" class="nav-link">
+                            <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+                        </a>
+                    </li>
+
+                    @* Society Account Details *@
+                    <li class="dropdown">
+                        <a class="nav-link dropdown-toggle" href="#accountantSubmenu1" role="button" aria-expanded="false" aria-controls="accountantSubmenu1">
+                            <i class="fas fa-university"></i><span>Society Account Details</span>
+                        </a>
+                        <ul id="accountantSubmenu1" class="dropdown-menu collapse">
+                            <li><a class="nav-link" href="@Url.Action("BankDetailsListSS","AccountManager")">Bank</a></li>                 
+                            <li><a class="nav-link" href="javascript:void(0);">Cash</a></li>
+                        </ul>
+                    </li>
+
+                    @* Worker Payment Management *@
+                    <li class="dropdown">
+                        <a href="javascript:void(0);" class="nav-link">
+                            <i class="fas fa-rupee-sign"></i><span>Worker Payment Management</span>
+                        </a>
+                    </li>
+
+                    @* Maintenance Management *@
+                    <li class="dropdown">
+                        <a  href="@Url.Action("MaintenanceManagementSY", "AccountManager")" class="nav-link">
+                            <i class="fas fa-tools"></i><span>Maintenance Management</span>
+                        </a>
+                    </li>
+
+                    @* Expense *@
+                    <li class="dropdown">
+                        <a href="@Url.Action("ExpenseList", "AccountManager")" class="nav-link">
+                            <i class="fas fa-wallet"></i><span>Expense</span>
+                        </a>
+                    </li>
+
+                    @* Event Management *@
+                    <li class="dropdown">
+                        <a href="javascript:void(0);" class="nav-link">
+                            <i class="fas fa-calendar-check"></i><span>Event Management</span>
+                        </a>
+                    </li>
+
+                    @* Community *@
+                    <li class="dropdown">
+                        <a class="nav-link dropdown-toggle" href="#accountantSubmenu2" role="button" aria-expanded="false" aria-controls="accountantSubmenu2">
+                            <i class="fas fa-users"></i><span>Community</span>
+                        </a>
+                        <ul id="accountantSubmenu2" class="dropdown-menu collapse">
+                            <li><a class="nav-link" href="@Url.Action("SendEMail", "AccountManager")">Message/Email</a></li>
+                            <li><a class="nav-link" href="javascript:void(0);">Complaints & Requests</a></li>
+                            <li><a class="nav-link" href="@Url.Action("NoticeList", "AccountManager")">Notice </a></li>                        </ul>
+                    </li>
+
+                    @* Reports *@
+                    <li class="dropdown">
+                        <a href="javascript:void(0);" class="nav-link">
+                            <i class="fas fa-chart-line"></i><span>Reports</span>
+                        </a>
+                    </li>
+                </ul>
+            }
+
+            }
+        </aside>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+
+
+
+
+    <script>
+        $(document).ready(function () {
+            $('.sidebar-menu .dropdown-toggle').click(function (e) {
+                e.preventDefault();
+
+                var $toggle = $(this);
+                var $dropdown = $toggle.closest('.dropdown');
+                var $submenu = $($toggle.attr('href'));
+
+                var isOpen = $submenu.hasClass('show');
+
+                // Close all submenus
+                $('.sidebar-menu .dropdown-menu').removeClass('show');
+                $('.sidebar-menu .dropdown').removeClass('active');
+                $('.sidebar-menu .dropdown-toggle').attr('aria-expanded', 'false');
+
+                if (!isOpen) {
+                    // Open current
+                    $dropdown.addClass('active');
+                    $submenu.addClass('show');
+                    $toggle.attr('aria-expanded', 'true');
+                }
+            });
+
+            // Active submenu marker
+            $('.sidebar-menu .dropdown-menu .nav-link').click(function () {
+                $('.sidebar-menu .dropdown-menu .nav-link').removeClass('active-submenu');
+                $(this).addClass('active-submenu');
+            });
+
+            // Optional: close on outside click
+            $(document).click(function (e) {
+                if (!$(e.target).closest('.sidebar-menu').length) {
+                    $('.sidebar-menu .dropdown-menu').removeClass('show');
+                    $('.sidebar-menu .dropdown').removeClass('active');
+                    $('.sidebar-menu .dropdown-toggle').attr('aria-expanded', 'false');
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>

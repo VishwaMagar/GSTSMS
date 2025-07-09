@@ -1,0 +1,508 @@
+﻿@model GSTSMSLibrary.Security.Security
+
+@{
+    ViewBag.Title = "AttendanceofWorkerSS";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
+    <title>Modules &rsaquo; DataTables &mdash; Stisla</title>
+
+    <!-- General CSS Files -->
+    <link rel="stylesheet" href="~/Content/modules/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="~/Content/modules/fontawesome/css/all.min.css">
+
+    <!-- CSS Libraries -->
+    <link rel="stylesheet" href="~/Content/modules/datatables/datatables.min.css">
+    <link rel="stylesheet" href="~/Content/modules/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="~/Content/modules/datatables/Select-1.2.4/css/select.bootstrap4.min.css">
+
+    <!-- Template CSS -->
+    <link rel="stylesheet" href="~/Content/css/style.css">
+    <link rel="stylesheet" href="~/Content/css/components.css">
+    <link href="~/Content/css/StaffManagementSS.css" rel="stylesheet" />
+
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Start GA -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-94034622-3"></script>
+
+
+    <style>
+    </style>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-94034622-3');
+    </script>
+
+</head>
+<body>
+
+    <div class="main-content">
+        <section class="section">
+
+
+
+            <div class="export-container">
+                <button type="button" class="export-icon-btn export-pdf-btn" onclick="downloadPDF()" title="Export PDF">
+                    <i class="fas fa-file-pdf"></i>
+                </button>
+
+                <button type="button" class="export-icon-btn export-csv-btn" onclick="downloadCSV()" title="Export CSV">
+                    <i class="fas fa-file-csv"></i>
+                </button>
+
+                <button type="button" class="export-icon-btn export-excel-btn" onclick="downloadExcel()" title="Export Excel">
+                    <i class="fas fa-file-excel"></i>
+                </button>
+            </div>
+
+
+
+
+            <div class="date-filter-section">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="StartDate">From Date:</label>
+                        <input type="date" name="StartDate" id="StartDate" class="form-control"
+                               value="@ViewBag.StartDate"
+                               max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-4">
+                        <label for="endDate">To Date:</label>
+                        <input type="date" name="EndDate" id="endDate" class="form-control"
+                               value="@ViewBag.EndDate"
+                               max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        <span id="dateError" style="color:red; display:none;">Please select today's date or earlier only.</span>
+                    </div>
+                    <div class="col-md-4">
+                        <label>&nbsp;</label><br>
+
+                    </div>
+                </div>
+            </div>
+            <div id="pdfExportArea">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped" id="table-1">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center">
+                                            <div class="custom-checkbox custom-control">
+                                                <input type="checkbox" class="custom-control-input" id="checkbox-all">
+                                                <label for="checkbox-all" class="custom-control-label">&nbsp;</label>
+                                            </div>
+                                        </th>
+                                        <th>Sr No</th>
+                                        <th>Worker Name</th>
+                                        <th>Time Type</th>
+                                        @if (ViewBag.DateRange != null)
+                                        {
+                                            foreach (DateTime date in ViewBag.DateRange)
+                                            {
+                                                string dayAbbr = date.ToString("ddd");
+                                                <th class="day-header">
+                                                    <span class="day-number">@date.Day</span>
+                                                    <span class="day-name">@dayAbbr</span>
+                                                </th>
+                                            }
+                                        }
+                                        <th>Total Present</th>
+                                        <th>Total Absent</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.Attendancelist != null)
+                                    {
+                                        int rowId = 0;
+                                        int lastSrNo = 0; // To keep track of the last SrNo rendered
+
+                                        foreach (var item in Model.Attendancelist)
+                                        {
+                                            rowId++;
+                                            <tr>
+                                                <td>
+                                                    <div class="custom-checkbox custom-control">
+                                                        <input type="checkbox" class="custom-control-input" id="checkbox-@rowId">
+                                                        <label for="checkbox-@rowId" class="custom-control-label">&nbsp;</label>
+                                                    </div>
+                                                </td>
+                                                @if (item.SrNo != lastSrNo)
+                                                {
+
+                                                    <td rowspan="2">@item.SrNo</td>
+                                                    <td rowspan="2">@item.WorkerName</td>
+                                                    lastSrNo = item.SrNo;
+                                                }
+                                                else
+                                                {
+
+                                                    <td style="display:none;"></td>
+
+                                                    <td style="display:none;"></td>
+
+                                                }
+                                                <td>@item.TimeType</td>
+                                                @if (ViewBag.DateRange != null)
+                                                {
+                                                    foreach (DateTime date in ViewBag.DateRange)
+                                                    {
+                                                        var dayKey = date.Day.ToString();
+                                                        var value = "";
+
+                                                        if (item.AttendanceDays != null && item.AttendanceDays.ContainsKey(dayKey))
+                                                        {
+                                                            value = item.AttendanceDays[dayKey];
+                                                        }
+                                                        else
+                                                        {
+                                                            value = item.GetType().GetProperty(dayKey)?.GetValue(item)?.ToString();
+                                                        }
+
+                                                        if (value == "P")
+                                                        {
+                                                            <td><span class="badge badge-success">P</span></td>
+                                                        }
+                                                        else if (value == "A")
+                                                        {
+                                                            <td><span class="badge badge-danger">A</span></td>
+                                                        }
+                                                        else if (!string.IsNullOrEmpty(value))
+                                                        {
+                                                            <td>@value</td>
+                                                        }
+                                                        else
+                                                        {
+                                                            <td>-</td>
+                                                        }
+                                                    }
+                                                }
+                                                <td>@item.TotalPresent</td>
+                                                <td>@item.TotalAbsent</td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="modal fade" id="attendanceModal" tabindex="-1" role="dialog" aria-labelledby="attendanceModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="attendanceModalLabel">Add Attendance</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="attendanceModalBody">
+                    <!-- Form will load here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- General JS Scripts -->
+    <script src="~/Content/modules/jquery.min.js"></script>
+    <script src="~/Content/modules/popper.js"></script>
+    <script src="~/Content/modules/tooltip.js"></script>
+    <script src="~/Content/modules/bootstrap/js/bootstrap.min.js"></script>
+    <script src="~/Content/modules/nicescroll/jquery.nicescroll.min.js"></script>
+    <script src="~/Content/modules/moment.min.js"></script>
+    <script src="~/Content/js/stisla.js"></script>
+
+    <!-- JS Libraies -->
+    <script src="~/Content/modules/datatables/datatables.min.js"></script>
+    <script src="~/Content/modules/datatables/DataTables-1.10.16/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/Content/modules/datatables/Select-1.2.4/js/dataTables.select.min.js"></script>
+    <script src="~/Content/modules/jquery-ui/jquery-ui.min.js"></script>
+
+    <!-- Page Specific JS File -->
+    <script src="~/Content/js/page/modules-datatables.js"></script>
+
+    <!-- Template JS File -->
+    <script src="~/Content/js/scripts.js"></script>
+    <script src="~/Content/js/custom.js"></script>
+
+    <script>
+        function openAttendanceForm() {
+            $.ajax({
+                url: '@Url.Action("AddAttendanceStaff", "Security")',
+                type: 'GET',
+                success: function (data) {
+                    $('#attendanceModalBody').html(data);
+                    $('#attendanceModal').modal('show');
+                },
+                error: function () {
+                    $('#attendanceModalBody').html('<p class="text-danger">Failed to load attendance form.</p>');
+                    $('#attendanceModal').modal('show');
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            // Check if the DataTable is already initialized on #table-1
+            if ($.fn.DataTable.isDataTable('#table-1')) {
+                $('#table-1').DataTable().destroy(); // Destroy the existing instance
+            }
+
+            $('#table-1').DataTable({
+                scrollX: true,
+                scrollCollapse: true,
+                paging: true,
+                fixedHeader: true,
+                pageLength: 5
+            });
+        });
+
+        function validateEndDate() {
+            var startDate = new Date($('#StartDate').val());
+            var endDate = new Date($('#endDate').val());
+            var today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            $('#dateError').hide();
+
+            if (endDate > today) {
+                $('#dateError').text().show();
+                return false;
+            }
+
+            if (startDate > endDate) {
+                $('#dateError').text('Start date cannot be greater than end date.').show();
+                return false;
+            }
+
+            return true;
+        }
+
+        function applyDateFilter() {
+            if (!validateEndDate()) return;
+
+            var startDate = $('#StartDate').val();
+            var endDate = $('#endDate').val();
+
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates.');
+                return;
+            }
+
+            window.location.href = '@Url.Action("AttendanceofWorkerSS", "Security")?StartDate=' + startDate + '&EndDate=' + endDate;
+        }
+
+        // Auto-apply filter when dates change
+        $('#StartDate, #endDate').on('change', function() {
+            if (validateEndDate()) {
+                applyDateFilter();
+            }
+        });
+
+
+
+
+
+
+        // Checkbox functionality
+        $('#checkbox-all').on('change', function() {
+            $('input[id^="checkbox-"]:not(#checkbox-all)').prop('checked', this.checked);
+        });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+            function downloadPDF() {
+                // Get all selected checkboxes (excluding header)
+                var checkboxes = document.querySelectorAll('input[id^="checkbox-"]:checked');
+                var selectedRows = [];
+
+                checkboxes.forEach(function (checkbox) {
+                    var row = checkbox.closest('tr');
+                    if (row) selectedRows.push(row.cloneNode(true));
+                });
+
+                // Show warning if no checkbox selected and no "select all"
+                if (checkboxes.length === 0) {
+                    alert("Please select at least one row.");
+                    return;
+                }
+
+                // Clone thead
+                var thead = document.querySelector('#table-1 thead').cloneNode(true);
+
+                // Create new table and append cloned header + selected rows
+                var newTable = document.createElement('table');
+                newTable.className = 'table table-striped';
+                newTable.appendChild(thead);
+
+                var tbody = document.createElement('tbody');
+                selectedRows.forEach(function (row) {
+                    tbody.appendChild(row);
+                });
+
+                newTable.appendChild(tbody);
+
+                // Wrap inside container
+                var container = document.createElement('div');
+                container.appendChild(newTable);
+
+                // PDF Options
+                var opt = {
+                    margin: 0.5,
+                    filename: 'WorkerAttendance.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'in', format: 'A4', orientation: 'landscape' }
+                };
+
+                html2pdf().set(opt).from(container).save();
+            }
+
+            // "Select All" checkbox handler
+            document.addEventListener('DOMContentLoaded', function () {
+                var checkAll = document.getElementById('checkbox-all');
+                if (checkAll) {
+                    checkAll.addEventListener('change', function () {
+                        var allCheckboxes = document.querySelectorAll('input[id^="checkbox-"]');
+                        allCheckboxes.forEach(function (cb) {
+                            cb.checked = checkAll.checked;
+                        });
+                    });
+                }
+            });
+        </script>
+
+    $('#checkbox-all').on('click', function () {
+    var isChecked = $(this).prop('checked');
+
+    var table = $('#table-1').DataTable();
+
+    // Check or uncheck all checkboxes
+    table.rows().every(function () {
+    var node = this.node();
+    $(node).find('.row-checkbox').prop('checked', isChecked);
+    });
+    });
+    
+
+    <script>
+        function downloadCSV() {
+            var rows = [];
+            var headers = [];
+
+            // Get checked checkboxes
+            var checkboxes = document.querySelectorAll('input[id^="checkbox-"]:checked');
+            var selectedRows = [];
+
+            checkboxes.forEach(function (checkbox) {
+                var row = checkbox.closest('tr');
+                if (row) selectedRows.push(row);
+            });
+
+            // ✅ Validation: If no checkbox is selected, show alert and stop
+            if (selectedRows.length === 0) {
+                alert("Please select at least one row.");
+                return;
+            }
+
+            // Get table headers
+            document.querySelectorAll('#table-1 thead tr th').forEach(th => {
+                if (th.innerText.trim() !== "") {
+                    headers.push('"' + th.innerText.trim() + '"');
+                }
+            });
+            rows.push(headers.join(','));
+
+            selectedRows.forEach(function (row) {
+                var cols = row.querySelectorAll('td');
+                var rowData = [];
+
+                for (var i = 1; i < cols.length; i++) {
+
+                    let text = cols[i].innerText.trim().replace(/"/g, '""'); // escape quotes
+                    rowData.push('"' + text + '"');
+                }
+                rows.push(rowData.join(','));
+            });
+
+            // Create CSV Blob
+            var csvContent = rows.join('\n');
+            var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            var url = URL.createObjectURL(blob);
+
+            // Trigger download
+            var link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'WorkerAttendance.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script>
+        function downloadExcel() {
+            var checkboxes = document.querySelectorAll('input[id^="checkbox-"]:checked');
+            var selectedRows = [];
+
+            checkboxes.forEach(function (checkbox) {
+                var row = checkbox.closest('tr');
+                if (row) selectedRows.push(row);
+            });
+
+            // ✅ Alert if nothing is selected
+            if (selectedRows.length === 0) {
+                alert("Please select at least one row.");
+                return;
+            }
+
+            // Get table headers
+            var headers = [];
+            document.querySelectorAll('#table-1 thead tr th').forEach(th => {
+                if (th.innerText.trim() !== "") {
+                    headers.push(th.innerText.trim());
+                }
+            });
+
+            var data = [];
+            data.push(headers);
+
+            selectedRows.forEach(function (row) {
+                var cols = row.querySelectorAll('td');
+                var rowData = [];
+
+                for (var i = 1; i < cols.length; i++) {
+
+                    rowData.push(cols[i].innerText.trim());
+                }
+                data.push(rowData);
+            });
+
+            // Convert to worksheet
+            var worksheet = XLSX.utils.aoa_to_sheet(data);
+            var workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
+
+            // Export Excel file
+            XLSX.writeFile(workbook, "WorkerAttendance.xlsx");
+        }
+    </script>
+
+</body>
+</html>

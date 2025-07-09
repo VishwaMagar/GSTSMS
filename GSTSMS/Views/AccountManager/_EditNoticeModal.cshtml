@@ -1,0 +1,99 @@
+﻿@model GSTSMSLibrary.AccountManager.AccountManager
+
+@using (Html.BeginForm("UpdateNotice", "AccountManager", FormMethod.Post, new { enctype = "multipart/form-data", id = "editNoticeForm" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.NoticeCode)
+
+    <div class="modal-header">
+        <h5 class="modal-title">✏ Edit Notice</h5>
+        @*<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>*@
+        <a href="@Url.Action("NoticeList", "AccountManager")" class="btn btn-icon btn-danger"><i class="fas fa-times"></i></a>
+    </div>
+
+    <div class="modal-body">
+        <div class="mb-3">
+            <label class="form-label">Notice Title</label>
+            @Html.TextBoxFor(m => m.NoticeTitle, new { @class = "form-control", required = "required", placeholder = "Enter title" })
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            @Html.TextAreaFor(m => m.Description, new { @class = "form-control", rows = 5, placeholder = "Enter description" })
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Publish Date</label>
+                @Html.TextBoxFor(m => m.PublishDate, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">End Date</label>
+                @Html.TextBoxFor(m => m.EndDate, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Replace Attachment (PDF/JPG)</label>
+            <input type="file" name="PostedFile" class="form-control" accept=".pdf,.jpg,.jpeg,.png" />
+
+            @if (!string.IsNullOrEmpty(Model.Document))
+            {
+                <div class="mt-2">
+                    <strong>Current:</strong>
+                    <a href="@Url.Content("~/Uploads/Notices/" + Model.Document)" target="_blank">@Model.Document</a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-success">💾 Update</button>
+       <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+
+        <button type="button" class="btn btn-secondary" id="btnCancel">Cancel</button>
+
+
+
+    </div>
+}
+<script>
+$('#btnCancel').on('click', function () {
+    window.location.href = '@Url.Action("NoticeList", "AccountManager")';
+});
+</script>
+
+<script>
+    $('#editNoticeForm').on('submit', function () {
+        $('#overlayLoader').show(); // show loader
+    });
+
+    $('#btnCancel').on('click', function () {
+        window.location.href = '@Url.Action("NoticeList", "AccountManager")';
+    });
+
+    // SweetAlert after update
+    @if (ViewBag.Message != null)
+    {
+        <text>
+        Swal.fire({
+            icon: 'success',
+            title: 'Notice Updated!',
+            text: '@ViewBag.Message',
+            timer: 3000,
+            showConfirmButton: false
+        });
+        </text>
+    }
+    else if (ViewBag.Error != null)
+    {
+        <text>
+        Swal.fire({
+            icon: 'error',
+            title: 'Failed to Update Notice',
+            text: '@ViewBag.Error',
+            showConfirmButton: true
+        });
+        </text>
+    }
+</script>

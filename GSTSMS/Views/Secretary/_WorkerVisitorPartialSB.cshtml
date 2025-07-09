@@ -1,0 +1,78 @@
+﻿@model List<GSTSMSLibrary.Secretary.Secretary>
+
+<link href="~/Content/css/SecretaryDashboardSB.css" rel="stylesheet" />
+
+<div class="modal-header position-relative bg-success text-white">
+    <h5 class="modal-title text-center w-100">Worker</h5>
+    <button type="button" class="close text-danger position-absolute" style="top: 10px; right: 15px;" data-dismiss="modal" aria-label="Close">
+        <span>&times;</span>
+    </button>
+</div>
+
+<div class="modal-body ">
+    <table id="WorkerVisitorTable" class="display data-table-sb" style="width:100%">
+        <thead>
+            <tr>
+                <th class="text-center">
+                    <div class="custom-checkbox custom-control">
+                        <input type="checkbox" class="custom-control-input" id="checkbox-all">
+                        <label for="checkbox-all" class="custom-control-label">&nbsp;</label>
+
+                    </div>
+                </th>
+                <th>Sr No</th>
+                <th>Visitor Name</th>
+                <th>Visitor Contact</th>
+                <th>Vehicle Number</th>
+                <th>Reason</th>
+                <th>Check-In</th>
+                <th>Check-Out</th>
+
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <div class="custom-checkbox custom-control">
+                            <input type="checkbox" class="custom-control-input row-checkbox" id="checkbox-@item.SrNo">
+                            <label for="checkbox-@item.SrNo" class="custom-control-label">&nbsp;</label>
+                        </div>
+                    </td>
+                    <td>@item.SrNo</td>
+                    <td>@item.VisitorName</td>
+                    <td>@item.VisitorContact</td>
+                    <td> @(string.IsNullOrWhiteSpace(item.VehicleNumber)? "No Vehicle" : item.VehicleNumber)</td>
+                    <td>@item.Reason</td>
+                    <td>@(item.CheckIn?.ToString("g"))</td>
+                    <td>@(item.CheckOut != null ? item.CheckOut.Value.ToString("g") : "Not Checked Out")</td>
+
+                </tr>
+            }
+        </tbody>
+    </table>
+
+
+</div>
+
+
+
+
+<script>
+    js('#checkbox-all').on('change', function () {
+        var isChecked = js(this).prop("checked");
+        js('.row-checkbox').prop('checked', isChecked);
+    });
+
+    // If any row checkbox changes, update master checkbox
+    js('#Expensetable').on('change', '.row-checkbox', function () {
+        var total = js('.row-checkbox').length;
+        var checked = js('.row-checkbox:checked').length;
+        js('#checkbox-all').prop('checked', total === checked);
+    });
+
+</script>
+
+

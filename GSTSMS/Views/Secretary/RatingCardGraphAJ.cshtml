@@ -1,0 +1,302 @@
+﻿@model GSTSMSLibrary.Secretary.Secretary
+
+@{
+   // ViewBag.Title = "RatingCardGraph";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
+    <!-- General CSS Files -->
+    <link rel="stylesheet" href="~/Content/modules/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="~/Content/modules/fontawesome/css/all.min.css">
+
+    CSS Libraries
+    <link rel="stylesheet" href="~/Content/modules/datatables/datatables.min.css">
+    <link rel="stylesheet" href="~/Content/modules/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="~/Content/modules/datatables/Select-1.2.4/css/select.bootstrap4.min.css">
+
+    <!-- Template CSS -->
+    <link rel="stylesheet" href="~/Content/css/style.css">
+    <link rel="stylesheet" href="~/Content/css/components.css">
+
+    <!-- CSS Libraries -->
+    <link rel="stylesheet" href="~/Content/modules/bootstrap-daterangepicker/daterangepicker.css">
+    <link rel="stylesheet" href="~/Content/modules/bootstrap-colorpicker/dist/css/bootstrap-colorpicker.min.css">
+
+    <link rel="stylesheet" href="~/Content/modules/bootstrap-timepicker/css/bootstrap-timepicker.min.css">
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+
+
+
+
+    <link href="~/Content/css/FeedbackAJ&SD.css" rel="stylesheet" />
+    <!-- Start GA -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-94034622-3');
+    </script>
+</head>
+<body>
+    <div class="main-content">
+        <section class="section">
+
+            <div class="card p-4 shadow">
+                @*<h4>Rating List</h4>
+                    <ul>
+                        @foreach (var item in Model.RatingPercentageList)
+                        {
+                            <li><strong>@item.Ratings Star</strong> - @item.RatingPercentage %</li>
+                        }
+                    </ul>*@
+
+                <h4 class="mt-4">Rating Graph</h4>
+                <div id="ratingChart" style="height: 400px;"></div>
+
+
+                <canvas id="ratingChart" style="width: 100% !important; height: 400px !important;"></canvas>
+
+
+                <ul class="nav nav-tabs" id="vehicleTabs" role="tablist">
+                    @*<li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="feedbacklist-tab" data-bs-toggle="tab" data-bs-target="#feedbacklist" type="button" role="tab" aria-controls="feedbacklist" aria-selected="true">FeedbackList</button>
+                        </li>*@
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="requestfeedback-tab" data-bs-toggle="tab" data-bs-target="#requestfeedback" type="button" role="tab" aria-controls="requestfeedback" aria-selected="false">RequestFeedback</button>
+                    </li>
+                </ul>
+
+
+                <!-- Request Feedback Tab -->
+                <div class="tab-pane fade" id="requestfeedback" role="tabpanel" aria-labelledby="requestfeedback-tab">
+                    <h5>Request Feedback</h5>
+                    <div class="table-responsive" id="requestFeedbackContainer">
+                        <table class="table table-bordered table-striped text-center" id="feedbackTable">
+                            <thead>
+                                <tr>
+                                    <th>Sr.No</th>
+                                    <th>Event Name</th>
+                                    <th>Organizer</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Location</th>
+                                    <th>View</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.FeedbackList)
+                                {
+                                    <tr>
+                                        <td>@item.SrNo</td>
+                                        <td>@item.EventName</td>
+                                        <td>@item.Organizer</td>
+                                        <td>@item.ToDate.ToString("dd-MM-yyyy")</td>
+                                        @{
+                                            DateTime parsedTime;
+                                            var timeValue = DateTime.TryParse(item.Time, out parsedTime)
+                                                ? parsedTime.ToString("hh:mm tt")
+                                                : "Invalid Time";
+                                        }
+                                        <td>@timeValue</td>
+                                        <td>@item.Location</td>
+                                        <td>
+                                            <button type="button" class="btn btn-outline-info btn-sm btnSendRequest"
+                                                    data-eventcode="@item.EventCode">
+                                                <i class="fas fa-paper-plane"></i> Send
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+
+
+        </section>
+    </div>
+
+
+    @*Feedback Modal*@
+    <div class="modal fade" id="FeedbckModal" tabindex="-1" role="dialog" aria-labelledby="FeedbckModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content" id="FeedbckContainer"></div>
+        </div>
+    </div>
+
+
+    <!-- ✅ Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-94034622-3"></script>
+
+
+
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            debugger;
+         var ratingLabels = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.RatingPercentageList.Select(r => r.Ratings + "★")));
+        var ratingData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.RatingPercentageList.Select(r => r.RatingPercentage)));
+        var ratingStars = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.RatingPercentageList.Select(r => r.Ratings)));
+
+        // Combine label and data for Highcharts
+        var chartData = [];
+        for (var i = 0; i < ratingLabels.length; i++) {
+            chartData.push({
+                name: ratingLabels[i],
+                y: ratingData[i],
+                custom: { star: ratingStars[i] }
+            });
+        }
+
+        Highcharts.chart('ratingChart', {
+            chart: {
+                type: 'pie',
+                options3d: {
+                    enabled: true,
+                    alpha: 45
+                }
+            },
+            title: {
+                text: 'Star Rating Distribution'
+            },
+            subtitle: {
+                text: '3D Donut Chart'
+            },
+            plotOptions: {
+                pie: {
+                    innerSize: 100,
+                    depth: 45,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: true,
+                        format: '{point.name}: {point.y:.1f}%'
+                    },
+                    point: {
+                        events: {
+                            click: function () {
+                                var clickedStar = this.custom.star;
+                                console.log("Clicked Star:", clickedStar);
+
+                                loadStarFeedback(clickedStar);
+                            }
+                        }
+                    }
+                }
+            },
+            series: [{
+                name: 'Rating %',
+                data: chartData
+            }]
+        });
+});
+
+     $(document).ready(function () {
+    // Initialize DataTable on page load for static table (if needed)
+    $('#feedbackTable').DataTable({
+        destroy: true,
+        responsive: true,
+        autoWidth: false,
+        dom: 'Bfrtip',
+        pageLength: 5,
+        language: {
+            search: "Search:",
+            lengthMenu: "Show _MENU_ entries",
+            info: "Showing _START_ to _END_ of _TOTAL_ entries",
+            paginate: {
+                first: "First", last: "Last", next: "→", previous: "←"
+            }
+        }
+    });
+
+    // AJAX Load for requestfeedback-tab
+    $('#requestfeedback-tab').on('shown.bs.tab', function (e) {
+        $('#requestFeedbackContainer').html('<p class="text-muted">Loading...</p>');
+        $.ajax({
+            url: '@Url.Action("_LoadEventListSD", "Secretary")',
+            type: 'GET',
+            success: function (data) {
+                $('#requestFeedbackContainer').html(data);
+
+                // ✅ Reinitialize DataTable on loaded content
+                $('#feedbackTable').DataTable({
+                    destroy: true,
+                    responsive: true,
+                    autoWidth: false,
+                    dom: 'Bfrtip',
+                /*    buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],*/
+                    pageLength: 5
+                });
+            },
+            error: function () {
+                $('#requestFeedbackContainer').html('<p class="text-danger">Error loading data.</p>');
+            }
+        });
+    });
+
+    // Hide button after click
+    $(document).on('click', '.btnSendRequest', function () {
+        $(this).hide();
+    });
+});
+
+// Show feedback in modal when star clicked
+function loadStarFeedback(clickedStar) {
+    $.ajax({
+        url: '/Secretary/_LoadStarFeedbackAJ',
+        type: 'GET',
+        data: { star: clickedStar },
+        success: function (result) {
+            $("#FeedbckContainer").html(result);
+            $('#Feedbacktitle').text(` List of ${clickedStar} ★ Feedback`);
+            $("#FeedbckModal").modal('show')
+
+            // Initialize DataTable inside modal after loading
+            setTimeout(function () {
+                $('#Feedback-table').DataTable({
+                    destroy: true,
+                    responsive: true,
+                    autoWidth: false,
+                    dom: 'Bfrtip',
+                    pageLength: 5
+                });
+            }, 300);
+        },
+        error: function (xhr, status, error) {
+            console.error("Error:", error);
+            alert("Something went wrong while loading feedback.");
+        }
+    });
+}
+
+
+    $(document).on('click', '.btnSendRequest', function () {
+        $(this).hide(); // ✅ Immediately hides clicked button
+    });
+    </script>
+
+
+</body>
+</html>
+
+

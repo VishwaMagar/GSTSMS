@@ -1,0 +1,184 @@
+﻿@model IEnumerable<GSTSMSLibrary.AccountManager.AccountManager>
+
+@{
+    ViewBag.Title = "Bank List";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+<link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+<link href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap4.min.css" rel="stylesheet" />
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h4>Bank List</h4>
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("AddBankSociety", "AccountManager")" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Add Bank
+            </a>
+            <div id="exportButtons" class="d-flex gap-2"></div>
+        </div>
+        <div id="exportButtons" class="d-flex gap-2"></div>
+    </div>
+
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped w-100" id="bankTable">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAll" /></th>
+                        <th>Sr No</th>
+                        <th>Bank Name</th>
+                        <th>Account No</th>
+                        <th>Bank Holder Name</th>
+                        <th>Branch</th>
+                        <th>Opening Balance</th>
+                        <th>Added Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td><input type="checkbox" class="row-checkbox" /></td>
+                                <td></td> <!-- Sr.No will be filled by JS -->
+                                <td>@item.BankName</td>
+                                <td>@item.AccountNo</td>
+                                <td>@item.BankHolderName</td>
+                                <td>@item.Branch</td>
+                                <td class="text-success font-weight-bold exportable">₹@item.OpeningBalance</td>
+
+                                <td>@item.AddedDate.ToString("dd-MM-yyyy")</td>
+
+
+                                <td class="text-nowrap">
+                                    <div class="d-flex gap-1 justify-content-center">
+                                        <a href="@Url.Action("ViewBankDetails", "AccountManager", new { bankCode = item.BankCode })" title="View Details">
+                                            <i class="fa fa-eye text-primary"></i>
+                                        </a>
+
+                                        @*<a href="@Url.Action("Disable", "AccountManager", new { id = item.BankId })" class="btn btn-dark btn-sm" data-toggle="tooltip" title="Disable Account">
+                                                <i class="fas fa-ban"></i>
+                                            </a>*@
+                                    </div>
+                                </td>
+
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center text-danger">No records found.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- JS Dependencies -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+
+    <script>$(document).ready(function () {
+            var table = $('#bankTable').DataTable({
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        extend: 'csvHtml5',
+                        text: '<i class="fas fa-file-csv text-primary"></i>',
+                        className: 'btn btn-outline-primary btn-sm',
+                        exportOptions: {
+                            rows: function (idx, data, node) {
+                                return $(node).find('input.row-checkbox').prop('checked');
+                            },
+                            columns: [1, 2, 3, 4, 5, 6, 7], // Sr.No to Branch
+                            format: {
+                                body: function (data, row, column, node) {
+                                    if (column === 0) return row + 1;
+                                    return $(node).text().trim();
+                                }
+                            }
+                        }
+                    },
+                    {
+                        extend: 'excelHtml5',
+                        text: '<i class="fas fa-file-excel text-success"></i>',
+                        className: 'btn btn-outline-success btn-sm',
+                        exportOptions: {
+                            rows: function (idx, data, node) {
+                                return $(node).find('input.row-checkbox').prop('checked');
+                            },
+                            columns: [1, 2, 3, 4, 5, 6, 7],
+                            format: {
+                                body: function (data, row, column, node) {
+                                    if (column === 0) return row + 1;
+                                    return $(node).text().trim();
+                                }
+                            }
+                        }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        text: '<i class="fas fa-file-pdf text-danger"></i>',
+                        className: 'btn btn-outline-danger btn-sm',
+                        orientation: 'landscape',
+                        pageSize: 'A4',
+                        exportOptions: {
+                            rows: function (idx, data, node) {
+                                return $(node).find('input.row-checkbox').prop('checked');
+                            },
+                            columns: [1, 2, 3, 4, 5, 6, 7],
+                            format: {
+                                body: function (data, row, column, node) {
+                                    if (column === 0) return row + 1;
+                                    return $(node).text().trim();
+                                }
+                            }
+                        }
+                    }
+                ],
+                pageLength: 5,
+                drawCallback: function () {
+                    var api = this.api();
+                    api.rows({ page: 'current' }).every(function (rowIdx, tableLoop, rowLoop) {
+                        $(this.node()).find('td:eq(1)').html(rowLoop + 1); // Sr.No column
+                    });
+                }
+            });
+
+            // Export buttons to div
+            table.buttons().container().appendTo('#exportButtons');
+
+            // Select All
+            $('#selectAll').on('change', function () {
+                var checked = this.checked;
+                $('.row-checkbox').prop('checked', checked);
+            });
+
+            // Checkbox single uncheck
+            $('#bankTable').on('change', '.row-checkbox', function () {
+                var total = $('.row-checkbox').length;
+                var checked = $('.row-checkbox:checked').length;
+                $('#selectAll').prop('checked', total === checked);
+            });
+
+            // Tooltip
+            $('[data-toggle="tooltip"]').tooltip();
+        });</script>
+}

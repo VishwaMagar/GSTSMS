@@ -1,0 +1,252 @@
+﻿
+/*GetList*/
+table th, table td {
+    padding: 15px 20px;
+}
+
+table th {
+    background: linear-gradient(45deg, #e0f7fa, #b2ebf2);
+    color: #004d66;
+    text-align: center;
+    font-weight: bold;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+table {
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+    table tbody tr:hover {
+        background-color: #f9f9f9;
+    }
+
+    table td, table th {
+        font-size: 14px;
+        border: 1px solid #ddd;
+    }
+
+.btnadd {
+    background: linear-gradient(to right, #00b09b, #96c93d);
+    color: white;
+}
+
+/* ===== Table Styling ===== */
+table th, table td {
+    padding: 15px 20px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+}
+
+table th {
+    background: linear-gradient(45deg, #e0f7fa, #b2ebf2);
+    color: #004d66;
+    text-align: center;
+    font-weight: bold;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+table {
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+    table tbody tr:hover {
+        background-color: #f9f9f9;
+    }
+
+/* ===== Button Styling ===== */
+.btnadd,
+.btn-gradient-add {
+    background: linear-gradient(to right, #00b09b, #96c93d);
+    color: white !important;
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: none;
+    text-decoration: none;
+}
+
+    .btn-gradient-add i {
+        margin-right: 5px;
+    }
+
+/* ===== Ellipsis Text ===== */
+.text-ellipsis {
+    max-width: 200px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* ===== Conditional Row Background ===== */
+.broadcast-row {
+    background-color: lightblue;
+}
+
+/* ===== Dynamic SendTo Color ===== */
+.sendto-mem-stf {
+    color: blue;
+}
+
+.sendto-soc {
+    color: green;
+}
+
+.sendto-other {
+    color: black;
+}
+
+/*Register*/
+.custom-success-btn {
+    background: linear-gradient(to right, #00b09b, #96c93d);
+    border: none;
+    color: white;
+    padding: 10px 25px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+}
+
+    .custom-success-btn:hover {
+        opacity: 0.9;
+    }
+
+
+
+
+/*    Details*/
+
+.close-button {
+    color: red;
+    font-size: 30px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+    .close-button:hover {
+        color: darkred;
+    }
+
+/*    Edit*/
+
+.card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.form-label {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+}
+
+    .close-button:hover {
+        color: red;
+    }
+
+.btn-primary {
+    background: linear-gradient(to right, #56ccf2, #2f80ed);
+    border: none;
+    color: white;
+    padding: 10px 25px;
+    font-size: 16px;
+    border-radius: 5px;
+    transition: 0.3s ease-in-out;
+}
+
+    .btn-primary:hover {
+        opacity: 0.9;
+    }
+
+
+
+/*    Emai*/
+.back-arrow-btn {
+    font-size: 22px;
+    text-decoration: none;
+    margin-bottom: 10px;
+    display: inline-block;
+}
+/* InboxButton*/
+
+
+.inbox-btn {
+    background: linear-gradient(to right, #a2d4f5, #72bde0); /* Light blue gradient */
+    color: white;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-weight: 500;
+    border: none;
+    box-shadow: 0 2px 6px rgba(114, 189, 224, 0.4);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+    .inbox-btn:hover,
+    .inbox-btn:focus {
+        background: linear-gradient(to right, #90cbee, #5db0da); /* Slightly darker on hover */
+        box-shadow: 0 4px 12px rgba(114, 189, 224, 0.5);
+        text-decoration: none;
+    }
+
+    .inbox-btn:active {
+        background: linear-gradient(to right, #72bde0, #4aa3cb); /* Pressed effect */
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+
+/*Massge*/
+.back-arrow-btn {
+    font-size: 22px;
+    text-decoration: none;
+    margin-bottom: 10px;
+    display: inline-block;
+}
+/*Subject Templete*/
+
+.subject-btn {
+    margin: 5px;
+}
+
+.subject-btn.active {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+}
+
+
+.section {
+    padding-top: 10px !important;
+}
+
+h2, h3 {
+    margin-top: 0 !important;
+    margin-bottom: 10px;
+}
+
+.back-arrow-btn {
+    margin: 0;
+    padding: 0;
+    font-size: 20px;
+}
+
+
+
+
+

@@ -1,0 +1,64 @@
+﻿.btn-gradient-add {
+    background: linear-gradient(to right, #00b09b, #96c93d);
+    color: white;
+}
+
+.btn-gradient-details {
+    background: linear-gradient(to right, #8e2de2, #4a00e0);
+    color: white;
+}
+.nav-tabs .nav-link.active {
+    background: linear-gradient(to right, #36d1dc, #5b86e5);
+    color: white;
+    border-radius: 5px;
+    border: none;
+}
+.astric {
+    color: red
+}
+
+sup {
+    color: red;
+}
+input.is-invalid, textarea.is-invalid, select.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+.nav-tabs .nav-link {
+    background: linear-gradient(to right, #d7d2cc, #304352);
+    color: white;
+    border: none;
+    margin-right: 2px;
+    border-radius: 5px;
+}
+.card-header {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.form-label {
+    font-weight: 600;
+}
+
+.nav-link {
+    cursor: pointer;
+}
+
+.tab-pane {
+    margin-top: 1rem;
+}
+
+.badge-custom {
+    font-size: 0.85rem;
+    padding: 0.4em 0.8em;
+}
+
+.dataTables_wrapper .dataTables_paginate {
+    margin-top: 1rem;
+}
+
+/* Compact DataTable rows */
+table.dataTable tbody th,
+table.dataTable tbody td {
+    padding: 4px 8px; /* Default is ~8px; reducing for compactness */ /* :contentReference[oaicite:1]{index=1} */
+}

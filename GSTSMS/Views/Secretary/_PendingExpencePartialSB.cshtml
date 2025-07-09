@@ -1,0 +1,55 @@
+﻿@model List<GSTSMSLibrary.Secretary.Secretary>
+
+<link href="~/Content/css/SecretaryDashboardSB.css" rel="stylesheet" />
+
+<div class="modal-header position-relative bg-success text-white">
+    <h5 class="modal-title text-center w-100">Outstanding Expenses</h5>
+    <button type="button" class="close text-danger position-absolute" style="top: 10px; right: 15px;" data-dismiss="modal" aria-label="Close">
+        <span>&times;</span>
+    </button>
+</div>
+
+
+<div class="modal-body">
+    <table id="PendingExpenceTable" class="display data-table-sb" style="width:100%">
+        <thead style="background-color: #615677;">
+            <tr>
+                <th class="text-center">
+                    <div class="custom-checkbox custom-control">
+                        <input type="checkbox" class="custom-control-input" id="checkbox-all">
+                        <label for="checkbox-all" class="custom-control-label">&nbsp;</label>
+
+                    </div>
+                </th>
+                <th>Sr No</th>
+                <th>Paid To Name</th>
+                <th>Description</th>
+                <th>Total Amount</th>
+                <th>Paid Amount</th>
+                <th>Remaining Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <div class="custom-checkbox custom-control">
+                            <input type="checkbox" class="custom-control-input row-checkbox" id="checkbox-@item.SrNo">
+                            <label for="checkbox-@item.SrNo" class="custom-control-label">&nbsp;</label>
+                        </div>
+                    </td>
+                    <td>@item.SrNo</td>
+                    <td>@item.VendorName</td>
+                    <td>@item.Description</td>
+                    <td>@item.TotalAmount</td>
+                    <td>@item.PaidAmount</td>
+                    <td>@item.Amount</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</div>
+
+

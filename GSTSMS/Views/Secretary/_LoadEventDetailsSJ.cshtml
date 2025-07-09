@@ -1,0 +1,42 @@
+﻿@model GSTSMSLibrary.Secretary.Secretary
+
+<div class="modal-dialog" style="max-width: 500px;">
+    <div class="modal-content border-primary">
+        <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title font-weight-bold">@Model.Title</h5>
+            <button type="button" class="close custom-close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <dl class="row">
+                <dt class="col-sm-4">Type:</dt>
+                <dd class="col-sm-8">@Model.Type</dd>
+
+                <dt class="col-sm-4">Start Date:</dt>
+                <dd class="col-sm-8">@Model.StartDate?.ToString("dd MMM yyyy hh:mm tt")</dd>
+
+                @if (Model.EndDate != null)
+                {
+                    <dt class="col-sm-4">End Date:</dt>
+                    <dd class="col-sm-8">@Model.EndDate?.ToString("dd MMM yyyy hh:mm tt")</dd>
+                }
+
+                <dt class="col-sm-4">Location:</dt>
+                <dd class="col-sm-8">@Model.Location</dd>   <!-- ✅ Show Location -->
+
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <dt class="col-sm-4">Description:</dt>
+                    <dd class="col-sm-8">@Model.Description</dd>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.MeetingAgenda))
+                {
+                    <dt class="col-sm-4">Agenda:</dt>
+                    <dd class="col-sm-8">@Model.MeetingAgenda</dd>
+                }
+            </dl>
+        </div>
+    </div>
+</div>

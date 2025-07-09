@@ -1,0 +1,156 @@
+﻿
+@model GSTSMSLibrary.AccountManager.AccountManager
+
+<div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+            <h5 class="modal-title">Add Expense</h5>
+            <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            @using (Html.BeginForm("CreateExpense", "AccountManager", FormMethod.Post, new { enctype = "multipart/form-data", id = "expenseForm" }))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="form-horizontal">
+                    <h4>Add Expense</h4>
+                    <hr />
+                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                    <!-- Expense Type -->
+                    <div class="form-group row mb-3">
+                        @Html.LabelFor(m => m.ExpenseTypeId, new { @class = "col-sm-3 col-form-label" })
+                        <div class="col-sm-9">
+                            @Html.DropDownListFor(m => m.ExpenseTypeId, ViewBag.ExpenseTypeList as IEnumerable<SelectListItem>, "Select Type", new { @class = "form-control", id = "ExpenseTypeIdDropdown" })
+                        </div>
+                    </div>
+
+                    <!-- Vendor Type Dropdown -->
+                    <div class="form-group row mb-3">
+                        @Html.Label("Vendor Type", new { @class = "col-sm-3 col-form-label" })
+                        <div class="col-sm-9">
+                            <select id="vendorTypeDropdown" class="form-control">
+                                <option value="">Select Vendor Type</option>
+                                <option value="38">Regular</option>
+                                <option value="39">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Vendor Name Dropdown -->
+                    <div class="form-group row mb-3" id="vendorDropdownSection" style="display: none;">
+                        @Html.Label("Vendor Name", new { @class = "col-sm-3 col-form-label" })
+                        <div class="col-sm-9">
+                            <select id="vendorDropdown" class="form-control">
+                                <option value="">Select Vendor</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    @Html.HiddenFor(m => m.PaymentTo)
+
+                    <!-- Expense Name -->
+                    <div class="form-group row mb-3">
+                        @Html.LabelFor(m => m.ExpenseName, new { @class = "col-sm-3 col-form-label" })
+                        <div class="col-sm-9">
+                            @Html.TextBoxFor(m => m.ExpenseName, new { @class = "form-control" })
+                        </div>
+                    </div>
+
+                    <!-- GST Type -->
+                    <div class="form-group row mb-3">
+                        @Html.LabelFor(m => m.GSTTypeId, new { @class = "col-sm-3 col-form-label" })
+                        <div class="col-sm-9">
+                            @Html.DropDownListFor(m => m.GSTTypeId, ViewBag.GSTList as IEnumerable<SelectListItem>, "Select GST Type", new { @class = "form-control" })
+                        </div>
+                    </div>
+
+                    <!-- Amount -->
+                    <div class="form-group row mb-3">
+                        @Html.LabelFor(m => m.Amount, new { @class = "col-sm-3 col-form-label" })
+                        <div class="col-sm-9">
+                            @Html.TextBoxFor(m => m.Amount, new { @class = "form-control", type = "number", step = "0.01", placeholder = "Enter Amount" })
+                        </div>
+                    </div>
+
+                    <!-- Wing -->
+                    <div class="form-group row mb-3">
+                        @Html.LabelFor(m => m.WingId, new { @class = "col-sm-3 col-form-label" })
+                        <div class="col-sm-9">
+                            @Html.DropDownListFor(m => m.WingId, ViewBag.WingList as IEnumerable<SelectListItem>, "Select Wing", new { @class = "form-control" })
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-group row mb-3">
+                        @Html.LabelFor(m => m.Description, new { @class = "col-sm-3 col-form-label" })
+                        <div class="col-sm-9">
+                            @Html.TextBoxFor(m => m.Description, new { @class = "form-control", placeholder = "Enter Description" })
+                        </div>
+                    </div>
+
+                    <!-- Date -->
+                    <div class="form-group row mb-3">
+                        @Html.LabelFor(m => m.Date, new { @class = "col-sm-3 col-form-label" })
+                        <div class="col-sm-9">
+                            @Html.TextBoxFor(m => m.Date, "{0:yyyy-MM-ddTHH:mm}", new { @class = "form-control", type = "datetime-local" })
+                        </div>
+                    </div>
+
+                    <!-- Upload -->
+                    <div class="form-group row mb-3">
+                        @Html.Label("Upload PDF", new { @class = "col-sm-3 col-form-label" })
+                        <div class="col-sm-9">
+                            <input type="file" name="UploadedFile" class="form-control" accept=".pdf" />
+                        </div>
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="form-group row mb-3">
+                        <div class="col-sm-12 text-center">
+                            <button type="submit" class="btn btn-success">Save</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+
+
+<script>$(document).ready(function () {
+        $('#vendorTypeDropdown').change(function () {
+            var vendorType = $(this).val();
+
+            if (vendorType === "38" || vendorType === "39") {
+                $('#vendorDropdownSection').show();
+
+                $.ajax({
+                    url: '/AccountManager/GetVendorsByType',
+                    type: 'POST',
+                    data: { vendorType: vendorType },
+                    success: function (vendors) {
+                        var $dropdown = $('#vendorDropdown');
+                        $dropdown.empty().append('<option value="">Select Vendor</option>');
+                        $.each(vendors, function (i, vendor) {
+                            $dropdown.append('<option value="' + vendor.Value + '">' + vendor.Text + '</option>');
+                        });
+                    },
+                    error: function () {
+                        alert('Failed to load vendors.');
+                    }
+                });
+            } else {
+                $('#vendorDropdownSection').hide();
+                $('#vendorDropdown').empty();
+                $('#PaymentTo').val('');
+            }
+        });
+
+        $('#vendorDropdown').change(function () {
+            var selectedVendorCode = $(this).val();
+            $('#PaymentTo').val(selectedVendorCode);
+        });
+    });</script>

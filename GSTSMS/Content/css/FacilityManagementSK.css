@@ -1,0 +1,28 @@
+﻿
+.card-img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+    body.modal-open .modal-backdrop {
+        backdrop-filter: blur(5px);
+        background-color: rgba(0, 0, 0, 0.3);
+    }
+
+#facilityDetailContent p {
+    margin-bottom: 0.5rem;
+    font-size: 14px;
+}
+
+#facilityDetailModal img {
+    border-radius: 10px;
+}
+
+
