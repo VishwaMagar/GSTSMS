@@ -1,0 +1,309 @@
+﻿
+@model System.Data.DataRow
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+<style>
+    .modal-header {
+        background: linear-gradient(to right, #0d6efd, #0a58ca);
+        color: white;
+        padding: 0.5rem 1rem;
+        font-size: 14px;
+    }
+
+    .modal-backdrop.show {
+        z-index: 1040 !important;
+    }
+
+    .modal {
+        z-index: 1055 !important;
+        background-color: transparent;
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        color: #000;
+    }
+
+    .modal-body {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        font-size: 13px;
+    }
+
+    .list-group-item {
+        padding: 6px 10px;
+        font-size: 13px;
+        border: none;
+        border-left: 4px solid #0d6efd;
+        margin-bottom: 5px;
+    }
+
+    .btn-action {
+        font-size: 13px;
+        padding: 5px 15px;
+        border-radius: 20px;
+    }
+
+    .payment-label {
+        font-weight: 600;
+    }
+
+    #amountToPay {
+        font-weight: bold;
+        color: #198754;
+    }
+</style>
+
+<div class="modal-header">
+    <h6 class="modal-title"><i class="bi bi-cash-coin me-2"></i>Worker Payment</h6>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<div class="modal-body">
+    <!-- Hidden Fields -->
+    <input type="hidden" id="workerCode" value="@Model["WorkerCode"]" />
+    <input type="hidden" id="joiningDate" value="@Model["Date"]" />
+    <input type="hidden" id="baseSalary" value="@Model["BaseSalary"]" />
+    <input type="hidden" id="daysPresent" value="@Model["DaysPresent"]" />
+    <input type="hidden" id="accountNo" value="@Model["AccountNo"]" />
+
+    <!-- Visible Info -->
+    <ul class="list-group mb-3">
+        <li class="list-group-item">👤 <span class="payment-label">Name:</span> @Model["WorkerName"]</li>
+        <li class="list-group-item">📞 <span class="payment-label">Contact:</span> @Model["Contact"]</li>
+        <li class="list-group-item">🧰 <span class="payment-label">Role:</span> @Model["Role"]</li>
+        <li class="list-group-item">🏦 <span class="payment-label">Bank:</span> <span id="bankName">–</span></li>
+        <li class="list-group-item">🏢 <span class="payment-label">Branch:</span> <span id="branchName">–</span></li>
+        <li class="list-group-item">🗓 <span class="payment-label">Present Days:</span> @Model["DaysPresent"]</li>
+        <li class="list-group-item">🗓 <span class="payment-label">Base Salary:</span> ₹@Model["BaseSalary"]</li>
+        <li class="list-group-item">🗓 <span class="payment-label">Month:</span> @Model["AttendanceMonth"]</li>
+        <li class="list-group-item">🔢 <span class="payment-label">IFSC:</span> @Model["IFSC Code"]</li>
+        <li class="list-group-item">💳 <span class="payment-label">UPI:</span> @Model["Worker UPI"]</li>
+        <li class="list-group-item">💰 <span class="payment-label">Total Pay:</span> ₹<span id="amountToPay">@Model["AmountToBePaid"]</span></li>
+    </ul>
+
+    <div class="text-end">
+        <button id="rzp-confirm" class="btn btn-success btn-action">✅ Pay Now</button>
+        <button class="btn btn-outline-secondary btn-action ms-2" data-bs-dismiss="modal">❌ Close</button>
+    </div>
+</div>
+
+
+<script>
+    function fetchIfsc(code) {
+        if (!code) return;
+        $.getJSON(`https://ifsc.razorpay.com/${code}`)
+            .done(d => {
+                $('#bankName').text(d.BANK);
+                $('#branchName').text(d.BRANCH);
+            })
+            .fail(() => {
+                $('#bankName').text('Invalid IFSC');
+                $('#branchName').text('');
+            });
+    }
+
+    // 🔁 IFSC Fetch when modal opens
+    $(document).on('shown.bs.modal', '#paymentModal', function () {
+        fetchIfsc("@Model["IFSC Code"]");
+    });
+
+    // ✅ Razorpay Payment Handler
+    $(document).on('click', '#rzp-confirm', function (e) {
+        e.preventDefault();
+
+        var amountInRupees = parseFloat($('#amountToPay').text());
+        if (isNaN(amountInRupees) || amountInRupees <= 0) {
+            Swal.fire("Error", "Invalid amount ❌", "error");
+            return;
+        }
+
+        var amountInPaise = Math.round(amountInRupees * 100);
+
+        // Safety: Check if Razorpay is loaded
+        if (typeof Razorpay === "undefined") {
+            Swal.fire("Error", "Razorpay SDK not loaded ❌", "error");
+            return;
+        }
+
+        var options = {
+            key: "rzp_test_tnu8pNChRc5VBE", // Replace with live key in production
+            amount: amountInPaise,
+            currency: "INR",
+            name: "Green Vally Society",
+            description: "Salary for @Model["WorkerName"] (@Model["AttendanceMonth"])",
+            prefill: {
+                name: "@Model["WorkerName"]",
+                contact: "@Model["Contact"]"
+            },
+            notes: {
+                ifsc: "@Model["IFSC Code"]",
+                upi: "@Model["Worker UPI"]"
+            },
+            handler: function (response) {
+                $.post("@Url.Action("ProcessPayment", "AccountManager")", {
+                    WorkerCode: $('#workerCode').val(),
+                    AttendanceMonth: "@Model["AttendanceMonth"]",
+                    Amount: amountInRupees,
+                    TransactionId_ChequeId: response.razorpay_payment_id,
+                    IFSCCode: "@Model["IFSC Code"]",
+                    WorkerUPI: "@Model["Worker UPI"]",
+                    Contact: "@Model["Contact"]",
+                    RoleName: "@Model["Role"]",
+                    DateOfJoining: $('#joiningDate').val(),
+                    BaseSalary: $('#baseSalary').val(),
+                    DaysPresent: $('#daysPresent').val(),
+                    AccountNumber: $('#accountNo').val(),
+                    PaymentMode: 1,
+                    PaidTo: $('#workerCode').val(),
+                    UPIId: "@Model["Worker UPI"]",
+                    PaymentPurpose: "Monthly Salary",
+                    EntityCode: "ENT001",
+                    BankName_Code: "BANC086",
+                    TransactionType: 27,
+                    PaymentBy: "STF002"
+                }).done(function () {
+                    Swal.fire("Success!", "Payment done ✅", "success");
+
+                    let workerCode = $('#workerCode').val();
+                    let month = "@Model["AttendanceMonth"]";
+
+                    $('#workerTable tbody tr').each(function () {
+                        let row = $(this);
+                        let rowWorker = row.find('.payBtn').data('worker');
+                        let rowMonth = row.find('.payBtn').data('month');
+                        if (rowWorker === workerCode && rowMonth === month) {
+                            row.find('td:last').html(`
+                                <button class="btn btn-info btn-sm viewBtn"
+                                    data-worker="${workerCode}"
+                                    data-month="${month}">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            `);
+                            row.addClass("table-success");
+                        }
+                    });
+
+                    $('#paymentModal').modal('hide');
+                    $('body').removeClass('modal-open');
+                    $('.modal-backdrop').remove();
+                }).fail(function () {
+                    Swal.fire("Error", "Payment processed but server failed ❌", "error");
+                });
+            }
+        };
+
+        var rzp = new Razorpay(options);
+        rzp.open();
+    });
+</script>
+
+
+@*<script>
+        function fetchIfsc(code) {
+            if (!code) return;
+            $.getJSON(`https://ifsc.razorpay.com/${code}`)
+                .done(d => {
+                    $('#bankName').text(d.BANK);
+                    $('#branchName').text(d.BRANCH);
+                })
+                .fail(() => {
+                    $('#bankName').text('Invalid IFSC');
+                    $('#branchName').text('');
+                });
+        }
+
+        // 🔁 IFSC Fetch when modal opens
+        $(document).on('shown.bs.modal', '#paymentModal', function () {
+            fetchIfsc("@Model["IFSC Code"]");
+        });
+
+        // ✅ Razorpay Payment Handler
+        $(document).on('click', '#rzp-confirm', function (e) {
+
+                e.preventDefault();
+
+                var amountInRupees = parseFloat($('#amountToPay').text());
+                if (isNaN(amountInRupees) || amountInRupees <= 0) {
+                    Swal.fire("Error", "Invalid amount ❌", "error");
+                    return;
+                }
+
+                var amountInPaise = Math.round(amountInRupees * 100);
+
+                var options = {
+                    key: "rzp_test_tnu8pNChRc5VBE", // Replace with live key in production
+                    amount: amountInPaise,
+                    currency: "INR",
+                    name: "Green Vally Society",
+                    description: Salary for @Model["WorkerName"] (@Model["AttendanceMonth"]),
+                    prefill: {
+                        name: "@Model["WorkerName"]",
+                        contact: "@Model["Contact"]"
+                    },
+                    notes: {
+                        ifsc: "@Model["IFSC Code"]",
+                        upi: "@Model["Worker UPI"]"
+                    },
+                    handler: function (response) {
+                        $.post("@Url.Action("ProcessPayment", "AccountManager")", {
+                            WorkerCode: $('#workerCode').val(),
+                            AttendanceMonth: "@Model["AttendanceMonth"]",
+                            Amount: amountInRupees,
+                            TransactionId_ChequeId: response.razorpay_payment_id,
+                            IFSCCode: "@Model["IFSC Code"]",
+                            WorkerUPI: "@Model["Worker UPI"]",
+                            Contact: "@Model["Contact"]",
+                            RoleName: "@Model["Role"]",
+                            DateOfJoining: $('#joiningDate').val(),
+                            BaseSalary: $('#baseSalary').val(),
+                            DaysPresent: $('#daysPresent').val(),
+                            AccountNumber: $('#accountNo').val(),
+                            PaymentMode: 1,
+                            PaidTo: $('#workerCode').val(),
+                            UPIId: "@Model["Worker UPI"]",
+                            PaymentPurpose: "Monthly Salary",
+                            EntityCode: "ENT001",
+                            BankName_Code: "BANC086",
+                            TransactionType: 27,
+                            PaymentBy: "STF002"
+                        }).done(function () {
+                            Swal.fire("Success!", "Payment done ✅", "success");
+
+                            let workerCode = $('#workerCode').val();
+                            let month = "@Model["AttendanceMonth"]";
+
+                            $('#workerTable tbody tr').each(function () {
+                                let row = $(this);
+                                let rowWorker = row.find('.payBtn').data('worker');
+                                let rowMonth = row.find('.payBtn').data('month');
+                                if (rowWorker === workerCode && rowMonth === month) {
+                                    row.find('td:last').html(`
+                                        <button class="btn btn-info btn-sm viewBtn"
+                                            data-worker="${workerCode}"
+                                            data-month="${month}">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    `);
+                                    row.addClass("table-success");
+                                }
+                            });
+
+                            // ✅ Close modal and clean up backdrop
+                            $('#paymentModal').modal('hide');
+                            $('body').removeClass('modal-open');
+                            $('.modal-backdrop').remove();
+                        }).fail(function () {
+                            Swal.fire("Error", "Payment processed but server failed ❌", "error");
+                        });
+                    }
+                };
+
+                var rzp = new Razorpay(options);
+                rzp.open();
+            });
+        });
+    </script>*@

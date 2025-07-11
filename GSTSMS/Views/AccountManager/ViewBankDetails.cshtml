@@ -95,9 +95,7 @@
                                                     </td>
                                                     <td>@sr</td>
                                                     <td>@txn.PaymentByName</td>
-                                                    <td>
-                                                        @(txn.PaidDate != null ? txn.PaidDate.Value.ToString("dd-MM-yyyy") : "-")
-                                                    </td>
+                                                    <td>@(txn.PaidDate?.ToString("dd-MM-yyyy") ?? "N/A")</td>
                                                     <td>₹@txn.Amount.ToString("N0")</td>
                                                     <td>
                                                         <div class="badge badge-info">@txn.Status</div>
@@ -121,120 +119,126 @@
     </div>
 </div>
 
-<!-- JS FILES -->
-<script src="~/Content/modules/moment.min.js"></script>
-<script src="~/Content/modules/bootstrap-daterangepicker/daterangepicker.js"></script>
-<script src="~/Content/modules/datatables/datatables.min.js"></script>
-<script src="~/Content/modules/datatables/dataTables.bootstrap4.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
-<script>
-    $(document).ready(function () {
-        const displayFormat = "DD-MM-YYYY";
 
-        // Initialize daterange picker
-        $('.daterange-btn').daterangepicker({
-            locale: { format: displayFormat },
-            startDate: moment().startOf('month'),
-            endDate: moment()
-        }, function (start, end) {
-            $('#fromDate1').val(start.format(displayFormat));
-            $('#toDate1').val(end.format(displayFormat));
-            $('.daterange-btn span').html(start.format(displayFormat) + ' - ' + end.format(displayFormat));
-            table.draw();
-        });
 
-        $('#fromDate1').val(moment().startOf('month').format(displayFormat));
-        $('#toDate1').val(moment().format(displayFormat));
-        $('.daterange-btn span').html(moment().startOf('month').format(displayFormat) + ' - ' + moment().format(displayFormat));
+@section scripts {
+    <!-- JS FILES -->
+    <script src="~/Content/modules/moment.min.js"></script>
+    <script src="~/Content/modules/bootstrap-daterangepicker/daterangepicker.js"></script>
+    <script src="~/Content/modules/datatables/datatables.min.js"></script>
+    <script src="~/Content/modules/datatables/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
-        // Custom date range filtering
-        $.fn.dataTable.ext.search.push(function (settings, data) {
-            var min = moment($('#fromDate1').val(), displayFormat);
-            var max = moment($('#toDate1').val(), displayFormat);
-            var date = moment(data[3], displayFormat);
-            return (!min.isValid() || !max.isValid() || !date.isValid()) || (date.isSameOrAfter(min) && date.isSameOrBefore(max));
-        });
+    <script>
 
-        const table = $('#txnTable').DataTable({
-            "columnDefs": [{ "orderable": false, "targets": [0] }],
-            "pageLength": 10,
-            "ordering": true,
-            "searching": true,
-            "lengthChange": true,
-            "language": {
-                "search": "",
-                "searchPlaceholder": "Search transactions...",
-                "paginate": {
-                    "previous": "<i class='fas fa-angle-left'></i>",
-                    "next": "<i class='fas fa-angle-right'></i>"
+        $(document).ready(function () {
+            const displayFormat = "DD-MM-YYYY";
+
+            // Initialize daterange picker
+            $('.daterange-btn').daterangepicker({
+                locale: { format: displayFormat },
+                startDate: moment().startOf('month'),
+                endDate: moment()
+            }, function (start, end) {
+                $('#fromDate1').val(start.format(displayFormat));
+                $('#toDate1').val(end.format(displayFormat));
+                $('.daterange-btn span').html(start.format(displayFormat) + ' - ' + end.format(displayFormat));
+                table.draw();
+            });
+
+            $('#fromDate1').val(moment().startOf('month').format(displayFormat));
+            $('#toDate1').val(moment().format(displayFormat));
+            $('.daterange-btn span').html(moment().startOf('month').format(displayFormat) + ' - ' + moment().format(displayFormat));
+
+            // Custom date range filtering
+            $.fn.dataTable.ext.search.push(function (settings, data) {
+                var min = moment($('#fromDate1').val(), displayFormat);
+                var max = moment($('#toDate1').val(), displayFormat);
+                var date = moment(data[3], displayFormat);
+                return (!min.isValid() || !max.isValid() || !date.isValid()) || (date.isSameOrAfter(min) && date.isSameOrBefore(max));
+            });
+
+            const table = $('#txnTable').DataTable({
+                "columnDefs": [{ "orderable": false, "targets": [0] }],
+                "pageLength": 10,
+                "ordering": true,
+                "searching": true,
+                "lengthChange": true,
+                "language": {
+                    "search": "",
+                    "searchPlaceholder": "Search transactions...",
+                    "paginate": {
+                        "previous": "<i class='fas fa-angle-left'></i>",
+                        "next": "<i class='fas fa-angle-right'></i>"
+                    }
+                },
+                "initComplete": function () {
+                    $("#txnTable_filter").remove(); // remove duplicate search
                 }
-            },
-            "initComplete": function () {
-                $("#txnTable_filter").remove(); // remove duplicate search
+            });
+
+            $('#searchBox').on('keyup', function () {
+                table.search(this.value).draw();
+            });
+
+            // Select-all across all pages
+            $('#checkbox-all').on('change', function () {
+                var checked = this.checked;
+                $('.checkbox-item').prop('checked', checked);
+            });
+
+            function getSelectedRows() {
+                return $('.checkbox-item:checked').closest('tr');
             }
-        });
 
-        $('#searchBox').on('keyup', function () {
-            table.search(this.value).draw();
-        });
-
-        // Select-all across all pages
-        $('#checkbox-all').on('change', function () {
-            var checked = this.checked;
-            $('.checkbox-item').prop('checked', checked);
-        });
-
-        function getSelectedRows() {
-            return $('.checkbox-item:checked').closest('tr');
-        }
-
-        $('#exportCsv').click(function () {
-            const rows = getSelectedRows();
-            if (rows.length === 0) return alert("Please select transactions.");
-            let csv = "Sr. No,Sender/Receiver,Date,Amount,Status\n";
-            rows.each(function () {
-                const data = $(this).find('td').map((i, el) => $(el).text().trim()).get().slice(1);
-                csv += data.join(",") + "\n";
+            $('#exportCsv').click(function () {
+                const rows = getSelectedRows();
+                if (rows.length === 0) return alert("Please select transactions.");
+                let csv = "Sr. No,Sender/Receiver,Date,Amount,Status\n";
+                rows.each(function () {
+                    const data = $(this).find('td').map((i, el) => $(el).text().trim()).get().slice(1);
+                    csv += data.join(",") + "\n";
+                });
+                const blob = new Blob([csv], { type: "text/csv" });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = "Transaction_Statement.csv";
+                link.click();
             });
-            const blob = new Blob([csv], { type: "text/csv" });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "Transaction_Statement.csv";
-            link.click();
-        });
 
-        $('#exportExcel').click(function () {
-            const rows = getSelectedRows();
-            if (rows.length === 0) return alert("Please select transactions.");
-            const data = [["Sr. No", "Sender/Receiver", "Date", "Amount", "Status"]];
-            rows.each(function () {
-                const row = $(this).find('td').map((i, el) => $(el).text().trim()).get().slice(1);
-                data.push(row);
+            $('#exportExcel').click(function () {
+                const rows = getSelectedRows();
+                if (rows.length === 0) return alert("Please select transactions.");
+                const data = [["Sr. No", "Sender/Receiver", "Date", "Amount", "Status"]];
+                rows.each(function () {
+                    const row = $(this).find('td').map((i, el) => $(el).text().trim()).get().slice(1);
+                    data.push(row);
+                });
+                const ws = XLSX.utils.aoa_to_sheet(data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Transactions");
+                XLSX.writeFile(wb, "Transaction_Statement.xlsx");
             });
-            const ws = XLSX.utils.aoa_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Transactions");
-            XLSX.writeFile(wb, "Transaction_Statement.xlsx");
-        });
 
-        $('#exportPdf').click(function () {
-            const rows = getSelectedRows();
-            if (rows.length === 0) return alert("Please select transactions.");
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const data = [];
-            rows.each(function () {
-                const row = $(this).find('td').map((i, el) => $(el).text().trim()).get().slice(1);
-                data.push(row);
+            $('#exportPdf').click(function () {
+                const rows = getSelectedRows();
+                if (rows.length === 0) return alert("Please select transactions.");
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const data = [];
+                rows.each(function () {
+                    const row = $(this).find('td').map((i, el) => $(el).text().trim()).get().slice(1);
+                    data.push(row);
+                });
+                doc.autoTable({
+                    head: [["Sr. No", "Sender/Receiver", "Date", "Amount", "Status"]],
+                    body: data
+                });
+                doc.save("Transaction_Statement.pdf");
             });
-            doc.autoTable({
-                head: [["Sr. No", "Sender/Receiver", "Date", "Amount", "Status"]],
-                body: data
-            });
-            doc.save("Transaction_Statement.pdf");
         });
-    });
-</script>
+    </script>
+}

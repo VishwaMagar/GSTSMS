@@ -1,0 +1,500 @@
+﻿@model IEnumerable<GSTSMSLibrary.AccountManager.AccountManager>
+
+@{
+    ViewBag.Title = "EventList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>EventList</h2>
+
+<!-- CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap4.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<link href="~/Content/modules/bootstrap-daterangepicker/daterangepicker.css" rel="stylesheet" />
+
+<style>
+    .dataTables_wrapper {
+        overflow-x: unset !important;
+    }
+
+    .export-label {
+        display: none;
+    }
+
+    #eventTable_wrapper {
+/*        margin-left: 248px;
+*/    }
+
+    #Header {
+      /*  margin-left: 270px;*/
+        width: 1200px;
+    }
+
+    #button {
+/*        margin-left: 271px;
+*/        margin-top: 24px;
+    }
+
+    .modal-content {
+        width: 750px;
+        height: 400px;
+    }
+</style>
+
+<div class="card-header d-flex justify-content-between align-items-center flex-wrap" id="Header">
+    <div class="d-flex align-items-center gap-2">
+        <h4 class="mb-0">Event List</h4>
+    </div>
+    <div id="exportButtons" class="d-flex gap-2"></div>
+</div>
+
+<a href="javascript:;" class="btn btn-primary open-create-modal" data-url="@Url.Action("CreateBudget", "AccountManager")" id="button">
+    <i class="fa fa-plus"></i> Create Budget
+</a>
+
+<div class="card-body">
+    <div class="form-group mb-3">
+        <a href="javascript:;" class="btn btn-primary daterange-btn icon-left btn-icon">
+            <i class="fas fa-calendar"></i> <span>Select Date</span>
+        </a>
+        <input type="hidden" id="fromDate1" />
+        <input type="hidden" id="toDate1" />
+    </div>
+
+    <table class="table table-bordered table-striped w-100" id="eventTable">
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="selectAll" /></th>
+                <th>Sr.No</th>
+                <th>Event Name</th>
+                <th>Event Handler Name</th>
+                <th>Created Date</th>
+                <th>Allocated Budget</th>
+                <th>Actual Cost</th>
+                <th>Added Date</th>
+                <th>Payment</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                int serial = 1;
+                foreach (var item in Model)
+                {
+                    var status = item.BudgetStatusName?.ToLower();
+                    <tr>
+                        <td><input type="checkbox" class="row-checkbox" /></td>
+                        <td>@serial</td>
+                        <td>@item.EventName</td>
+                        <td>@item.EventHandlerName</td>
+                        <td>@(item.CreatedDate?.ToString("dd-MM-yyyy"))</td>
+                        <td>₹ @(item.AllocatedBudget?.ToString("N0") ?? "0")</td>
+                        <td>₹ @(item.ActualCost?.ToString("N0") ?? "0")</td>
+                        <td>@(item.BudgetAddedDate?.ToString("dd-MM-yyyy"))</td>
+                        <td class="text-center">
+                            <span class="export-label">
+                                @(status == "paid" ? "Paid" :
+                                  status == "approved" ? "Pay" :
+                                  status == "unpaid" ? "Send Request" :
+                                  status == "rejected" ? "Rejected" : "N/A")
+                            </span>
+                            @if (status == "paid")
+                            {
+                                <button class="btn btn-sm btn-secondary" disabled><i class="fa fa-lock"></i> Paid</button>
+                            }
+                            else if (status == "approved")
+                            {
+                                <button class="btn btn-sm btn-success pay-btn" data-eventcode="@item.EventCode">
+                                    <i class="fa fa-money-bill-wave"></i> Pay
+                                </button>
+                            }
+                            else if (status == "unpaid")
+                            {
+                                <button class="btn btn-sm btn-primary send-request-btn" data-id="@item.EBudgetId">
+                                    <i class="fa fa-paper-plane"></i> Send Request
+                                </button>
+                            }
+                            else if (status == "rejected")
+                            {
+                                <button class="btn btn-sm btn-secondary" disabled style="opacity: 0.6;">
+                                    <i class="fa fa-ban"></i> Pay
+                                </button>
+                            }
+                        </td>
+                        <td><div class="badge badge-@GetBadgeClass(item.BudgetStatusName)">@item.BudgetStatusName</div></td>
+                        <td class="text-center text-nowrap">
+                            <a href="javascript:;" class="btn btn-sm btn-warning open-update-modal" data-url="@Url.Action("UpdateDetails", "AccountManager", new { eventCode = item.EventCode })" title="Edit">
+                                <i class="fa fa-edit"></i>
+                            </a>
+                            <a href="javascript:;" class="btn btn-sm btn-info me-1 open-view-modal" data-url="@Url.Action("ViewBudget", "AccountManager", new { eventCode = item.EventCode })" title="View">
+                                <i class="fa fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    serial++;
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Modals -->
+<div class="modal fade" id="createModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content"></div>
+    </div>
+</div>
+
+<div class="modal fade" id="viewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content"></div>
+    </div>
+</div>
+
+<div class="modal fade" id="updateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content"></div>
+    </div>
+</div>
+
+@functions {
+    public string GetBadgeClass(string status)
+    {
+        if (string.IsNullOrEmpty(status)) return "secondary";
+        switch (status.ToLower())
+        {
+            case "paid": return "success";
+            case "approved": return "info";
+            case "rejected": return "danger";
+            case "unpaid": return "warning";
+            default: return "secondary";
+        }
+    }
+}
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script src="~/Content/modules/moment.min.js"></script>
+    <script src="~/Content/modules/bootstrap-daterangepicker/daterangepicker.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            var table = $('#eventTable').DataTable({
+                dom: 'Bfrtip',
+                scrollX: true,
+                buttons: [
+                    {
+                        extend: 'csvHtml5',
+                        text: '<i class="fas fa-file-csv text-primary"></i>',
+                        className: 'btn btn-outline-primary btn-sm',
+                        exportOptions: {
+                            rows: function (idx, data, node) {
+                                return $(node).find('input.row-checkbox').prop('checked');
+                            },
+                            columns: ':not(:first-child):not(:last-child)',
+                            format: { body: function (data, row, column, node) {
+                                return $(node).find(".export-label").text().trim() || $(node).text().trim();
+                            }}
+                        }
+                    },
+                    {
+                        extend: 'excelHtml5',
+                        text: '<i class="fas fa-file-excel text-success"></i>',
+                        className: 'btn btn-outline-success btn-sm',
+                        exportOptions: {
+                            rows: function (idx, data, node) {
+                                return $(node).find('input.row-checkbox').prop('checked');
+                            },
+                            columns: ':not(:first-child):not(:last-child)',
+                            format: { body: function (data, row, column, node) {
+                                return $(node).find(".export-label").text().trim() || $(node).text().trim();
+                            }}
+                        }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        text: '<i class="fas fa-file-pdf text-danger"></i>',
+                        className: 'btn btn-outline-danger btn-sm',
+                        orientation: 'landscape',
+                        pageSize: 'A4',
+                        exportOptions: {
+                            rows: function (idx, data, node) {
+                                return $(node).find('input.row-checkbox').prop('checked');
+                            },
+                            columns: ':not(:first-child):not(:last-child)',
+                            format: { body: function (data, row, column, node) {
+                                return $(node).find(".export-label").text().trim() || $(node).text().trim();
+                            }}
+                        }
+                    }
+                ],
+                pageLength: 10,
+                columnDefs: [{ orderable: false, targets: [0, 10] }],
+                drawCallback: function () {
+                    var api = this.api();
+                    api.rows({ page: 'current' }).every(function (rowIdx, tableLoop, rowLoop) {
+                        var index = rowLoop + 1;
+                        $(this.node()).find('td:eq(1)').html(index);
+                    });
+                }
+            });
+
+            table.buttons().container().appendTo('#exportButtons');
+
+            $('#selectAll').on('change', function () {
+                $('.row-checkbox').prop('checked', this.checked);
+            });
+
+            $('#eventTable').on('change', '.row-checkbox', function () {
+                $('#selectAll').prop('checked', $('.row-checkbox:checked').length === $('.row-checkbox').length);
+            });
+
+            $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+                var min = $('#fromDate1').val();
+                var max = $('#toDate1').val();
+                var dateStr = data[4];
+                if (!min && !max) return true;
+                var rowDate = moment(dateStr, 'DD-MM-YYYY');
+                var minDate = moment(min, 'DD-MM-YYYY');
+                var maxDate = moment(max, 'DD-MM-YYYY');
+                return rowDate.isValid() && (!min || rowDate.isSameOrAfter(minDate)) && (!max || rowDate.isSameOrBefore(maxDate));
+            });
+
+            function initializeDateRangePicker() {
+                var format = 'DD-MM-YYYY';
+                $('.daterange-btn').daterangepicker({
+                    locale: { format: format },
+                    startDate: moment().startOf('month'),
+                    endDate: moment()
+                }, function (start, end) {
+                    $('.daterange-btn span').html(start.format(format) + ' - ' + end.format(format));
+                    $('#fromDate1').val(start.format(format));
+                    $('#toDate1').val(end.format(format));
+                    table.draw();
+                });
+
+                $('#fromDate1').val(moment().startOf('month').format(format));
+                $('#toDate1').val(moment().format(format));
+                $('.daterange-btn span').html(moment().startOf('month').format(format) + ' - ' + moment().format(format));
+            }
+
+            initializeDateRangePicker();
+
+            // ✅ Send Request AJAX
+            $(document).on('click', '.send-request-btn', function () {
+                var btn = $(this);
+                var budgetId = btn.data("id");
+
+                $.ajax({
+                    url: '@Url.Action("SendRequestAjax", "AccountManager")',
+                    type: 'POST',
+                    data: { id: budgetId },
+                    success: function (response) {
+                        if (response.success) {
+                            toastr.success(response.message);
+                            btn.closest('td').html(`
+                                <a href="/AccountManager/Pay?id=${budgetId}" class="btn btn-sm btn-success">
+                                    <i class="fa fa-money-bill-wave"></i> Pay
+                                </a>
+                            `);
+                            var row = btn.closest('tr');
+                            row.find('td').eq(9).html('<div class="badge badge-info">Approved</div>');
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    },
+                    error: function () {
+                        toastr.error("Something went wrong. Please try again.");
+                    }
+                });
+            });
+
+            // ✅ Modal logic
+            $(document).on("click", ".open-create-modal", function () {
+                var url = $(this).data("url");
+                $.get(url, function (data) {
+                    $("#createModal .modal-content").html(data);
+                    $("#createModal").modal("show");
+                });
+            });
+
+            $(document).on("click", ".open-view-modal", function () {
+                var url = $(this).data("url");
+                $.get(url, function (data) {
+                    $("#viewModal .modal-content").html(data);
+                    $("#viewModal").modal("show");
+                });
+            });
+
+            $(document).on("click", ".open-update-modal", function () {
+                var url = $(this).data("url");
+                $.get(url, function (data) {
+                    $("#updateModal .modal-content").html(data);
+                    $("#updateModal").modal("show");
+                });
+            });
+
+            // Close modal function
+            function closeModal() {
+                if ($('#createModal').hasClass('show')) {
+                    $('#createModal').modal('hide');
+                } else if ($('#viewModal').hasClass('show')) {
+                    $('#viewModal').modal('hide');
+                } else if ($('#updateModal').hasClass('show')) {
+                    $('#updateModal').modal('hide');
+                }
+            }
+
+            // Clear modal content when hidden
+            $('.modal').on('hidden.bs.modal', function () {
+                $(this).find('.modal-content').html('');
+            });
+
+
+        });
+    </script>
+    ✅ Razor Partial Popup Modal
+    <div id="paymentPopupOverlay" class="popup-overlay d-none">
+        <div class="popup-box">
+            <button class="btn btn-outline-danger btn-sm close-btn" onclick="hidePartial()">×</button>
+            <div id="paymentPartialContainer"></div>
+        </div>
+    </div>
+
+    ✅ Popup Styling
+    <style>
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .popup-box {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            width: 600px;
+            max-width: 95%;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+            .popup-box button.close-btn {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+            }
+    </style>
+
+    ✅ SCRIPT: Razorpay Payment + AJAX + Toastr
+    <script>
+        let selectedEventCode = '';
+        let selectedAmount = 0;
+
+        // ✅ Handle "Pay" button click
+        $(document).on('click', '.pay-btn', function () {
+            selectedEventCode = $(this).data('eventcode');
+
+            $.ajax({
+                url: '/AccountManager/LoadPaymentPartialSV',
+                type: 'GET',
+                data: { eventCode: selectedEventCode },
+                success: function (html) {
+                    $('#paymentPartialContainer').html(html);
+                    $('#paymentPopupOverlay').removeClass('d-none'); // Show popup
+
+                    const ifsc = $('#paymentPartialContainer').find("p:contains('IFSC Code')").text().split(':')[1]?.trim();
+                    selectedAmount = parseFloat($('#paymentPartialContainer').find("p:contains('Amount to Pay')").text().replace(/[^\d.]/g, ''));
+
+                    if (ifsc) {
+                        fetch(`https://ifsc.razorpay.com/${ifsc}`)
+                                    .then(res => res.json())
+                            .then(data => {
+                                $('#bankName').text(data.BANK || 'N/A');
+                                $('#bankBranch').text(data.BRANCH || 'N/A');
+                                $('#bankAddress').text(data.ADDRESS || 'N/A');
+                                $('#bankDetails').removeClass('d-none');
+                            })
+                            .catch(err => console.warn('IFSC fetch failed:', err));
+                    }
+                },
+                error: function (err) {
+                    toastr.error("❌ Failed to load payment form.");
+                    console.error(err);
+                }
+            });
+        });
+
+        // ✅ Hide Partial Popup
+        function hidePartial() {
+            $('#paymentPopupOverlay').addClass('d-none');
+            $('#paymentPartialContainer').html('');
+        }
+
+        // ✅ Handle Razorpay Payment Confirm
+        $(document).on("click", "#confirmPaymentBtn", function () {
+            const options = {
+                "key": "rzp_test_tnu8pNChRc5VBE",
+                "amount": selectedAmount * 100,
+                "currency": "INR",
+                "name": "Green Valley Society",
+                "description": "Payment for Event: " + selectedEventCode,
+                "handler": function (response) {
+                    fetch('/AccountManager/SavePaymentSV', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            eventCode: selectedEventCode,
+                            transactionId_ChequeId: response.razorpay_payment_id,
+                            paymentId: response.razorpay_payment_id,
+                            paymentModeId: 0
+                        })
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                toastr.success("✅ Payment successful!");
+                                hidePartial();
+                                setTimeout(() => location.reload(), 15000);
+                            } else {
+                                toastr.error("❌ Failed to save payment.");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error saving payment:", error);
+                            toastr.error("❌ Payment processing error.");
+                        });
+                },
+                "theme": {
+                    "color": "#0d6efd"
+                }
+            };
+            const rzp = new Razorpay(options);
+            rzp.open();
+        });
+    </script>
+
+}

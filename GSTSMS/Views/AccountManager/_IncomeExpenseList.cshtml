@@ -1,0 +1,114 @@
+﻿
+@model List<GSTSMSLibrary.AccountManager.AccountManager>
+@{
+    Layout = null;
+}
+
+
+<!-- ✅ MODAL BODY -->
+<div class="modal-body bg-white p-3" style="border-radius: 0 0 0.75rem 0.75rem; max-height: 80vh; overflow-y: auto;">
+    @if (Model != null && Model.Count > 0)
+    {
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered table-hover table-striped w-100 dataTableExport"
+                   id="incomeExpenseTable" style="table-layout: fixed;">
+                <thead class="thead-dark small">
+                    <tr>
+                        <th style="width: 30px;"><input type="checkbox" id="selectAll" /></th>
+                        <th style="width: 100px;">Month</th>
+                        <th style="width: 120px;">Type</th>
+                        <th class="text-right" style="width: 130px;">Amount (₹)</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody class="small">
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><input type="checkbox" class="rowCheckbox" /></td>
+                            <td>@item.MonthName</td>
+                            <td>
+                                <span class="badge @(item.TypeLabel == "Income" ? "badge-success" : "badge-danger")">
+                                    @item.TypeLabel
+                                </span>
+                            </td>
+                            <td class="text-right">₹@item.Amount.ToString("N2")</td>
+                            <td>@item.PaymentPurpose</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">No income or expense data found.</div>
+    }
+</div>
+
+<!-- ✅ STYLES -->
+<style>
+    .modal-xl {
+        max-width: 90% !important;
+    }
+
+    table td, table th {
+        padding: 0.4rem 0.6rem !important;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+    }
+</style>
+
+<!-- ✅ DATATABLES CSS -->
+<link href="~/Content/modules/datatables/datatables.min.css" rel="stylesheet" />
+<link href="~/Content/modules/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+<link href="~/Content/modules/datatables/Buttons-1.5.1/css/buttons.bootstrap4.min.css" rel="stylesheet" />
+<link href="~/Content/modules/datatables/Select-1.2.6/css/select.bootstrap4.min.css" rel="stylesheet" />
+
+<!-- ✅ DATATABLES JS -->
+<script src="~/Content/modules/datatables/datatables.min.js"></script>
+<script src="~/Content/modules/datatables/Buttons-1.5.1/js/dataTables.buttons.min.js"></script>
+<script src="~/Content/modules/datatables/Buttons-1.5.1/js/buttons.bootstrap4.min.js"></script>
+<script src="~/Content/modules/datatables/JSZip-2.5.0/jszip.min.js"></script>
+<script src="~/Content/modules/datatables/pdfmake-0.1.36/pdfmake.min.js"></script>
+<script src="~/Content/modules/datatables/pdfmake-0.1.36/vfs_fonts.js"></script>
+<script src="~/Content/modules/datatables/Buttons-1.5.1/js/buttons.html5.min.js"></script>
+<script src="~/Content/modules/datatables/Select-1.2.6/js/dataTables.select.min.js"></script>
+
+<!-- ✅ INIT DATATABLE -->
+<script>$(document).ready(function () {
+        var table = $('#incomeExpenseTable').DataTable({
+            dom: "<'row'<'col-md-6'B><'col-md-6'f>>" +
+                "<'row'<'col-12'tr>>" +
+                "<'row'<'col-md-5'i><'col-md-7'p>>",
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="fas fa-file-excel"></i> Excel',
+                    className: 'btn btn-sm btn-success mr-2',
+                    exportOptions: {
+                        columns: [1, 2, 3, 4]
+                    }
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="fas fa-file-pdf"></i> PDF',
+                    className: 'btn btn-sm btn-danger',
+                    exportOptions: {
+                        columns: [1, 2, 3, 4]
+                    }
+                }
+            ],
+            pageLength: 10,
+            select: false,
+            order: [[1, 'asc']],
+            responsive: true
+        });
+
+        $('#selectAll').click(function () {
+            $('.rowCheckbox').prop('checked', this.checked);
+        });
+    });</script>

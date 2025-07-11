@@ -1,0 +1,257 @@
+﻿@model IEnumerable<GSTSMSLibrary.AccountManager.AccountManager>
+
+@{
+    ViewBag.Title = "Complaint List";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var exportTimestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+    int serial = 1;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/Content/modules/bootstrap-daterangepicker/daterangepicker.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.bootstrap4.min.css" />
+    <style>
+        .custom-checkbox {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+            .custom-checkbox input[type="checkbox"] {
+                transform: scale(1.2);
+                cursor: pointer;
+            }
+
+        .action-btn {
+            background-color: #17a2b8;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 10px;
+            color: white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+            .action-btn i {
+                font-size: 16px;
+            }
+
+        .dt-buttons {
+            margin-bottom: 10px;
+        }
+    </style>
+}
+
+<h2 class="text-center mb-4">Complaint List</h2>
+
+<!-- Date Range Picker -->
+<div class="form-group mb-3">
+    <a href="javascript:;" class="btn btn-primary daterange-btn icon-left btn-icon">
+        <i class="fas fa-calendar"></i> <span>Select Date</span>
+    </a>
+    <input type="hidden" id="fromDate1" />
+    <input type="hidden" id="toDate1" />
+</div>
+
+<!-- Table -->
+<div class="card-body">
+    <div class="table-responsive">
+        <table class="table table-striped" id="complaintTable">
+            <thead>
+                <tr>
+                    <th class="text-center" id="toggleSelectAll" style="cursor:pointer;">Select</th>
+                    <th>Sr.No</th>
+                    <th>Complaint Type</th>
+                    <th>Complaint</th>
+                    <th>Complaint Date</th>
+                    <th>Assign By</th>
+                    <th>Status</th>
+                    <th class="text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr data-date="@item.ComplaintDate.ToString("yyyy-MM-dd")">
+                        <td class="text-center">
+                            <div class="custom-checkbox">
+                                <input type="checkbox" class="rowCheckbox" name="selectedComplaints" value="@item.ComplaintId" />
+                            </div>
+                        </td>
+
+                        <td>@serial</td>
+                        <td>@item.ComplaintType</td>
+                        <td>@item.Complaint</td>
+                        <td>@item.ComplaintDate.ToString("dd-MM-yyyy")</td>
+                        <td>@item.AssignBy</td>
+                        <td>@item.StatusName</td>
+                        <td>
+                            <a href="javascript:void(0);" class="btn btn-info btn-sm view-details"
+                               data-id="@item.ComplaintId" title="View">
+                                <i class="fas fa-eye text-white"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    serial++;
+                }
+            </tbody>
+        </table>
+        <div class="modal fade" id="complaintModal" tabindex="-1" role="dialog" aria-labelledby="complaintModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content" id="complaintModalContent">
+                    <!-- AJAX will load content here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.bootstrap4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    <script src="~/Content/modules/bootstrap-daterangepicker/daterangepicker.js"></script>
+
+    @*<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>*@
+
+    <script>
+        $(function () {
+            let allChecked = false;
+
+            // Date Range Picker
+            $('.daterange-btn').daterangepicker({
+                locale: { format: 'YYYY-MM-DD' },
+                startDate: moment().startOf('month'),
+                endDate: moment(),
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 15 Days': [moment().subtract(14, 'days'), moment()],
+                    'Last 1 Month': [moment().subtract(1, 'month'), moment()]
+                }
+            }, function (start, end) {
+                $('#fromDate1').val(start.format('YYYY-MM-DD'));
+                $('#toDate1').val(end.format('YYYY-MM-DD'));
+                $('#complaintTable').DataTable().draw();
+            });
+
+            // Custom filter
+            $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+                let min = $('#fromDate1').val();
+                let max = $('#toDate1').val();
+                let date = data[4]; // Complaint Date
+                if (!min || !max || !date) return true;
+                let rowDate = moment(date, 'DD-MM-YYYY');
+                return rowDate.isBetween(moment(min), moment(max), null, '[]');
+            });
+
+            // DataTable with export buttons
+            let table = $('#complaintTable').DataTable({
+                responsive: true,
+                autoWidth: false,
+                pageLength: 10,
+                dom: 'Bfrtip',
+                ordering: false,
+                buttons: [
+                    {
+                        extend: 'csvHtml5',
+                        text: 'Export CSV',
+                        className: 'btn btn-sm btn-primary',
+                        exportOptions: {
+                            columns: ':visible:not(:first-child):not(:last-child)',
+                            rows: function (idx, data, node) {
+                                return $(node).find('.rowCheckbox').is(':checked');
+                            }
+                        },
+                        action: function (e, dt, btn, config) {
+                            if ($('.rowCheckbox:checked').length === 0) {
+                                Swal.fire('Warning', 'Please select at least one row to export.', 'warning');
+                                return;
+                            }
+                            $.fn.dataTable.ext.buttons.csvHtml5.action.call(this, e, dt, btn, config);
+                        }
+                    },
+                    {
+                        extend: 'excelHtml5',
+                        text: 'Export Excel',
+                        className: 'btn btn-sm btn-success',
+                        exportOptions: {
+                            columns: ':visible:not(:first-child):not(:last-child)',
+                            rows: function (idx, data, node) {
+                                return $(node).find('.rowCheckbox').is(':checked');
+                            }
+                        },
+                        action: function (e, dt, btn, config) {
+                            if ($('.rowCheckbox:checked').length === 0) {
+                                Swal.fire('Warning', 'Please select at least one row to export.', 'warning');
+                                return;
+                            }
+                            $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, btn, config);
+                        }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        text: 'Export PDF',
+                        className: 'btn btn-sm btn-danger',
+                        orientation: 'landscape',
+                        pageSize: 'A4',
+                        messageTop: 'Exported on: @exportTimestamp',
+                        exportOptions: {
+                            columns: ':visible:not(:first-child):not(:last-child)',
+                            rows: function (idx, data, node) {
+                                return $(node).find('.rowCheckbox').is(':checked');
+                            }
+                        },
+                        action: function (e, dt, btn, config) {
+                            if ($('.rowCheckbox:checked').length === 0) {
+                                Swal.fire('Warning', 'Please select at least one row to export.', 'warning');
+                                return;
+                            }
+                            $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, btn, config);
+                        }
+                    }
+                ]
+            });
+
+            // Toggle all checkboxes across all pages
+            $('#toggleSelectAll').on('click', function () {
+                allChecked = !allChecked;
+                $('.rowCheckbox', table.rows().nodes()).prop('checked', allChecked);
+            });
+        });
+
+
+
+        $(document).on("click", ".view-details", function () {
+          var complaintId = $(this).data("id");
+
+          $.ajax({
+              url: '@Url.Action("ViewResolvedComplaintDetails", "AccountManager")',
+              type: 'GET',
+              data: { complaintId: complaintId },
+              success: function (result) {
+                  $('#complaintModalContent').html(result);
+                  $('#complaintModal').modal('show');
+              },
+              error: function (xhr) {
+                  alert('Unable to load complaint details.');
+                  console.error(xhr.responseText);
+              }
+          });
+      });
+
+      // fallback if close button fails
+      $(document).on('click', '[data-dismiss="modal"]', function () {
+          $('#complaintModal').modal('hide');
+      });
+    </script>
+}

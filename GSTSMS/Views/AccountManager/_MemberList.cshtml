@@ -1,0 +1,191 @@
+﻿@model IEnumerable<GSTSMSLibrary.AccountManager.AccountManager>
+
+<!-- Modal Header -->
+<div class="modal-header bg-light p-2">
+    <h5 class="modal-title text-center w-100">All Member List</h5>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<!-- Modal Body -->
+<div class="modal-body p-2">
+    <div class="table-responsive">
+        <table id="memberDataTable" class="table table-sm table-bordered table-hover table-striped dataTableExport mb-0" style="width:100%; table-layout: fixed;">
+
+            <thead class="thead-dark small">
+                <tr style="height: 32px;">
+                    <th style="width: 30px; text-align: center; vertical-align: middle;">
+                        <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
+                            <input type="checkbox" id="select-all" />
+                        </div>
+                    </th>
+                    <th style="width: 90px;">Flat</th>
+                    <th style="width: 120px;">Name</th>
+                    <th style="width: 150px;">Email</th>
+                    <th style="width: 100px;">Phone</th>
+                    <th style="width: 100px;">Possession Date</th>
+                    <th style="width: 80px;">Gender</th>
+                    <th style="width: 70px;">Family</th>
+                    <th style="width: 80px;">Vehicles</th>
+                    <th style="width: 100px;">Reg Date</th>
+                </tr>
+            </thead>
+
+            <tbody class="small">
+                @{
+                    int i = 1;
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td></td> <!-- auto-checkbox -->
+                            <td>@item.FlatCode</td>
+                            <td title="@item.FullName">@item.FullName</td>
+                            <td title="@item.Email">@item.Email</td>
+                            <td>@item.PhoneNumber</td>
+                            <td>@item.PossessionDate.ToString("dd-MM-yyyy")</td>
+                            <td>@item.Gender</td>
+                            <td>@item.FamilyMemberCount</td>
+                            <td>@item.NoOfVehicle</td>
+                            <td>@item.RegisterationDate.ToString("dd-MM-yyyy")</td>
+                        </tr>
+                        i++;
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal + Table Styling -->
+<style>
+    .modal-xl {
+        max-width: 85% !important;
+        margin: auto;
+    }
+
+    .modal-content {
+        border-radius: 0.75rem;
+        padding: 0.5rem;
+    }
+
+    .modal-body {
+        overflow-x: hidden;
+        padding: 0.75rem;
+    }
+
+    table td, table th {
+        padding: 0.25rem 0.5rem !important;
+        vertical-align: middle;
+        font-size: 0.85rem;
+    }
+
+    td {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    table.dataTable tbody tr.selected {
+        background-color: transparent !important;
+    }
+
+        /* ✅ Keep data text visible even if selected */
+        table.dataTable tbody tr.selected td {
+            color: #212529 !important; /* default bootstrap text color */
+        }
+
+            /* ✅ Ensure checkbox tick shows, but no background */
+            table.dataTable tbody tr.selected td.select-checkbox::before {
+                background-color: transparent !important;
+                color: #007bff !important; /* or use black/white based on design */
+            }
+
+    /* 🛡 Optional: Remove outline or unwanted effects */
+    /*table.dataTable tbody tr.selected td.select-checkbox {
+                box-shadow: none !important;
+            }*/
+
+</style>
+
+
+
+<!-- DataTables CSS -->
+<link href="~/Content/modules/datatables/datatables.min.css" rel="stylesheet" />
+<link href="~/Content/modules/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+<link href="~/Content/modules/datatables/Buttons-1.5.1/css/buttons.bootstrap4.min.css" rel="stylesheet" />
+<link href="~/Content/modules/datatables/Select-1.2.6/css/select.bootstrap4.min.css" rel="stylesheet" />
+
+<!-- DataTables JS -->
+<script src="~/Content/modules/datatables/datatables.min.js"></script>
+<script src="~/Content/modules/datatables/Buttons-1.5.1/js/dataTables.buttons.min.js"></script>
+<script src="~/Content/modules/datatables/Buttons-1.5.1/js/buttons.bootstrap4.min.js"></script>
+<script src="~/Content/modules/datatables/JSZip-2.5.0/jszip.min.js"></script>
+<script src="~/Content/modules/datatables/pdfmake-0.1.36/pdfmake.min.js"></script>
+<script src="~/Content/modules/datatables/pdfmake-0.1.36/vfs_fonts.js"></script>
+<script src="~/Content/modules/datatables/Buttons-1.5.1/js/buttons.html5.min.js"></script>
+<script src="~/Content/modules/datatables/Select-1.2.6/js/dataTables.select.min.js"></script>
+
+<!-- DataTables Initialization -->
+<script>$(document).ready(function () {
+        var table = $('#memberDataTable').DataTable({
+            dom: "<'row'<'col-md-6'B><'col-md-6'f>>" +
+                "<'row'<'col-12'tr>>" +
+                "<'row'<'col-md-5'i><'col-md-7'p>>",
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="fas fa-file-excel"></i> Excel',
+                    className: 'btn btn-sm btn-success',
+                    exportOptions: {
+                        columns: ':visible:not(:first-child)',
+                        modifier: {
+                            selected: true
+                        }
+                    }
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="fas fa-file-pdf"></i> PDF',
+                    className: 'btn btn-sm btn-danger',
+                    exportOptions: {
+                        columns: ':visible:not(:first-child)',
+                        modifier: {
+                            selected: true
+                        }
+                    }
+                }
+            ],
+            select: {
+                style: 'multi',
+                selector: 'td:first-child'
+            },
+            columnDefs: [
+                {
+                    orderable: false,
+                    className: 'select-checkbox',
+                    targets: 0
+                }
+            ],
+            order: [[1, 'asc']],
+            pageLength: 10,
+            responsive: false,
+            scrollX: false
+        });
+
+        // Select All checkbox control
+        $('#select-all').on('click', function () {
+            if (this.checked) {
+                table.rows({ search: 'applied' }).select();
+            } else {
+                table.rows().deselect();
+            }
+        });
+
+        // Keep "select all" checkbox in sync
+        table.on('select deselect', function () {
+            var all = table.rows({ search: 'applied' }).count();
+            var selected = table.rows({ search: 'applied', selected: true }).count();
+            $('#select-all').prop('checked', selected === all);
+        });
+    });</script>

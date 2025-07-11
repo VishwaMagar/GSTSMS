@@ -1,0 +1,724 @@
+﻿@model GSTSMSLibrary.AccountManager.AccountManager
+@using System.Globalization
+
+<!--
+    Summary:
+    This is the partial view used inside the Cash Transaction Modal.
+    It contains:
+    - A dynamic form for credit/debit transactions
+    - Logic to show/hide fields based on Transaction Type and Payment Mode
+    - Dropdowns for member, maintenance, type, receiver
+    - File upload validation
+    - Client-side validation using jQuery
+    - AJAX form submission with post-save PDF (receipt/salary slip) generation
+-->
+
+<div class="modal-body">
+    @using (Html.BeginForm("SaveCashTransaction", "AccountManager", FormMethod.Post, new { enctype = "multipart/form-data", id = "cashTransactionForm" }))
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="form-horizontal">
+
+            <hr />
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+            <!-- Transaction Type -->
+            <div class="form-group row">
+                @Html.Label("TransactionId", "Transaction Type", new { @class = "col-sm-3 col-form-label" })
+                <div class="col-sm-9">
+                    @Html.DropDownListFor(m => m.TransactionId,
+                             ViewBag.TransactionList as IEnumerable<SelectListItem> ?? new List<SelectListItem>(),
+                             "-- Select Transaction Type --",
+                             new { @class = "form-control", id = "TransactionIdDropdown" })
+                </div>
+            </div>
+
+
+            <!-- Payment Mode -->
+            <div class="form-group row">
+                @Html.Label("Mode Of Payment", new { @class = "col-sm-3 col-form-label" })
+                <div class="col-sm-9 pt-2">
+                    <label class="me-3">
+                        @Html.RadioButtonFor(m => m.PaymentMode, "32", new { id = "PaymentModeCash" }) Cash
+                    </label>
+                    <label>
+                        @Html.RadioButtonFor(m => m.PaymentMode, "34", new { id = "PaymentModeCheque" }) Cheque
+                    </label>
+                </div>
+            </div>
+
+            @Html.HiddenFor(m => m.ExpenseCode)
+            @Html.HiddenFor(m => m.EventCode)
+
+            <!-- Credit Transaction Section (Maintenance & Member Binding) -->
+            <div id="CreditSection" style="display: none;">
+                <!-- Month -->
+                <div class="form-group row">
+                    @Html.LabelFor(m => m.Month, new { @class = "col-sm-3 col-form-label" })
+                    <div class="col-sm-9">
+                        @Html.DropDownListFor(m => m.Month,
+                                 Enumerable.Range(1, 12).Select(i => new SelectListItem
+                                 {
+                                     Value = i.ToString(),
+                                     Text = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(i)
+                                 }),
+                                 "-- Select Month --",
+                                 new { @class = "form-control", id = "month" })
+                    </div>
+                </div>
+
+                <!-- Year -->
+                <div class="form-group row">
+                    @Html.LabelFor(m => m.Year, new { @class = "col-sm-3 col-form-label" })
+                    <div class="col-sm-9">
+                        @Html.DropDownListFor(m => m.Year,
+                                 Enumerable.Range(DateTime.Now.Year - 5, 11).Select(y => new SelectListItem
+                                 {
+                                     Value = y.ToString(),
+                                     Text = y.ToString()
+                                 }),
+                                 "-- Select Year --",
+                                 new { @class = "form-control", id = "year" })
+                    </div>
+                </div>
+
+                <!-- Maintenance Dropdown -->
+                <div class="form-group row">
+                    @Html.Label("MaintenanceCode", "Maintenance", new { @class = "col-sm-3 col-form-label" })
+                    <div class="col-sm-9">
+                        @Html.DropDownListFor(m => m.MaintenanceCode,
+                                 ViewBag.MaintenanceList as IEnumerable<SelectListItem> ?? new List<SelectListItem>(),
+                                 "-- Select Maintenance --",
+                                 new { @class = "form-control", id = "MaintenanceDropdown" })
+                    </div>
+                </div>
+
+
+                <!-- Member Dropdown -->
+                <div class="form-group row">
+                    @Html.Label("MemberCode", "Member Name", new { @class = "col-sm-3 col-form-label" })
+                    <div class="col-sm-9">
+                        @Html.DropDownListFor(m => m.MemberCode,
+                                 ViewBag.ReceiverList as IEnumerable<SelectListItem> ?? new List<SelectListItem>(),
+                                 "-- Select Member --",
+                                 new { @class = "form-control", id = "MemberDropdown" })
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Cheque Details (Visible only for Cheque Mode) -->
+            <div class="form-group row cheque-fields" style="display: none;">
+                @Html.LabelFor(m => m.ChecqueNo, new { @class = "col-sm-3 col-form-label" })
+                <div class="col-sm-9">
+                    @Html.TextBoxFor(m => m.ChecqueNo, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group row cheque-fields" style="display: none;">
+                @Html.LabelFor(m => m.BankName, new { @class = "col-sm-3 col-form-label" })
+                <div class="col-sm-9">
+                    @Html.TextBoxFor(m => m.BankName, new { @class = "form-control" })
+                </div>
+            </div>
+
+            <!-- Type Dropdown (Visible for Debit) -->
+            <div class="form-group row" id="TypeDropdownDiv" style="display: none;">
+                @Html.LabelFor(m => m.Type, new { @class = "col-sm-3 col-form-label" })
+                <div class="col-sm-9">
+                    @Html.DropDownListFor(m => m.Type, new List<SelectListItem>
+                    {
+                    new SelectListItem { Text = "-- Select Type --", Value = "" },
+                    new SelectListItem { Text = "Member", Value = "Member" },
+                    new SelectListItem { Text = "Worker", Value = "Worker" },
+                    new SelectListItem { Text = "Vendor", Value = "Vendor" },
+                    new SelectListItem { Text = "EventHandler", Value = "EventHandler" },
+                    new SelectListItem { Text = "Other", Value = "Other" }
+                }, new { @class = "form-control", id = "TransactionTypeDropdown" })
+                </div>
+            </div>
+
+            <!-- Receiver Dropdown -->
+            <div class="form-group row" id="ReceiverDropdownDiv" style="display: none;">
+                @Html.LabelFor(m => m.ReceiverCode, new { @class = "col-sm-3 col-form-label" })
+                <div class="col-sm-9">
+                    @Html.DropDownListFor(m => m.ReceiverCode,
+                             ViewBag.ReceiverList as IEnumerable<SelectListItem> ?? new List<SelectListItem>(),
+                             "-- Select Receiver --",
+                             new { @class = "form-control", id = "ReceiverCode" })
+                </div>
+            </div>
+
+            <!-- Receiver Textbox -->
+            <div class="form-group row" id="ReceiverTextboxDiv" style="display: none;">
+                @Html.Label("Receiver Name", new { @class = "col-sm-3 col-form-label" })
+                <div class="col-sm-9">
+                    @Html.TextBoxFor(m => m.OtherReceiver, new { @class = "form-control", placeholder = "Enter Receiver Name" })
+                </div>
+            </div>
+
+            <!-- Amount -->
+            <!--<div class="form-group row">
+                @Html.LabelFor(m => m.Amount, new { @class = "col-sm-3 col-form-label" })
+                <div class="col-sm-9">
+                    @Html.EditorFor(m => m.Amount, new { htmlAttributes = new { @class = "form-control", @id = "Amount" } })
+                </div>
+            </div>-->
+            <!-- Amount -->
+            <div class="form-group row">
+                @Html.LabelFor(m => m.Amount, new { @class = "col-sm-3 col-form-label" })
+                <div class="col-sm-9">
+                    @Html.EditorFor(m => m.Amount, new { htmlAttributes = new { @class = "form-control", @id = "Amount", @readonly = "readonly" } })
+                </div>
+            </div>
+
+
+            <!-- Payment Purpose -->
+            <div class="form-group row">
+                @Html.LabelFor(m => m.PaymentPurpose, new { @class = "col-sm-3 col-form-label" })
+                <div class="col-sm-9">
+                    @Html.EditorFor(m => m.PaymentPurpose, new { htmlAttributes = new { @class = "form-control" } })
+                </div>
+            </div>
+
+            <!-- Attachment Upload -->
+            <div class="form-group row">
+                @Html.LabelFor(m => m.Attchment, new { @class = "col-sm-3 col-form-label" })
+                <div class="col-sm-9">
+                    <div class="input-group">
+                        <input type="file" class="form-control" id="AttachmentPath" name="AttachmentPath" />
+                        <span class="input-group-text" id="removeAttachmentIcon" style="cursor: pointer;" title="Remove file">
+                            <i class="bi bi-trash text-danger"></i>
+                        </span>
+                    </div>
+                    <small id="selectedFileName" class="form-text text-muted mt-1" style="display:none;"></small>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="modal-footer">
+    <button type="submit" class="btn btn-success" form="cashTransactionForm">Save</button>
+    <button type="button" class="btn btn-danger" id="closeModalBtn">Clear</button>
+</div>
+
+
+@*@section Scripts {
+        <script>
+
+            $(document).ready(function () {
+                var receiverList = [];
+
+                function toggleFields() {
+                    var transactionVal = $('#TransactionIdDropdown').val();
+                    var PaymentMode = $('input[name="PaymentMode"]:checked').val();
+                    var receiverType = $('#TransactionTypeDropdown').val();
+
+                    $('.cheque-fields').hide();
+                    $('#TypeDropdownDiv').hide();
+                    $('#ReceiverDropdownDiv').hide();
+                    $('#ReceiverTextboxDiv').hide();
+                    $('#CreditSection').hide();
+
+                    if (transactionVal === "26") {
+                        $('#CreditSection').show();
+                        if (PaymentMode === "34") $('.cheque-fields').show();
+                    } else if (transactionVal === "27") {
+                        $('#TypeDropdownDiv').show();
+                        if (PaymentMode === "34") $('.cheque-fields').show();
+                        if (receiverType === "Other") {
+                            $('#ReceiverTextboxDiv').show();
+                        } else if (receiverType) {
+                            $('#ReceiverDropdownDiv').show();
+                        }
+                    }
+                }
+
+                function loadReceiversByType(type) {
+                    $.ajax({
+                        url: '@Url.Action("GetReceiversByType", "AccountManager")',
+                        type: 'GET',
+                        data: { type: type },
+                        success: function (data) {
+                            receiverList = data || [];
+                            var $dropdown = $('#ReceiverCode');
+                            $dropdown.empty().append($('<option>', { value: '', text: '-- Select Receiver --' }));
+                            $.each(receiverList, function (i, item) {
+                                $dropdown.append($('<option>', {
+                                    value: item.Value,
+                                    text: item.Text,
+                                    'data-amount': item.Amount || 0,
+                                    'data-entity': item.EntityCode || ''
+                                }));
+                            });
+
+                            $dropdown.off('change').on('change', function () {
+                                var selected = $('option:selected', this);
+                                var amount = selected.data('amount');
+                                var entityCode = selected.data('entity');
+                                var type = $('#TransactionTypeDropdown').val();
+
+                                $('#Amount').val(amount || '');
+                                $('#ExpenseCode').val('');
+                                $('#EventCode').val('');
+                                if (type === "Vendor") {
+                                    $('#ExpenseCode').val(entityCode);
+                                } else if (type === "EventHandler") {
+                                    $('#EventCode').val(entityCode);
+                                }
+                            });
+
+                            $('#ReceiverDropdownDiv').show();
+                        }
+                    });
+                }
+
+                $('#TransactionTypeDropdown').change(function () {
+                    var selectedType = $(this).val();
+                    if (selectedType === "Other") {
+                        $('#ReceiverDropdownDiv').hide();
+                        $('#ReceiverTextboxDiv').show();
+                    } else if (selectedType) {
+                        $('#ReceiverTextboxDiv').hide();
+                        loadReceiversByType(selectedType);
+                    }
+                    toggleFields();
+                });
+
+                $(document).on('change', '#TransactionIdDropdown, input[name="PaymentMode"], #TransactionTypeDropdown', toggleFields);
+
+                $('#MaintenanceDropdown').change(function () {
+                    var code = $(this).val();
+                    if (!code) return;
+                    $.get('/AccountManager/GetMembersByMaintenance', { maintenanceCode: code }, function (data) {
+                        var $receiver = $('#MemberDropdown');
+                        $receiver.empty().append($('<option>', { value: '', text: '-- Select Member --' }));
+                        $.each(data.members, function (i, item) {
+                            $receiver.append($('<option>', { value: item.Value, text: item.Text }));
+                        });
+                        $('#Amount').val(data.totalAmount.toFixed(2));
+                    });
+                });
+
+                $('#month, #year').change(function () {
+                    var month = $('#month').val();
+                    var year = $('#year').val();
+                    if (month && year) {
+                        $.get('@Url.Action("GetMaintenanceListByMonthYear", "AccountManager")', { month, year }, function (data) {
+                            var $dropdown = $('#MaintenanceDropdown');
+                            $dropdown.empty().append($('<option>', { value: '', text: '-- Select Maintenance --' }));
+                            $.each(data, function (i, item) {
+                                $dropdown.append($('<option>', { value: item.Value, text: item.Text }));
+                            });
+                        });
+                    }
+                });
+
+                $('#AttachmentPath').change(function () {
+                    var file = this.files[0];
+                    if (!file) return;
+
+                    var ext = file.name.split('.').pop().toLowerCase();
+                    if (ext !== 'pdf') {
+                        alert('Only PDF files are allowed.');
+                        resetFileInput();
+                        return;
+                    }
+                    if (file.size > 2 * 1024 * 1024) {
+                        alert('File size exceeds 2MB.');
+                        resetFileInput();
+                        return;
+                    }
+
+                    $('#selectedFileName').text('Selected file: ' + file.name).show();
+                });
+
+                $('#removeAttachmentIcon').click(function () {
+                    resetFileInput();
+                });
+
+                function resetFileInput() {
+                    var input = $('#AttachmentPath');
+                    input.val('');
+                    input.replaceWith(input.clone(true));
+                    $('#selectedFileName').hide();
+                }
+
+                $('#cashTransactionForm').submit(function (e) {
+                    e.preventDefault();
+
+                    var isValid = true;
+                    var transactionType = $('#TransactionIdDropdown').val();
+                    var PaymentMode = $('input[name="PaymentMode"]:checked').val();
+                    var receiverType = $('#TransactionTypeDropdown').val();
+
+                    $('.text-danger').remove();
+                    $('.is-invalid').removeClass('is-invalid');
+
+                    function markInvalid(selector, message) {
+                        isValid = false;
+                        $(selector).addClass('is-invalid');
+                        $(selector).after('<span class="text-danger">' + message + '</span>');
+                    }
+
+                    if (!transactionType) markInvalid('#TransactionIdDropdown', 'Select Transaction Type');
+                    if (!PaymentMode) markInvalid('input[name="PaymentMode"]', 'Select Payment Mode');
+                    if (!$('#Amount').val()) markInvalid('#Amount', 'Enter Amount');
+                    if (!$('#PaymentPurpose').val()) markInvalid('#PaymentPurpose', 'Enter Payment Purpose');
+
+                    if (transactionType === "26") {
+                        if (!$('#month').val()) markInvalid('#month', 'Select Month');
+                        if (!$('#year').val()) markInvalid('#year', 'Select Year');
+                        if (!$('#MaintenanceDropdown').val()) markInvalid('#MaintenanceDropdown', 'Select Maintenance');
+                        if (!$('#MemberDropdown').val()) markInvalid('#MemberDropdown', 'Select Member');
+                        if (PaymentMode === "34") {
+                            if (!$('#ChecqueNo').val()) markInvalid('#ChecqueNo', 'Enter Cheque Number');
+                            if (!$('#BankName').val()) markInvalid('#BankName', 'Enter Bank Name');
+                        }
+                    }
+
+                    if (transactionType === "27") {
+                        if (!receiverType) markInvalid('#TransactionTypeDropdown', 'Select Type');
+                        if (receiverType === "Other") {
+                            if (!$('#OtherReceiver').val()) markInvalid('#OtherReceiver', 'Enter Receiver Name');
+                        } else {
+                            if (!$('#ReceiverCode').val()) markInvalid('#ReceiverCode', 'Select Receiver');
+                        }
+                        if (PaymentMode === "34") {
+                            if (!$('#ChecqueNo').val()) markInvalid('#ChecqueNo', 'Enter Cheque Number');
+                            if (!$('#BankName').val()) markInvalid('#BankName', 'Enter Bank Name');
+                        }
+                    }
+
+                    if (!isValid) return;
+
+                    var form = $(this);
+                    var formData = new FormData(this);
+
+                    $.ajax({
+                        url: form.attr('action'),
+                        method: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (result) {
+                            if (result.success) {
+                                $('#CashModal').modal('hide');
+                                form[0].reset();
+
+                                if (parseInt(result.transactionId) === 26) {
+                                    $.post('/AccountManager/GenerateReceiptPdf', { transactionCode: result.transactionCode }, function (res) {
+                                        alert(res.success ? 'Transaction saved and receipt PDF generated!' : 'Transaction saved but receipt PDF generation failed.');
+                                    }).fail(() => alert('Transaction saved, but receipt PDF generation failed.'));
+                                } else if (parseInt(result.transactionId) === 27 && result.receiverType === "Worker" && result.receiverCode) {
+                                    $.post('/AccountManager/GenerateSalarySlip', { workerCode: result.receiverCode }, function (res) {
+                                        if (res.success) {
+                                            window.open(res.filePath, '_blank');
+                                            alert('Transaction saved and salary slip generated!');
+                                        } else {
+                                            alert('Transaction saved, but salary slip generation failed: ' + res.message);
+                                        }
+                                    }).fail(() => alert('Transaction saved, but salary slip generation failed.'));
+                                } else {
+                                    alert('Transaction saved successfully!');
+                                }
+                            } else {
+                                $('#modalBody').html(result);
+                            }
+                        },
+                        error: function () {
+                            alert('An error occurred while saving the transaction.');
+                        }
+                    });
+                });
+
+                $('#closeModalBtn').click(function () {
+                    const $form = $('#cashTransactionForm');
+                    if ($form.length) {
+                        $form[0].reset();
+                        $form.find('select').each(function () {
+                            $(this).val($(this).find('option:first').val());
+                        });
+                    }
+
+                    $('#CreditSection, #TypeDropdownDiv, #ReceiverDropdownDiv, #ReceiverTextboxDiv, .cheque-fields').hide();
+                    $('.text-danger').remove();
+                    $('.is-invalid').removeClass('is-invalid');
+                    $('#selectedFileName').hide();
+                    $('#AttachmentPath').val('');
+                });
+
+                toggleFields(); // init
+            });
+        </script>
+    }*@
+
+
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            var receiverList = [];
+
+            // 🔁 Toggles field visibility based on Transaction Type, Payment Mode, and Receiver Type
+            function toggleFields() {
+                var transactionVal = $('#TransactionIdDropdown').val();
+                var PaymentMode = $('input[name="PaymentMode"]:checked').val();
+                var receiverType = $('#TransactionTypeDropdown').val();
+
+                // Hide all conditional fields initially
+                $('.cheque-fields').hide();
+                $('#TypeDropdownDiv').hide();
+                $('#ReceiverDropdownDiv').hide();
+                $('#ReceiverTextboxDiv').hide();
+                $('#CreditSection').hide();
+
+                // Credit Transaction
+                if (transactionVal === "26") {
+                    $('#CreditSection').show();
+                    if (PaymentMode === "34") $('.cheque-fields').show(); // Show cheque fields for cheque mode
+                }
+                // Debit Transaction
+                else if (transactionVal === "27") {
+                    $('#TypeDropdownDiv').show(); // Show Receiver Type dropdown
+                    if (PaymentMode === "34") $('.cheque-fields').show(); // Show cheque fields
+
+                    if (receiverType === "Other") {
+                        $('#ReceiverTextboxDiv').show(); // Show manual name textbox
+                    } else if (receiverType) {
+                        $('#ReceiverDropdownDiv').show(); // Show receiver dropdown
+                    }
+                }
+            }
+
+            // 🔁 Loads receiver list (Member/Worker/Vendor/EventHandler) dynamically via AJAX
+            function loadReceiversByType(type) {
+                $.ajax({
+                    url: '@Url.Action("GetReceiversByType", "AccountManager")',
+                    type: 'GET',
+                    data: { type: type },
+                    success: function (data) {
+                        receiverList = data || [];
+                        var $dropdown = $('#ReceiverCode');
+                        $dropdown.empty().append($('<option>', { value: '', text: '-- Select Receiver --' }));
+
+                        $.each(receiverList, function (i, item) {
+                            $dropdown.append($('<option>', {
+                                value: item.Value,
+                                text: item.Text,
+                                'data-amount': item.Amount || 0,
+                                'data-entity': item.EntityCode || ''
+                            }));
+                        });
+
+                        // Auto-fill amount and entity codes on change
+                        $dropdown.off('change').on('change', function () {
+                            var selected = $('option:selected', this);
+                            var amount = selected.data('amount');
+                            var entityCode = selected.data('entity');
+                            var type = $('#TransactionTypeDropdown').val();
+
+                            $('#Amount').val(amount || '');
+                            $('#ExpenseCode').val('');
+                            $('#EventCode').val('');
+                            if (type === "Vendor") $('#ExpenseCode').val(entityCode);
+                            else if (type === "EventHandler") $('#EventCode').val(entityCode);
+                        });
+
+                        $('#ReceiverDropdownDiv').show();
+                    }
+                });
+            }
+
+            // 🔁 When receiver type changes, load dropdown or show manual input
+            $('#TransactionTypeDropdown').change(function () {
+                var selectedType = $(this).val();
+                if (selectedType === "Other") {
+                    $('#ReceiverDropdownDiv').hide();
+                    $('#ReceiverTextboxDiv').show();
+                } else if (selectedType) {
+                    $('#ReceiverTextboxDiv').hide();
+                    loadReceiversByType(selectedType);
+                }
+                toggleFields();
+            });
+
+            // 🔁 Field visibility on transaction/payment/receiver type change
+            $(document).on('change', '#TransactionIdDropdown, input[name="PaymentMode"], #TransactionTypeDropdown', toggleFields);
+
+            // 🔁 Load members by selected maintenance and populate Amount
+            $('#MaintenanceDropdown').change(function () {
+                var code = $(this).val();
+                if (!code) return;
+                $.get('/AccountManager/GetMembersByMaintenance', { maintenanceCode: code }, function (data) {
+                    var $receiver = $('#MemberDropdown');
+                    $receiver.empty().append($('<option>', { value: '', text: '-- Select Member --' }));
+                    $.each(data.members, function (i, item) {
+                        $receiver.append($('<option>', { value: item.Value, text: item.Text }));
+                    });
+                    $('#Amount').val(data.totalAmount.toFixed(2));
+                });
+            });
+
+            // 🔁 Load maintenance list on month-year selection
+            $('#month, #year').change(function () {
+                var month = $('#month').val();
+                var year = $('#year').val();
+                if (month && year) {
+                    $.get('@Url.Action("GetMaintenanceListByMonthYear", "AccountManager")', { month, year }, function (data) {
+                        var $dropdown = $('#MaintenanceDropdown');
+                        $dropdown.empty().append($('<option>', { value: '', text: '-- Select Maintenance --' }));
+                        $.each(data, function (i, item) {
+                            $dropdown.append($('<option>', { value: item.Value, text: item.Text }));
+                        });
+                    });
+                }
+            });
+
+            // 📄 File upload validation (PDF only, max 2MB)
+            $('#AttachmentPath').change(function () {
+                var file = this.files[0];
+                if (!file) return;
+
+                var ext = file.name.split('.').pop().toLowerCase();
+                if (ext !== 'pdf') {
+                    alert('Only PDF files are allowed.');
+                    resetFileInput();
+                    return;
+                }
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('File size exceeds 2MB.');
+                    resetFileInput();
+                    return;
+                }
+
+                $('#selectedFileName').text('Selected file: ' + file.name).show();
+            });
+
+            // ❌ Remove file
+            $('#removeAttachmentIcon').click(function () {
+                resetFileInput();
+            });
+
+            function resetFileInput() {
+                var input = $('#AttachmentPath');
+                input.val('');
+                input.replaceWith(input.clone(true));
+                $('#selectedFileName').hide();
+            }
+
+            // ✅ Validate and submit form via AJAX
+            $('#cashTransactionForm').submit(function (e) {
+                e.preventDefault();
+
+                var isValid = true;
+                var transactionType = $('#TransactionIdDropdown').val();
+                var PaymentMode = $('input[name="PaymentMode"]:checked').val();
+                var receiverType = $('#TransactionTypeDropdown').val();
+
+                $('.text-danger').remove();
+                $('.is-invalid').removeClass('is-invalid');
+
+                // 🛑 Basic validation
+                function markInvalid(selector, message) {
+                    isValid = false;
+                    $(selector).addClass('is-invalid');
+                    $(selector).after('<span class="text-danger">' + message + '</span>');
+                }
+
+                if (!transactionType) markInvalid('#TransactionIdDropdown', 'Select Transaction Type');
+                if (!PaymentMode) markInvalid('input[name="PaymentMode"]', 'Select Payment Mode');
+                if (!$('#Amount').val()) markInvalid('#Amount', 'Enter Amount');
+                if (!$('#PaymentPurpose').val()) markInvalid('#PaymentPurpose', 'Enter Payment Purpose');
+
+                if (transactionType === "26") {
+                    if (!$('#month').val()) markInvalid('#month', 'Select Month');
+                    if (!$('#year').val()) markInvalid('#year', 'Select Year');
+                    if (!$('#MaintenanceDropdown').val()) markInvalid('#MaintenanceDropdown', 'Select Maintenance');
+                    if (!$('#MemberDropdown').val()) markInvalid('#MemberDropdown', 'Select Member');
+                    if (PaymentMode === "34") {
+                        if (!$('#ChecqueNo').val()) markInvalid('#ChecqueNo', 'Enter Cheque Number');
+                        if (!$('#BankName').val()) markInvalid('#BankName', 'Enter Bank Name');
+                    }
+                }
+
+                if (transactionType === "27") {
+                    if (!receiverType) markInvalid('#TransactionTypeDropdown', 'Select Type');
+                    if (receiverType === "Other") {
+                        if (!$('#OtherReceiver').val()) markInvalid('#OtherReceiver', 'Enter Receiver Name');
+                    } else {
+                        if (!$('#ReceiverCode').val()) markInvalid('#ReceiverCode', 'Select Receiver');
+                    }
+                    if (PaymentMode === "34") {
+                        if (!$('#ChecqueNo').val()) markInvalid('#ChecqueNo', 'Enter Cheque Number');
+                        if (!$('#BankName').val()) markInvalid('#BankName', 'Enter Bank Name');
+                    }
+                }
+
+                if (!isValid) return;
+
+                // 📨 Submit form data
+                var form = $(this);
+                var formData = new FormData(this);
+
+                $.ajax({
+                    url: form.attr('action'),
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (result) {
+                        if (result.success) {
+                            $('#CashModal').modal('hide');
+                            form[0].reset();
+
+                            // 📄 Generate receipt or salary slip after success
+                            if (parseInt(result.transactionId) === 26) {
+                                $.post('/AccountManager/GenerateReceiptPdf', { transactionCode: result.transactionCode }, function (res) {
+                                    alert(res.success ? 'Transaction saved and receipt PDF generated!' : 'Transaction saved but receipt PDF generation failed.');
+                                }).fail(() => alert('Transaction saved, but receipt PDF generation failed.'));
+                            } else if (parseInt(result.transactionId) === 27 && result.receiverType === "Worker" && result.receiverCode) {
+                                $.post('/AccountManager/GenerateSalarySlip', { workerCode: result.receiverCode }, function (res) {
+                                    if (res.success) {
+                                        window.open(res.filePath, '_blank');
+                                        alert('Transaction saved and salary slip generated!');
+                                    } else {
+                                        alert('Transaction saved, but salary slip generation failed: ' + res.message);
+                                    }
+                                }).fail(() => alert('Transaction saved, but salary slip generation failed.'));
+                            } else {
+                                alert('Transaction saved successfully!');
+                            }
+                        } else {
+                            $('#modalBody').html(result);
+                        }
+                    },
+                    error: function () {
+                        alert('An error occurred while saving the transaction.');
+                    }
+                });
+            });
+
+            // 🧼 Clear form & reset all UI
+            $('#closeModalBtn').click(function () {
+                const $form = $('#cashTransactionForm');
+                if ($form.length) {
+                    $form[0].reset();
+                    $form.find('select').each(function () {
+                        $(this).val($(this).find('option:first').val());
+                    });
+                }
+
+                $('#CreditSection, #TypeDropdownDiv, #ReceiverDropdownDiv, #ReceiverTextboxDiv, .cheque-fields').hide();
+                $('.text-danger').remove();
+                $('.is-invalid').removeClass('is-invalid');
+                $('#selectedFileName').hide();
+                $('#AttachmentPath').val('');
+            });
+
+            toggleFields(); // ▶ Initialize fields
+        });
+    </script>
+}

@@ -1,0 +1,518 @@
+﻿@{
+    ViewBag.Title = "Audit Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css" rel="stylesheet" />
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+
+<div class="section">
+    <div class="section-header">
+        <h1>Audit Report</h1>
+    </div>
+
+    <div class="section-body">
+
+        <!-- 🔹 Summary Cards -->
+        <div class="row">
+            <div class="col-lg-4 col-md-6 col-sm-6 mb-4">
+                <div class="card card-statistic-1" style="cursor:pointer;" onclick="loadAllMembers()">
+                    <div class="card-icon bg-primary"><i class="fas fa-users"></i></div>
+                    <div class="card-wrap">
+                        <div class="card-header"><h4>Total Registered Members</h4></div>
+                        <div class="card-body">@ViewBag.TotalMembers</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 col-sm-6 mb-4">
+                <div class="card card-statistic-1" style="cursor:pointer;" onclick="loadAllWorkers()">
+                    <div class="card-icon bg-info"><i class="fas fa-user-cog"></i></div>
+                    <div class="card-wrap">
+                        <div class="card-header"><h4>Total Workers</h4></div>
+                        <div class="card-body">@ViewBag.TotalWorkers</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 col-sm-6 mb-4">
+                <div class="card card-statistic-1" style="cursor:pointer;" onclick="loadAllVendors()">
+                    <div class="card-icon bg-info"><i class="fas fa-toolbox"></i></div>
+                    <div class="card-wrap">
+                        <div class="card-header"><h4>Total Vendor</h4></div>
+                        <div class="card-body">@ViewBag.TotalVendor</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🔸 Month Filter -->
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label class="font-weight-bold">Select Month & Year</label>
+                <input type="text" id="monthPicker" class="form-control" placeholder="Select Month & Year" readonly />
+            </div>
+        </div>
+
+        <!-- 🔸 Chart Grid -->
+        <div class="row">
+
+            <!-- Pie Chart -->
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">Monthly Direct vs Indirect Expense</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="expenseChart" style="height: 300px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column Chart -->
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">Total Worker Salary Paid Per Month</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="workerMonthlyChart" style="height: 300px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Budget vs Actual -->
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Budget vs Actual (Monthly)</h5>
+                        <div>
+                            <button class="btn btn-light btn-sm" id="prevMonth"><i class="fas fa-arrow-left"></i></button>
+                            <button class="btn btn-light btn-sm" id="nextMonth"><i class="fas fa-arrow-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="container" style="height: 300px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Income vs Expense -->
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Income vs Expense (Monthly)</h5>
+                        <div>
+                            <button class="btn btn-dark btn-sm" id="prevYear"><i class="fas fa-arrow-left"></i></button>
+                            <span class="mx-2 font-weight-bold" id="yearDisplay"></span>
+                            <button class="btn btn-dark btn-sm" id="nextYear"><i class="fas fa-arrow-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="lineChart" style="height: 300px;"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- 🔹 Modals -->
+<div class="modal fade" id="memberModal"><div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content" id="memberModalContent"></div></div></div>
+<div class="modal fade" id="workerModal"><div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content" id="workerModalContent"></div></div></div>
+<div class="modal fade" id="vendorModal"><div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content" id="vendorModalContent"></div></div></div>
+<div class="modal fade" id="workerSalaryModal"><div class="modal-dialog modal-xl"><div class="modal-content" id="workerSalaryModalContent"></div></div></div>
+<div class="modal fade" id="budgetDetailsModal"><div class="modal-dialog modal-xl"><div class="modal-content"><div class="modal-body" id="budgetModalContent" style="min-height: 100px;"><div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</div></div></div></div></div>
+<div class="modal fade" id="incomeExpenseDetailsModal"><div class="modal-dialog modal-xl"><div class="modal-content"><div class="modal-header bg-light text-dark p-2"><h5 class="modal-title">Income vs Expense Details</h5><button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button></div><div class="modal-body" id="incomeExpenseModalContent"><div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</div></div></div></div></div>
+<div class="modal fade" id="expenseDetailsModal"><div class="modal-dialog modal-xl"><div class="modal-content"><div class="modal-body p-2"></div></div></div></div>
+
+<style>
+    .card.h-100 {
+        height: 100%;
+    }
+</style>
+
+
+
+<script>
+    function loadAllMembers() {
+        $.ajax({
+            url: '@Url.Action("MemberList", "AccountManager")',
+            type: 'GET',
+            success: function (html) {
+                $('#memberModalContent').html(html);
+                $('#memberModal').modal('show');
+            }
+        });
+    }
+
+    function loadAllWorkers() {
+        $.ajax({
+            url: '@Url.Action("WorkerList", "AccountManager")',
+            type: 'GET',
+            success: function (html) {
+                $('#workerModalContent').html(html);
+                $('#workerModal').modal('show');
+            }
+        });
+    }
+
+    function loadAllVendors() {
+        $.ajax({
+            url: '@Url.Action("VendorList", "AccountManager")',
+            type: 'GET',
+            success: function (html) {
+                $('#vendorModalContent').html(html);
+                $('#vendorModal').modal('show');
+            }
+        });
+    }
+
+
+
+    function getMonthName(monthNumber) {
+        const months = ["January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"];
+        return months[parseInt(monthNumber) - 1];
+    }
+
+    function loadExpenseChart(month, year) {
+        $.ajax({
+            url: '@Url.Action("ShowPieChartForExpence", "AccountManager")',
+            type: 'POST',
+            data: { month: month, year: year },
+            success: function (data) {
+                if (!data || data.length === 0) {
+                    $('#expenseChart').html('<div class="text-danger text-center mt-3">No expense data found for selected month.</div>');
+                    return;
+                }
+
+                Highcharts.chart('expenseChart', {
+                    chart: { type: 'pie' },
+                    title: { text: 'Expense Distribution - ' + getMonthName(month) + ' ' + year },
+                    tooltip: {
+                        pointFormat: '<b>{point.name}</b>: ₹{point.y:.2f} ({point.percentage:.1f}%)'
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: false,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                format: '<b>{point.name}</b>: {point.percentage:.1f} %'
+                            },
+                            point: {
+                                events: {
+                                    click: function () {
+                                        onPieSliceClick(this.name, month, year);
+                                    }
+                                }
+                            }
+                        }
+                    },
+                      exporting: { enabled: false },   // ❌ Hides the 3-dots menu
+                      credits: { enabled: false },    // ❌ Hides the Highcharts.com logo
+
+                    series: [{
+                        name: 'Expense',
+                        colorByPoint: true,
+                        data: data
+                    }]
+                });
+            },
+            error: function () {
+                $('#expenseChart').html('<div class="text-danger text-center mt-3">Failed to load chart data.</div>');
+            }
+        });
+    }
+
+    function onPieSliceClick(expenseTypeName, month, year) {
+    $.ajax({
+        type: "POST",
+        url: '@Url.Action("GetExpenseDetailsByType", "AccountManager")', // safer
+        data: {
+            expenseTypeName: expenseTypeName,
+            month: month,
+            year: year
+        },
+        success: function (response) {
+            $('#expenseDetailsModal .modal-body').html(response);
+            $('#expenseDetailsModal').modal('show');
+        },
+        error: function (xhr, status, error) {
+            alert("Error loading details: " + xhr.responseText);
+        }
+    });
+}
+
+
+    $(document).ready(function () {
+        $('#monthPicker').datepicker({
+            format: "mm/yyyy",
+            startView: "months",
+            minViewMode: "months",
+            autoclose: true
+        }).on('changeDate', function (e) {
+            const [month, year] = e.format('mm/yyyy').split('/');
+            loadExpenseChart(month, year);
+        });
+
+        const defaultMonth = 5;
+        const defaultYear = 2025;
+        $('#monthPicker').datepicker('update', defaultMonth + '/' + defaultYear);
+        loadExpenseChart(defaultMonth, defaultYear);
+    });
+
+
+
+
+
+    //for Salary column chart
+
+
+
+
+  $(document).ready(function () {
+    $.ajax({
+        url: '@Url.Action("GetWorkerSalaryTotalPerMonth", "AccountManager")',
+        type: 'GET',
+        success: function (data) {
+
+            // Static month names (x-axis)
+            const allMonths = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"];
+
+            // Map for quick lookup
+            const dataMap = {};
+            data.forEach(item => {
+                dataMap[item.Month] = item.Amount;
+            });
+
+            // Fill all 12 months with 0 if missing
+            const amounts = allMonths.map(month => dataMap[month] || 0);
+
+            // Create the column chart
+            Highcharts.chart('workerMonthlyChart', {
+                chart: {
+                    type: 'column'
+                },
+                accessibility: {
+                    enabled: false
+                },
+                title: {
+                    text: 'Total Worker Salary Paid Per Month'
+                },
+                xAxis: {
+                    categories: allMonths,
+                    title: {
+                        text: 'Month'
+                    }
+                },
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: 'Total Amount (₹)'
+                    }
+                },
+                tooltip: {
+                    pointFormat: '₹{point.y:,.0f}'
+                },
+                exporting: { enabled: false },   // ❌ Hides the 3-dots menu
+                credits: { enabled: false },    // ❌ Hides the Highcharts.com logo
+                series: [{
+                    name: 'Total Salary',
+                    data: amounts,
+                    point: {
+                        events: {
+                            click: function () {
+                                let clickedMonth = this.category;
+                                const monthMap = {
+                                    "January": 1, "February": 2, "March": 3, "April": 4,
+                                    "May": 5, "June": 6, "July": 7, "August": 8,
+                                    "September": 9, "October": 10, "November": 11, "December": 12
+                                };
+                                let monthNumber = monthMap[clickedMonth];
+                                let year = 2025; // Or set dynamically
+
+                                // Load modal data for clicked month
+                                $.ajax({
+                                    url: '@Url.Action("GetWorkerSalaryListByMonth", "AccountManager")',
+                                    type: 'POST',
+                                    data: { month: monthNumber, year: year },
+                                    success: function (html) {
+                                        $('#workerSalaryModalContent').html(html);
+                                        $('#workerSalaryModal').modal('show');
+                                    },
+                                    error: function () {
+                                        alert("Could not load worker salary details.");
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }]
+            });
+        },
+        error: function () {
+            alert("Failed to load chart data.");
+        }
+    });
+});
+
+
+
+
+
+
+
+    //VIRAJ SCRIPTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT 10-7-2025
+
+
+
+
+
+
+    let currentMonth = new Date().getMonth() + 1;
+let currentYear = new Date().getFullYear();
+let incomeExpenseYear = new Date().getFullYear();
+
+function loadBudgetChart(month, year) {
+    $.get(@Url.Action("GetBudgetVsActualChartData", "AccountManager")?month=${month}&year=${year}, function (group) {
+        const categories = group.Events.map(e => e.EventName);
+        const allocated = group.Events.map(e => e.AllocatedBudget);
+        const actual = group.Events.map(e => e.ActualCost);
+
+        Highcharts.chart('container', {
+            chart: { type: 'bar' },
+            title: { text: `Budget vs Actual - ${group.MonthLabel} `},
+            xAxis: { categories: categories },
+            yAxis: {
+                title: { text: 'Amount (INR)' },
+                labels: {
+                    formatter: function () {
+                        return '₹' + (this.value / 1000) + 'k';
+                    }
+                }
+            },
+            tooltip: { pointFormat: '{series.name}: <b>₹{point.y}</b>' },
+            plotOptions: {
+                bar: {
+                    dataLabels: { enabled: true, format: '₹{y}' },
+                    point: {
+                        events: {
+                            click: function () {
+                                $.get(@Url.Action("EventBudgetDetails", "AccountManager")?month=${group.Month}&year=${group.Year}, function (html) {
+                                    $('#budgetModalContent').html(html);
+                                    $('#budgetDetailsModal').modal('show');
+                                });
+                            }
+                        }
+                    }
+                }
+            },
+            legend: { enabled: true },
+            credits: { enabled: false },
+            exporting: { enabled: false },   // ❌ Hides the 3-dots menu
+            credits: { enabled: false },    // ❌ Hides the Highcharts.com logo
+            series: [
+                { name: 'Allocated Budget', data: allocated },
+                { name: 'Actual Cost', data: actual }
+            ]
+        });
+    });
+}
+
+function loadIncomeExpenseChart(year) {
+    $('#yearDisplay').text(year);
+
+    $.get(@Url.Action("GetMonthlyIncomeExpenseChartData", "AccountManager")?year=${year}, function (response) {
+        if (response.error) {
+            alert(response.message);
+            return;
+        }
+
+        const data = response.data;
+        const income = Array(12).fill(0);
+        const expense = Array(12).fill(0);
+        const categories = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+        data.forEach(item => {
+            income[item.MonthNumber - 1] = item.TotalIncome;
+            expense[item.MonthNumber - 1] = item.TotalExpense;
+        });
+
+        Highcharts.chart('lineChart', {
+            chart: { type: 'line' },
+            title: { text: Monthly `Income vs Expense - ${year}` },
+            xAxis: { categories: categories },
+            yAxis: { title: { text: 'Amount (INR)' } },
+            tooltip: { shared: true },
+            credits: { enabled: false },
+            exporting: { enabled: false },   // ❌ Hides the 3-dots menu
+            credits: { enabled: false },    // ❌ Hides the Highcharts.com logo
+            plotOptions: {
+                series: {
+                    cursor: 'pointer',
+                    point: {
+                        events: {
+                            click: function () {
+                                const selectedMonth = this.index + 1;
+                                const selectedYear = incomeExpenseYear;
+
+                                $.get(@Url.Action("IncomeExpenseDetails", "AccountManager")?month=${selectedMonth}&year=${selectedYear}, function (html) {
+                                    $('#incomeExpenseModalContent').html(html);
+                                    $('#incomeExpenseDetailsModal').modal('show');
+                                });
+                            }
+                        }
+                    }
+                }
+            },
+            series: [
+                { name: 'Income', data: income },
+                { name: 'Expense', data: expense }
+            ]
+        });
+    });
+}
+
+// 🔄 Chart navigation
+$('#nextMonth').click(function () {
+    currentMonth++;
+    if (currentMonth > 12) {
+        currentMonth = 1;
+        currentYear++;
+    }
+    loadBudgetChart(currentMonth, currentYear);
+});
+
+$('#prevMonth').click(function () {
+    currentMonth--;
+    if (currentMonth < 1) {
+        currentMonth = 12;
+        currentYear--;
+    }
+    loadBudgetChart(currentMonth, currentYear);
+});
+
+$('#nextYear').click(() => {
+    incomeExpenseYear++;
+    loadIncomeExpenseChart(incomeExpenseYear);
+});
+
+$('#prevYear').click(() => {
+    incomeExpenseYear--;
+    loadIncomeExpenseChart(incomeExpenseYear);
+});
+
+// 🔃 Initial load
+$(document).ready(function () {
+    loadBudgetChart(currentMonth, currentYear);
+    loadIncomeExpenseChart(incomeExpenseYear);
+});
+
+</script>

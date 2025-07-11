@@ -1,0 +1,272 @@
+﻿@model GSTSMSLibrary.AccountManager.AccountManager.ReceiptViewModel
+
+@{
+    Layout = null;
+
+    var formattedDate = "";
+    if (!string.IsNullOrEmpty(Model.PaidDate))
+    {
+        DateTime d;
+        if (DateTime.TryParse(Model.PaidDate, out d))
+        {
+            formattedDate = d.ToString("dd-MMM-yyyy");
+        }
+    }
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Receipt - @Model.TransactionCode</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f7f9fc;
+            margin: 0;
+            padding: 40px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background: #007bff;
+            background: linear-gradient(to right, #007bff, #00c6ff);
+            color: white;
+            padding: 25px 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+            .header h1 {
+                margin-bottom: 5px;
+                font-size: 28px;
+            }
+
+            .header h2 {
+                margin-top: 10px;
+                font-size: 22px;
+            }
+
+            .header p {
+                margin: 4px 0;
+                font-size: 14px;
+            }
+
+        .section {
+            margin-top: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #f1f1f1;
+            text-align: left;
+        }
+
+        .amount-cell {
+            text-align: right;
+        }
+
+        .total-row {
+            font-weight: bold;
+            font-size: 1.1em;
+            background-color: #f8f8f8;
+        }
+
+        .penalty {
+            color: red;
+        }
+
+        .info-table td {
+            border: none;
+            padding: 5px 10px;
+        }
+
+        .badge {
+            background-color: #28a745;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            display: inline-block;
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .download-button {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 10px 24px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+            .download-button:hover {
+                background-color: #0056b3;
+            }
+
+        .section-title {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        @@media print {
+            body {
+                margin: 0;
+                padding: 0;
+                font-size: 13px;
+                background-color: white;
+            }
+
+            .container {
+                padding: 10px;
+                box-shadow: none;
+                border-radius: 0;
+                max-width: 100%;
+            }
+
+            .header {
+                page-break-inside: avoid;
+            }
+
+            .section {
+                page-break-inside: avoid;
+            }
+
+            table {
+                page-break-inside: avoid;
+            }
+
+            tr, td, th {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .download-button {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Gradient Header -->
+        <div class="header">
+            <h1>SAI AMBAR HOUSING SOCIETY</h1>
+            <p>Reg. No. MH/123456 | 123 Society Lane, Karve Nagar, Pune - 411052</p>
+            <p>Contact: +91 89546 37896 • Email: saiambar.society@email.com</p>
+            <hr style="border: 1px solid #ffffff; margin: 10px 0;" />
+            <h2>Payment Receipt</h2>
+        </div>
+
+        <!-- Receipt Info -->
+        <div class="section">
+            <table class="info-table">
+                <tr>
+                    <td><strong>Receipt No:</strong> @Model.TransactionCode</td>
+                    <td style="text-align:right;"><strong>Date:</strong> @formattedDate</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Member Info -->
+        <div class="section">
+            <table class="info-table">
+                <tr>
+                    <td><strong>Member Name:</strong> @Model.PaymentBy</td>
+                    <td><strong>Payment Purpose:</strong> @Model.PaymentPurpose</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Payment Details -->
+        <div class="section">
+            <div class="section-title">Payment Details</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th class="amount-cell">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td class="@(item.IsPenalty ? "penalty" : "")">@item.Description</td>
+                            <td class="amount-cell @(item.IsPenalty ? "penalty" : "")">₹@item.Amount.ToString("N2")</td>
+                        </tr>
+                    }
+                    <tr class="total-row">
+                        <td>TOTAL AMOUNT</td>
+                        <td class="amount-cell">₹@Model.Amount.ToString("N2")</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="section">
+            <strong>Payment Method:</strong>
+            <span class="badge">@Model.PaymentMode?.ToUpper()</span>
+        </div>
+
+        <!-- Amount in Words -->
+        <div class="section">
+            <strong>Amount in words:</strong><br />
+            @Model.AmountInWords
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            This is a system-generated receipt.
+        </div>
+
+        <!-- Download Button -->
+        <div class="no-print" style="text-align:center;">
+            <a href="@Url.Action("ReceiptPdfDownload", "AccountManager", new { transactionCode = Model.TransactionCode })" class="download-button">
+                Download PDF
+            </a>
+        </div>
+    </div>
+</body>
+</html>

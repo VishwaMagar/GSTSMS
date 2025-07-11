@@ -1,0 +1,84 @@
+﻿
+@model GSTSMSLibrary.AccountManager.AccountManager
+
+<div class="modal-header bg-primary text-white">
+    <h5 class="modal-title">
+        <i class="bi bi-info-circle me-2"></i>Transaction Details
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+<div class="modal-body">
+    <div class="container-fluid">
+
+        <div class="row mb-3 border-bottom pb-2">
+            <div class="col-sm-4 fw-bold text-muted">Transaction Purpose:</div>
+            <div class="col-sm-8">@Model.SubTypeName</div>
+        </div>
+
+        <div class="row mb-3 border-bottom pb-2">
+            <div class="col-sm-4 fw-bold text-muted">Entity Code:</div>
+            <div class="col-sm-8">@Model.EntityCode</div>
+        </div>
+
+        <div class="row mb-3 border-bottom pb-2">
+            <div class="col-sm-4 fw-bold text-muted">Payment By:</div>
+            <div class="col-sm-8">@Model.PaymentByName</div>
+        </div>
+
+        <div class="row mb-3 border-bottom pb-2">
+            <div class="col-sm-4 fw-bold text-muted">Paid To:</div>
+            <div class="col-sm-8">@Model.PaidToName</div>
+        </div>
+
+        <div class="row mb-3 border-bottom pb-2">
+            <div class="col-sm-4 fw-bold text-muted">Amount:</div>
+            <div class="col-sm-8 text-success fw-semibold">@Model.Amount.ToString("C")</div>
+        </div>
+
+        <div class="row mb-3 border-bottom pb-2">
+            <div class="col-sm-4 fw-bold text-muted">Payment Mode:</div>
+            <div class="col-sm-8">@Model.PaymentModeName</div>
+        </div>
+
+        <div class="row mb-3 border-bottom pb-2">
+            <div class="col-sm-4 fw-bold text-muted">Payment Purpose:</div>
+            <div class="col-sm-8">@Model.PaymentPurpose</div>
+        </div>
+
+        <div class="row mb-3 border-bottom pb-2">
+            <div class="col-sm-4 fw-bold text-muted">Cheque / Txn ID:</div>
+            <div class="col-sm-8">@Model.TransactionId_ChequeId</div>
+        </div>
+
+        <div class="row mb-3 border-bottom pb-2">
+            <div class="col-sm-4 fw-bold text-muted">Paid Date:</div>
+            <div class="col-sm-8">
+                @(Model.PaidDate.HasValue ? Model.PaidDate.Value.ToString("dd-MM-yyyy") : "")
+            </div>
+        </div>
+
+        <div class="row mb-3 border-bottom pb-2">
+            <div class="col-sm-4 fw-bold text-muted">Transaction Nature:</div>
+            <div class="col-sm-8">@Model.TransactionNature</div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-sm-4 fw-bold text-muted">Document:</div>
+            <div class="col-sm-8">
+                @if (!string.IsNullOrEmpty(Model.Document) && Model.Document != "-")
+                {
+                    <a href="@Url.Content("~/Content/Documents/TransactionReceipts/" + Model.Document)" class="btn btn-sm btn-outline-primary" target="_blank">
+                        <i class="bi bi-file-earmark-text"></i> View Document
+                    </a>
+                }
+                else
+                {
+                    <span class="text-muted"><i class="bi bi-x-circle-fill text-danger me-1"></i>No Document</span>
+                }
+            </div>
+        </div>
+
+    </div>
+</div>

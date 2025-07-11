@@ -58,6 +58,9 @@
     <Reference Include="Razorpay, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Razorpay.3.1.4\lib\net47\Razorpay.dll</HintPath>
     </Reference>
+    <Reference Include="Rotativa, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rotativa.1.7.3\lib\net461\Rotativa.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -4746,6 +4749,10 @@
     <Content Include="Content\vendor\typed.js\typed.umd.js" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
+    <Content Include="Rotativa\help-wkhtmltoimage.txt" />
+    <Content Include="Rotativa\help-wkhtmltopdf.txt" />
+    <Content Include="Rotativa\wkhtmltoimage.exe" />
+    <Content Include="Rotativa\wkhtmltopdf.exe" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.esm.js" />
@@ -5015,6 +5022,7 @@
     <Content Include="Content\sources\scss\theme\_section.scss" />
     <Content Include="Content\sources\scss\_mixin.scss" />
     <Content Include="Content\sources\scss\_variable.scss" />
+    <Content Include="App_Browsers\qt.browser" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
@@ -5103,12 +5111,10 @@
     <Content Include="Views\Secretary\_ScheduleMaintenancesListVK.cshtml" />
     <Content Include="Views\Secretary\_ScheduleMaintenancesVK.cshtml" />
     <Content Include="Views\Secretary\MainMaintenanceVk.cshtml" />
-    <Content Include="Views\AccountManager\Dashboard.cshtml" />
     <Content Include="Views\AccountManager\MaintenanceManagementSY.cshtml" />
     <Content Include="Views\AccountManager\_MemberMaintenanceDetailsSY.cshtml" />
     <Content Include="Views\AccountManager\BankDetailsListSS.cshtml" />
     <Content Include="Views\AccountManager\ViewBankDetails.cshtml" />
-    <Content Include="Views\AccountManager\AddBankSociety.cshtml" />
     <Content Include="Views\AccountManager\SendEMail.cshtml" />
     <Content Include="Views\AccountManager\_AddNotice.cshtml" />
     <Content Include="Views\AccountManager\_EditNoticeModal.cshtml" />
@@ -5118,9 +5124,36 @@
     <Content Include="Views\AccountManager\_IFSCModal.cshtml" />
     <Content Include="Views\AccountManager\_RegisterVendor.cshtml" />
     <Content Include="Views\AccountManager\_AddExpensePage.cshtml" />
+    <Content Include="Views\AccountManager\EventList.cshtml" />
+    <Content Include="Views\AccountManager\_CreateBudget.cshtml" />
+    <Content Include="Views\AccountManager\_UpdateDetails.cshtml" />
+    <Content Include="Views\AccountManager\_ViewBudget.cshtml" />
+    <Content Include="Views\AccountManager\_PaymentPartial.cshtml" />
+    <Content Include="Views\AccountManager\AuditReport.cshtml" />
+    <Content Include="Views\AccountManager\_MemberList.cshtml" />
+    <Content Include="Views\AccountManager\_WorkerListNK.cshtml" />
+    <Content Include="Views\AccountManager\_VendorListNK.cshtml" />
+    <Content Include="Views\AccountManager\_ExpenceDetailsListPartialNK.cshtml" />
+    <Content Include="Views\AccountManager\_WorkerSalaryListPartialNK.cshtml" />
+    <Content Include="Views\AccountManager\_EventBudgetDetailsPartial.cshtml" />
+    <Content Include="Views\AccountManager\_IncomeExpenseList.cshtml" />
+    <Content Include="Views\AccountManager\Dashboard.cshtml" />
+    <Content Include="Views\AccountManager\CashTansactionListDD.cshtml" />
+    <Content Include="Views\AccountManager\_ViewTransactionPartialDD.cshtml" />
+    <Content Include="Views\AccountManager\_CashTransactionPage.cshtml" />
+    <Content Include="Views\AccountManager\ReceiptPdf.cshtml" />
+    <Content Include="Views\AccountManager\SalarySlipView.cshtml" />
+    <Content Include="Views\AccountManager\FetchingWorkersData.cshtml" />
+    <Content Include="Views\AccountManager\_ViewWorkerDetailsAD.cshtml" />
+    <Content Include="Views\AccountManager\_WorkerPaymentFormAD.cshtml" />
+    <Content Include="Views\AccountManager\ComplaintList.cshtml" />
+    <Content Include="Views\AccountManager\_ResolvedComplaintDetails.cshtml" />
+    <Content Include="Views\AccountManager\_GetAddBankSocietyMS.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Content\Documents\SalarySlips\" />
+    <Folder Include="Content\Documents\TransactionReceipts\" />
     <Folder Include="Models\" />
     <Folder Include="Views\Bind\" />
     <Folder Include="Views\Chairman\" />

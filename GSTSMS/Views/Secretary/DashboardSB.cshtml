@@ -1195,7 +1195,8 @@
                              let categories = ['Pending', 'Inprogress', 'Solved', 'Escalate',];
                              let complaintCounts = [0, 0, 0, 0];
 
-                             data.forEach(item => {
+                             
+        (item => {
                                  if (item.Status === 'Pending') complaintCounts[0] = item.ComplaintCount;
                                  if (item.Status === 'Inprogress') complaintCounts[1] = item.ComplaintCount;
                                  if (item.Status === 'Solved') complaintCounts[2] = item.ComplaintCount;
@@ -3483,13 +3484,15 @@
                              alert("Failed to load event data.");
                          }
                      });
-                 }
+        }
+
 
     </script>
 
 
     <!-- General JS Scripts -->
-    <script src="~/Content/modules/jquery.min.js"></script>
+    <script src="~/Content/modules/
+            "></script>
     <script src="~/Content/modules/popper.js"></script>
     <script src="~/Content/modules/tooltip.js"></script>
     <script src="~/Content/modules/bootstrap/js/bootstrap.min.js"></script>

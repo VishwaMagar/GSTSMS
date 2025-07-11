@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using System.Net;
 using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
@@ -226,7 +227,36 @@ namespace GSTSMSHelper
 </div>";
         }
 
+        public async Task<bool> SendEmailAsync(string toEmail, string subject, string body)
+        {
+            try
+            {
+                MailMessage mail = new MailMessage();
+                mail.To.Add(toEmail);
+                mail.Subject = subject;
+                mail.Body = body;
+                mail.IsBodyHtml = true;
+                mail.From = new MailAddress("savitagavali15@gmail.com");
 
+                SmtpClient smtp = new SmtpClient
+                {
+                    Host = "smtp.gmail.com",
+                    Port = 587,
+                    EnableSsl = true,
+                    UseDefaultCredentials = false,
+                    Credentials = new NetworkCredential("savitagavali15@gmail.com", "ndouhycpgvjomitj")
+                };
+
+                await smtp.SendMailAsync(mail);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+
+        }
 
 
 

@@ -1,0 +1,190 @@
+﻿@model IEnumerable<GSTSMSLibrary.AccountManager.AccountManager>
+
+<div class="modal-header bg-light p-2">
+    <h5 class="modal-title text-center w-100">Expense Details</h5>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<div class="modal-body p-2">
+
+    <!-- Spinner shown initially -->
+    <div id="expense-loading" class="text-center my-3">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+
+    <!-- Table container hidden until ready -->
+    <div id="expense-table-container" style="display:none;">
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered table-hover table-striped dataTableExport mb-0"
+                   id="expenseDetailTable" style="width:100%; table-layout: fixed;">
+                <thead class="thead-dark small">
+                    <tr style="height: 32px;">
+                        <th style="width: 30px; text-align: center; vertical-align: middle;">
+                            <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
+                                <input type="checkbox" id="select-expense-all" />
+                            </div>
+                        </th>
+                        <th style="width: 20px;">Sr.No</th>
+                        <th style="width: 100px;">Type</th>
+                        <th style="width: 120px;">Name</th>
+                        <th style="width: 80px;">Wing</th>
+                        <th style="width: 100px;">Paid To</th>
+                        <th style="width: 200px;">Description</th>
+                        <th style="width: 100px;">Date</th>
+                        <th style="width: 100px;" class="text-right">Amount</th>
+                    </tr>
+                </thead>
+                <tbody class="small">
+                    @{
+                        int i = 1;
+                        foreach (var item in Model)
+                        {
+                            <tr style="height: 34px;">
+                                <td></td>
+                                <td>@i</td>
+                                <td>@item.ExpenseTypeName</td>
+                                <td title="@item.ExpenseName">@item.ExpenseName</td>
+                                <td>@item.WingName</td>
+                                <td>@item.PaidTo</td>
+                                <td>@item.Description</td>
+                                <td>@(item.ExpenseDate.HasValue ? item.ExpenseDate.Value.ToString("dd-MM-yyyy") : "")</td>
+                                <td class="text-right">@item.Amount.ToString("N2")</td>
+                            </tr>
+                            i++;
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .modal-xl {
+        max-width: 85% !important;
+        margin: auto;
+    }
+
+    .modal-content {
+        border-radius: 0.75rem;
+        padding: 0.5rem;
+    }
+
+    .modal-body {
+        overflow-x: hidden;
+        padding: 0.75rem;
+    }
+
+    table td, table th {
+        padding: 0.25rem 0.5rem !important;
+        vertical-align: middle;
+        font-size: 0.85rem;
+    }
+
+    td {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    table.dataTable tbody tr.selected {
+        background-color: transparent !important;
+    }
+
+        table.dataTable tbody tr.selected td {
+            color: #212529 !important;
+        }
+
+            table.dataTable tbody tr.selected td.select-checkbox::before {
+                background-color: transparent !important;
+                color: #007bff !important;
+            }
+
+    #expense-loading .spinner-border {
+        width: 3rem;
+        height: 3rem;
+    }
+</style>
+
+<!-- DataTables & Export Buttons -->
+<link href="~/Content/modules/datatables/datatables.min.css" rel="stylesheet" />
+<link href="~/Content/modules/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+<link href="~/Content/modules/datatables/Buttons-1.5.1/css/buttons.bootstrap4.min.css" rel="stylesheet" />
+<link href="~/Content/modules/datatables/Select-1.2.6/css/select.bootstrap4.min.css" rel="stylesheet" />
+
+<script src="~/Content/modules/datatables/datatables.min.js"></script>
+<script src="~/Content/modules/datatables/Buttons-1.5.1/js/dataTables.buttons.min.js"></script>
+<script src="~/Content/modules/datatables/Buttons-1.5.1/js/buttons.bootstrap4.min.js"></script>
+<script src="~/Content/modules/datatables/JSZip-2.5.0/jszip.min.js"></script>
+<script src="~/Content/modules/datatables/pdfmake-0.1.36/pdfmake.min.js"></script>
+<script src="~/Content/modules/datatables/pdfmake-0.1.36/vfs_fonts.js"></script>
+<script src="~/Content/modules/datatables/Buttons-1.5.1/js/buttons.html5.min.js"></script>
+<script src="~/Content/modules/datatables/Select-1.2.6/js/dataTables.select.min.js"></script>
+
+<script>$(document).on('shown.bs.modal', '#expenseDetailsModal', function () {
+        // Hide table and show spinner
+        $('#expense-table-container').hide();
+        $('#expense-loading').show();
+
+        if (!$.fn.DataTable.isDataTable('#expenseDetailTable')) {
+            var table = $('#expenseDetailTable').DataTable({
+                dom: "<'row'<'col-md-6'B><'col-md-6'f>>" +
+                    "<'row'<'col-12'tr>>" +
+                    "<'row'<'col-md-5'i><'col-md-7'p>>",
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        text: '<i class="fas fa-file-excel"></i> Excel',
+                        className: 'btn btn-sm btn-success',
+                        exportOptions: {
+                            columns: ':visible:not(:first-child)',
+                            modifier: { selected: true }
+                        }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        text: '<i class="fas fa-file-pdf"></i> PDF',
+                        className: 'btn btn-sm btn-danger',
+                        exportOptions: {
+                            columns: ':visible:not(:first-child)',
+                            modifier: { selected: true }
+                        }
+                    }
+                ],
+                select: {
+                    style: 'multi',
+                    selector: 'td:first-child'
+                },
+                columnDefs: [
+                    { orderable: false, className: 'select-checkbox', targets: 0 }
+                ],
+                order: [[1, 'asc']],
+                pageLength: 10,
+                responsive: false,
+                scrollX: false,
+                initComplete: function () {
+                    $('#expense-loading').hide();
+                    $('#expense-table-container').show();
+                }
+            });
+
+            $('#select-expense-all').on('click', function () {
+                if (this.checked) {
+                    table.rows({ search: 'applied' }).select();
+                } else {
+                    table.rows().deselect();
+                }
+            });
+
+            table.on('select deselect', function () {
+                var all = table.rows({ search: 'applied' }).count();
+                var selected = table.rows({ search: 'applied', selected: true }).count();
+                $('#select-expense-all').prop('checked', selected === all);
+            });
+        } else {
+            $('#expense-loading').hide();
+            $('#expense-table-container').show();
+        }
+    });</script>

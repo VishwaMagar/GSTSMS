@@ -1,0 +1,226 @@
+﻿@* Views/AccountManager/_ViewWorkerDetails.cshtml *@
+
+@{
+    var fileName = "WorkerReceipt_" +
+                   Model["WorkerName"].ToString().Replace(" ", "") + "" +
+                   Model["AttendanceMonth"].ToString().Replace("/", "").Replace("-", "").Trim().ToLower().Replace(" ", "_") + ".pdf";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+
+<style>
+    #receiptContent p {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        margin: 6px 0;
+        padding: 0;
+    }
+
+        #receiptContent p strong {
+            width: 180px;
+            color: #333;
+        }
+
+    #receiptContent .footer-sign {
+        margin-top: 40px;
+        text-align: right;
+        font-weight: bold;
+        color: #157347;
+    }
+
+    #receiptContent hr {
+        margin: 15px 0;
+        border-top: 1px solid #ccc;
+    }
+
+    #receiptContent {
+        background: white;
+        padding: 30px;
+        border: 1px solid #ccc;
+        width: 650px;
+        margin: 40px auto;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 14px;
+        line-height: 1.7;
+        display: none;
+    }
+
+    .modal-header {
+        background: linear-gradient(to right, #198754, #157347);
+        color: white;
+    }
+
+    .modal-title {
+        font-weight: 600;
+    }
+
+    .modal-body {
+        font-size: 15px;
+    }
+
+    .info-box {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0.4rem;
+        padding: 10px 15px;
+        margin-bottom: 10px;
+    }
+
+    .badge-paid {
+        font-size: 0.9rem;
+        background-color: #198754;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 0.5rem;
+        margin-bottom: 15px;
+        display: inline-block;
+    }
+
+    .footer-sign {
+        margin-top: 40px;
+        text-align: right;
+        font-weight: bold;
+    }
+</style>
+
+<div class="modal-header">
+    <h5 class="modal-title"><i class="bi bi-check2-circle me-2"></i>Payment Completed</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+    <span class="badge-paid"><i class="bi bi-cash-coin"></i> Salary Already Paid</span>
+
+    <div class="container px-0">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="info-box"><strong><i class="bi bi-person-fill"></i> Name:</strong> @Model["WorkerName"]</div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-box"><strong><i class="bi bi-telephone-fill"></i> Contact No:</strong> @Model["Contact"]</div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-box"><strong><i class="bi bi-person-vcard-fill"></i> Role:</strong> @Model["Role"]</div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-box"><strong><i class="bi bi-calendar-event"></i> Joining Date:</strong> @Convert.ToDateTime(Model["Date"]).ToString("dd MMM yyyy")</div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-box"><strong><i class="bi bi-wallet2"></i> Base Salary:</strong> ₹@Model["BaseSalary"]</div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-box"><strong><i class="bi bi-calendar-month"></i> Attendance Month:</strong> @Model["AttendanceMonth"]</div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-box"><strong><i class="bi bi-clock-history"></i> Days Present:</strong> @Model["DaysPresent"]</div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-box"><strong><i class="bi bi-currency-rupee"></i> Amount Paid:</strong> ₹@Model["AmountToBePaid"]</div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-box"><strong><i class="bi bi-calendar-check"></i> Paid Date:</strong> @Convert.ToDateTime(Model["PaidDate"]).ToString("dd MMM yyyy hh:mm tt")</div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-box"><strong><i class="bi bi-clock-history"></i> Payment Mode:</strong> @Model["PaymentModeName"]</div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-box"><strong><i class="bi bi-bank"></i> IFSC Code:</strong> @Model["IFSC Code"]</div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-box"><strong><i class="bi bi-upc-scan"></i> UPI ID:</strong> @Model["Worker UPI"]</div>
+            </div>
+            <div class="col-md-12">
+                <div class="info-box"><strong><i class="bi bi-card-checklist"></i> Transaction Ref:</strong> @Model["TransactionRef"]</div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <div id="receiptContent">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h3 style="margin: 0; color: #198754;">Sai Amber Society</h3>
+            <p style="margin: 0; font-size: 13px;">Pune - 411038</p>
+            <h5 style="margin-top: 10px; color: #157347;">Salary Payment Receipt</h5>
+            <hr />
+        </div>
+
+        <table style="width: 100%; font-size: 13px; border-collapse: collapse;">
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ccc;"><strong>Employee Name</strong></td>
+                <td style="padding: 8px; border: 1px solid #ccc;">@Model["WorkerName"]</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ccc;"><strong>Contact Number</strong></td>
+                <td style="padding: 8px; border: 1px solid #ccc;">@Model["Contact"]</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ccc;"><strong>Role</strong></td>
+                <td style="padding: 8px; border: 1px solid #ccc;">@Model["Role"]</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ccc;"><strong>Attendance Month</strong></td>
+                <td style="padding: 8px; border: 1px solid #ccc;">@Model["AttendanceMonth"]</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ccc;"><strong>Days Present</strong></td>
+                <td style="padding: 8px; border: 1px solid #ccc;">@Model["DaysPresent"]</td>
+            </tr>
+            <tr style="background-color: #eaf9ef;">
+                <td style="padding: 8px; border: 1px solid #ccc;"><strong>Total Amount Paid</strong></td>
+                <td style="padding: 8px; border: 1px solid #ccc; color: green; font-weight: bold;">₹@Model["AmountToBePaid"]</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ccc;"><strong>Paid Date</strong></td>
+                <td style="padding: 8px; border: 1px solid #ccc;">@Convert.ToDateTime(Model["PaidDate"]).ToString("dd MMM yyyy hh:mm tt")</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ccc;"><strong>Payment Mode</strong></td>
+                <td style="padding: 8px; border: 1px solid #ccc;">@Model["PaymentModeName"]</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ccc;"><strong>Transaction Ref</strong></td>
+                <td style="padding: 8px; border: 1px solid #ccc;">@Model["TransactionRef"]</td>
+            </tr>
+        </table>
+
+        <p style="margin-top: 20px;"><strong>Receipt Generated On:</strong> @DateTime.Now.ToString("dd MMM yyyy hh:mm tt")</p>
+
+        <div class="footer-sign mt-4">
+            Authorized By: Accountant Meena Bhaskar Deshmukh
+        </div>
+    </div>
+
+
+
+    <div class="text-end mt-4">
+        <button class="btn btn-success me-2" onclick="downloadReceipt()">
+            <i class="bi bi-download"></i> Download Receipt
+        </button>
+        <button class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle"></i> Close
+        </button>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+    function downloadReceipt() {
+        const element = document.getElementById('receiptContent');
+        const clone = element.cloneNode(true);
+        clone.style.display = 'block';
+
+        const opt = {
+            margin: 0.5,
+            filename: '@fileName',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(clone).save();
+    }
+</script>

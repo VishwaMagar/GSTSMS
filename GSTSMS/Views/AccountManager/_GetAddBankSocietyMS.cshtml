@@ -1,0 +1,88 @@
+﻿@model GSTSMSLibrary.AccountManager.AccountManager
+
+<div class="col-12 col-md-12 col-lg-12">
+    <div class="card">
+        <div class="card-header">
+            <h4>Add Bank Account</h4>
+        </div>
+        <div class="card-body">
+
+            @using (Html.BeginForm("GetAddBankSocietyMS", "AccountManager", FormMethod.Post, new { id = "AddBankFormSimple" }))
+            {
+                @Html.AntiForgeryToken()
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label>IFSC Code</label>
+                        @Html.TextBoxFor(m => m.IFSCCode, new { @class = "form-control", @id = "ifscCode", placeholder = "Enter IFSC Code", maxlength = "11" })
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label>Bank Name</label>
+                        @Html.TextBoxFor(m => m.BankName, new { @class = "form-control", @id = "bankName", @readonly = "readonly", placeholder = "Auto-filled Bank Name" })
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label>Account No</label>
+                        @Html.TextBoxFor(m => m.AccountNo, new { @class = "form-control", placeholder = "Enter Account Number" })
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label>UPI ID</label>
+                        @Html.TextBoxFor(m => m.UPIId, new { @class = "form-control", placeholder = "Enter UPI ID" })
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label>Opening Balance</label>
+                        @Html.TextBoxFor(m => m.OpeningBalance, new { @class = "form-control", type = "number", placeholder = "Enter Opening Balance" })
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label>Account Type</label>
+                        @Html.DropDownListFor(m => m.AccountTypeId, ViewBag.AccountTypeList as List<SelectListItem>, "-- Select Account Type --", new { @class = "form-control" })
+                    </div>
+                </div>
+
+                <div class="form-group text-right mt-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-save"></i> +Add Bank
+                    </button>
+                    <button type="button" class="btn btn-secondary ml-2" id="btnClearForm">
+                        <i class="fa fa-times"></i> Clear
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>$(document).ready(function () {
+
+        // IFSC -> Fetch bank name & branch
+        $('#ifscCode').on('input', function () {
+            var ifsc = $(this).val().trim();
+            if (ifsc.length === 11) {
+                $.ajax({
+                    url: 'https://ifsc.razorpay.com/' + ifsc,
+                    type: 'GET',
+                    success: function (data) {
+                        $('#bankName').val(data.BANK);
+                        $('#branch').val(data.BRANCH);
+                    },
+                    error: function () {
+                        $('#bankName').val('');
+                        $('#branch').val('');
+                    }
+                });
+            } else {
+                $('#bankName').val('');
+                $('#branch').val('');
+            }
+        });
+
+        // Clear form
+        $('#btnClearForm').click(function () {
+            $('#AddBankFormSimple')[0].reset();
+            $('#bankName').val('');
+            $('#branch').val('');
+        });
+    });</script>

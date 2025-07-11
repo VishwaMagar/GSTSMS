@@ -1,0 +1,174 @@
+﻿
+@model List<GSTSMSLibrary.AccountManager.AccountManager>
+@{
+    Layout = null;
+}
+
+<!-- ✅ MODAL WRAPPER -->
+<div class="modal-dialog modal-xl">
+    <div class="modal-content">
+
+        <!-- ✅ MODAL BODY -->
+        <div class="modal-body p-2">
+            @if (Model != null && Model.Count > 0)
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered table-hover table-striped dataTableExport w-100"
+                           id="eventBudgetTable" style="table-layout: fixed;">
+                        <thead class="thead-dark small">
+                            <tr>
+                                <th style="width: 30px; text-align: center;">
+                                    <input type="checkbox" id="select-event-all" />
+                                </th>
+                                <th style="width: 40px;">#</th>
+                                <th style="width: 150px;">Event Name</th>
+                                <th style="width: 100px;">From Date</th>
+                                <th style="width: 100px;">Month</th>
+                                <th class="text-right" style="width: 130px;">Allocated Budget</th>
+                                <th class="text-right" style="width: 130px;">Actual Cost</th>
+                                <th class="text-right" style="width: 130px;">Difference</th>
+                            </tr>
+                        </thead>
+                        <tbody class="small">
+                            @{
+                                int count = 1;
+                                foreach (var item in Model)
+                                {
+                                    var diff = item.AllocatedBudget - item.ActualCost;
+                                    var diffClass = diff >= 0 ? "text-success" : "text-danger";
+                                                        <tr>
+                                                            <td></td>
+                                                            <td>@count</td>
+                                                            <td>@item.EventName</td>
+                                                            <td>@item.FromDate.ToString("dd")</td>
+                                                            <td>@item.MonthYear</td>
+                                                            <td class="text-right">₹@item.AllocatedBudget?.ToString("N2") ?? "0.00"</td>
+                                                            <td class="text-right">₹@item.ActualCost?.ToString("N2") ?? "0.00"</td>
+                                                            <td class="text-right font-weight-bold @diffClass">₹@diff?.ToString("N2") ?? "0.00"</td>
+
+                                                        </tr>
+                                    count++;
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">No event budget data found for this month.</div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- ✅ STYLES -->
+<style>
+    .modal-xl {
+        max-width: 90% !important;
+    }
+
+    .modal-content {
+        background-color: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+
+    .modal-body {
+        overflow-x: hidden;
+        overflow-y: auto;
+        max-height: 80vh;
+        padding: 0.75rem;
+        background-color: white;
+        border-radius: 0.75rem;
+    }
+
+    div.dataTables_wrapper {
+        background-color: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+
+    table td, table th {
+        padding: 0.4rem 0.6rem !important;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+    }
+</style>
+
+<!-- ✅ DATATABLES CSS -->
+<link href="~/Content/modules/datatables/datatables.min.css" rel="stylesheet" />
+<link href="~/Content/modules/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
+<link href="~/Content/modules/datatables/Buttons-1.5.1/css/buttons.bootstrap4.min.css" rel="stylesheet" />
+<link href="~/Content/modules/datatables/Select-1.2.6/css/select.bootstrap4.min.css" rel="stylesheet" />
+
+<!-- ✅ DATATABLES JS -->
+<script src="~/Content/modules/datatables/datatables.min.js"></script>
+<script src="~/Content/modules/datatables/Buttons-1.5.1/js/dataTables.buttons.min.js"></script>
+<script src="~/Content/modules/datatables/Buttons-1.5.1/js/buttons.bootstrap4.min.js"></script>
+<script src="~/Content/modules/datatables/JSZip-2.5.0/jszip.min.js"></script>
+<script src="~/Content/modules/datatables/pdfmake-0.1.36/pdfmake.min.js"></script>
+<script src="~/Content/modules/datatables/pdfmake-0.1.36/vfs_fonts.js"></script>
+<script src="~/Content/modules/datatables/Buttons-1.5.1/js/buttons.html5.min.js"></script>
+<script src="~/Content/modules/datatables/Select-1.2.6/js/dataTables.select.min.js"></script>
+
+<!-- ✅ INIT DATATABLE -->
+<script>$(document).ready(function () {
+        var table = $('#eventBudgetTable').DataTable({
+            dom: "<'row'<'col-md-6'B><'col-md-6'f>>" +
+                "<'row'<'col-12'tr>>" +
+                "<'row'<'col-md-5'i><'col-md-7'p>>",
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="fas fa-file-excel"></i> Excel',
+                    className: 'btn btn-sm btn-success',
+                    exportOptions: {
+                        columns: ':visible:not(:first-child)',
+                        modifier: { selected: true }
+                    }
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="fas fa-file-pdf"></i> PDF',
+                    className: 'btn btn-sm btn-danger',
+                    exportOptions: {
+                        columns: ':visible:not(:first-child)',
+                        modifier: { selected: true }
+                    }
+                }
+            ],
+            select: {
+                style: 'multi',
+                selector: 'td:first-child'
+            },
+            columnDefs: [
+                {
+                    orderable: false,
+                    className: 'select-checkbox',
+                    targets: 0
+                }
+            ],
+            order: [[1, 'asc']],
+            pageLength: 10,
+            scrollX: false,
+            responsive: false
+        });
+
+        $('#select-event-all').on('click', function () {
+            if (this.checked) {
+                table.rows({ search: 'applied' }).select();
+            } else {
+                table.rows().deselect();
+            }
+        });
+
+        table.on('select deselect', function () {
+            var total = table.rows({ search: 'applied' }).count();
+            var selected = table.rows({ search: 'applied', selected: true }).count();
+            $('#select-event-all').prop('checked', total === selected);
+        });
+    });</script>

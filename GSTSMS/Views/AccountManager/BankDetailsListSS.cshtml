@@ -13,13 +13,10 @@
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h4>Bank List</h4>
-        <div class="d-flex gap-2">
-            <a href="@Url.Action("AddBankSociety", "AccountManager")" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus"></i> Add Bank
-            </a>
-            <div id="exportButtons" class="d-flex gap-2"></div>
-        </div>
         <div id="exportButtons" class="d-flex gap-2"></div>
+        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addBankModal">
+            <i class="fa fa-plus"></i> Add Bank
+        </button>
     </div>
 
     <div class="card-body">
@@ -60,10 +57,11 @@
                                         <a href="@Url.Action("ViewBankDetails", "AccountManager", new { bankCode = item.BankCode })" title="View Details">
                                             <i class="fa fa-eye text-primary"></i>
                                         </a>
+                                        <a href="javascript:void(0);" class="btn btn-dark btn-sm btn-disable" data-id="@item.BankId" data-toggle="tooltip" title="Disable Account">
+                                            <i class="fas fa-ban"></i>
+                                        </a>
 
-                                        @*<a href="@Url.Action("Disable", "AccountManager", new { id = item.BankId })" class="btn btn-dark btn-sm" data-toggle="tooltip" title="Disable Account">
-                                                <i class="fas fa-ban"></i>
-                                            </a>*@
+
                                     </div>
                                 </td>
 
@@ -80,7 +78,25 @@
             </table>
         </div>
     </div>
+    <!-- ------------------------------------------------------------------------------------------------------------------🧩 Add Bank Modal ---------------------------------------------------------------->
+    <div class="modal fade" id="addBankModal" tabindex="-1" role="dialog" aria-labelledby="addBankModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Bank</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="addBankModalBody">
+                    <div class="text-center text-muted">Loading form...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
+
 
 @section Scripts {
     <!-- JS Dependencies -->
@@ -95,7 +111,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
 
-    <script>$(document).ready(function () {
+    ////////////////////////////////////use to partial view////////////////////////////////////////////////
+    <!-- Bootstrap JS Required for Tooltip/Modal -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+
+
+    <script>
+        $(document).ready(function () {
             var table = $('#bankTable').DataTable({
                 dom: 'Bfrtip',
                 buttons: [
@@ -103,14 +127,21 @@
                         extend: 'csvHtml5',
                         text: '<i class="fas fa-file-csv text-primary"></i>',
                         className: 'btn btn-outline-primary btn-sm',
+                        action: function (e, dt, button, config) {
+                            var selectedRows = dt.rows().nodes().to$().find('input.row-checkbox:checked').length;
+                            if (selectedRows === 0) {
+                                alert('Please select at least one row to export.');
+                                return;
+                            }
+                            $.fn.dataTable.ext.buttons.csvHtml5.action.call(this, e, dt, button, config);
+                        },
                         exportOptions: {
                             rows: function (idx, data, node) {
                                 return $(node).find('input.row-checkbox').prop('checked');
                             },
-                            columns: [1, 2, 3, 4, 5, 6, 7], // Sr.No to Branch
+                            columns: [1, 2, 3, 4, 5, 6, 7],
                             format: {
                                 body: function (data, row, column, node) {
-                                    if (column === 0) return row + 1;
                                     return $(node).text().trim();
                                 }
                             }
@@ -120,6 +151,14 @@
                         extend: 'excelHtml5',
                         text: '<i class="fas fa-file-excel text-success"></i>',
                         className: 'btn btn-outline-success btn-sm',
+                        action: function (e, dt, button, config) {
+                            var selectedRows = dt.rows().nodes().to$().find('input.row-checkbox:checked').length;
+                            if (selectedRows === 0) {
+                                alert('Please select at least one row to export.');
+                                return;
+                            }
+                            $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
+                        },
                         exportOptions: {
                             rows: function (idx, data, node) {
                                 return $(node).find('input.row-checkbox').prop('checked');
@@ -127,7 +166,6 @@
                             columns: [1, 2, 3, 4, 5, 6, 7],
                             format: {
                                 body: function (data, row, column, node) {
-                                    if (column === 0) return row + 1;
                                     return $(node).text().trim();
                                 }
                             }
@@ -139,6 +177,14 @@
                         className: 'btn btn-outline-danger btn-sm',
                         orientation: 'landscape',
                         pageSize: 'A4',
+                        action: function (e, dt, button, config) {
+                            var selectedRows = dt.rows().nodes().to$().find('input.row-checkbox:checked').length;
+                            if (selectedRows === 0) {
+                                alert('Please select at least one row to export.');
+                                return;
+                            }
+                            $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+                        },
                         exportOptions: {
                             rows: function (idx, data, node) {
                                 return $(node).find('input.row-checkbox').prop('checked');
@@ -146,18 +192,19 @@
                             columns: [1, 2, 3, 4, 5, 6, 7],
                             format: {
                                 body: function (data, row, column, node) {
-                                    if (column === 0) return row + 1;
                                     return $(node).text().trim();
                                 }
                             }
                         }
                     }
                 ],
+
+
                 pageLength: 5,
                 drawCallback: function () {
                     var api = this.api();
                     api.rows({ page: 'current' }).every(function (rowIdx, tableLoop, rowLoop) {
-                        $(this.node()).find('td:eq(1)').html(rowLoop + 1); // Sr.No column
+                        $(this.node()).find('td:eq(1)').html(rowLoop + 1);
                     });
                 }
             });
@@ -177,8 +224,64 @@
                 var checked = $('.row-checkbox:checked').length;
                 $('#selectAll').prop('checked', total === checked);
             });
+            // Disable bank account via AJAX
+               $('#bankTable').on('click', '.btn-disable', function () {
+                var bankId = $(this).data('id');
+               if (confirm("Are you sure you want to disable this bank account?")) {
+                $.ajax({
+            url: '@Url.Action("DisableBank", "AccountManager")',
+            type: 'POST',
+            data: { bankId: bankId },
+            success: function (response) {
+                if (response.success) {
+                    toastr.success("Bank account disabled successfully.");
+                    setTimeout(function () { location.reload(); }, 1000);
+                } else {
+                    toastr.error("Failed to disable the bank account.");
+                }
+            },
+            error: function () {
+                toastr.error("Something went wrong!");
+            }
+        });
+    }
+});
 
             // Tooltip
             $('[data-toggle="tooltip"]').tooltip();
-        });</script>
+        });
+
+
+/////////////////////////////////////////////add bank partial code ///////////////////////
+
+        // 🧠 Load Add Bank Form when Modal Opens
+$('#addBankModal').on('show.bs.modal', function () {
+    $('#addBankModalBody').html('<div class="text-center text-muted">Loading form...</div>');
+    $.get('@Url.Action("GetAddBankSocietyMS", "AccountManager")', function (html) {
+        $('#addBankModalBody').html(html);
+    });
+});
+
+// 💾 Submit Add Bank Form via Ajax
+$(document).on('submit', '#AddBankFormSimple', function (e) {
+    e.preventDefault();
+    $.ajax({
+        url: $(this).attr('action'),
+        method: 'POST',
+        data: $(this).serialize(),
+        success: function (res) {
+            if (res.trim() === "success") {
+                $('#addBankModal').modal('hide');
+                location.reload(); // reload the list
+            } else {
+                $('#addBankModalBody').html(res); // show validation if failed
+            }
+        },
+        error: function () {
+            alert("Failed to save bank.");
+        }
+    });
+});
+
+    </script>
 }

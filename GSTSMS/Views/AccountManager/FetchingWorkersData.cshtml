@@ -1,0 +1,288 @@
+﻿@model IEnumerable<GSTSMSLibrary.AccountManager.AccountManager>
+@{
+    ViewBag.Title = "Worker Payment List";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var exportTimestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+}
+
+<!-- Styles -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.bootstrap4.min.css" />
+<link rel="stylesheet" href="~/Content/modules/bootstrap-daterangepicker/daterangepicker.css" />
+
+<h2 class="text-center mb-4">Worker Payment List</h2>
+
+@if (TempData["Message"] != null)
+{
+    <script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Transaction Complete 🎉',
+            text: '@TempData["Message"]',
+            confirmButtonColor: '#3085d6'
+        });
+    </script>
+}
+
+
+<!-- Date Range Picker -->
+<div class="form-group mb-3">
+    <a href="javascript:;" class="btn btn-primary daterange-btn icon-left btn-icon">
+        <i class="fas fa-calendar"></i> <span>Select Joining Date Range</span>
+    </a>
+    <input type="hidden" id="fromDate" />
+    <input type="hidden" id="toDate" />
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped" id="workerTable">
+        <thead>
+            <tr>
+                <th class="text-center" id="toggleSelectAll" style="cursor:pointer;">Select</th>
+                <th>Sr.No</th>
+                <th>Worker Name</th>
+                <th>Role</th>
+                <th>Contact</th>
+                <th>Date Of Joining</th>
+                <th>Base Salary</th>
+                <th>Attendance Month</th>
+                <th>Days Present</th>
+                <th>Per Day Payment</th>
+                <th>Amount To Be Paid</th>
+                <th class="d-none">Account Number</th>
+                <th class="d-none">IFSC</th>
+                <th class="d-none">UPI</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr data-date="@item.DateOfJoining.ToString("yyyy-MM-dd")">
+                    <td class="text-center"><input type="checkbox" class="rowCheckbox" /></td>
+                    <td>@item.SerialNumber</td>
+                    <td>@item.StaffName</td>
+                    <td>@item.RoleName</td>
+                    <td>@item.Contact</td>
+                    <td>@item.DateOfJoining.ToShortDateString()</td>
+                    <td>@item.BaseSalary.ToString("C")</td>
+                    <td>@item.AttendanceMonth</td>
+                    <td>@item.DaysPresent</td>
+                    <td>@item.PerdayPayment.ToString("C")</td>
+                    <td>@item.AmountToBePaid.ToString("C")</td>
+                    <td class="d-none">@item.AccountNumber</td>
+                    <td class="d-none">@item.IFSCCode</td>
+                    <td class="d-none">@item.WorkerUPI</td>
+                    <td>
+                        @if (item.IsPaid)
+                        {
+                            <button class="btn btn-info btn-sm viewBtn"
+                                    data-worker="@item.WorkerCode"
+                                    data-month="@item.AttendanceMonth">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-success btn-sm payBtn"
+                                    data-worker="@item.WorkerCode"
+                                    data-month="@item.AttendanceMonth">
+                                <i class="bi bi-currency-rupee"></i> Pay
+                            </button>
+                        }
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="modalContent"></div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="~/Content/modules/moment.min.js"></script>
+    <script src="~/Content/modules/bootstrap-daterangepicker/daterangepicker.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.bootstrap4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+
+    <script>
+        $(function () {
+            let allSelected = false;
+
+            let table = $('#workerTable').DataTable({
+                ordering: false,
+                pageLength: 10,
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        extend: 'csvHtml5',
+                        text: 'Export CSV',
+                        className: 'btn btn-sm btn-primary',
+                        exportOptions: {
+                            columns: ':visible:not(:first-child):not(:last-child)',
+                            rows: function (idx, data, node) {
+                                return $(node).find('.rowCheckbox').prop('checked');
+                            }
+                        },
+                        action: function (e, dt, button, config) {
+                            if ($('.rowCheckbox:checked').length === 0) {
+                                Swal.fire('Warning', 'Please select at least one row to export.', 'warning');
+                                return;
+                            }
+                            $.fn.dataTable.ext.buttons.csvHtml5.action.call(this, e, dt, button, config);
+                        }
+                    },
+                    {
+                        extend: 'excelHtml5',
+                        text: 'Export Excel',
+                        className: 'btn btn-sm btn-success',
+                        exportOptions: {
+                            columns: ':visible:not(:first-child):not(:last-child)',
+                            rows: function (idx, data, node) {
+                                return $(node).find('.rowCheckbox').prop('checked');
+                            }
+                        },
+                        action: function (e, dt, button, config) {
+                            if ($('.rowCheckbox:checked').length === 0) {
+                                Swal.fire('Warning', 'Please select at least one row to export.', 'warning');
+                                return;
+                            }
+                            $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
+                        }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        text: 'Export PDF',
+                        className: 'btn btn-sm btn-danger',
+                        orientation: 'landscape',
+                        pageSize: 'A4',
+                        messageTop: 'Exported: @exportTimestamp',
+                        exportOptions: {
+                            columns: ':visible:not(:first-child):not(:last-child)',
+                            rows: function (idx, data, node) {
+                                return $(node).find('.rowCheckbox').prop('checked');
+                            }
+                        },
+                        action: function (e, dt, button, config) {
+                            if ($('.rowCheckbox:checked').length === 0) {
+                                Swal.fire('Warning', 'Please select at least one row to export.', 'warning');
+                                return;
+                            }
+                            $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+                        }
+                    }
+                ]
+            });
+
+            // ✅ Global Select All toggle across all pages
+            $('#toggleSelectAll').on('click', function () {
+                allSelected = !allSelected;
+                table.rows().every(function () {
+                    $(this.node()).find('.rowCheckbox').prop('checked', allSelected);
+                });
+
+                if (allSelected) {
+                    $('#toggleSelectAll').addClass('table-success');
+                } else {
+                    $('#toggleSelectAll').removeClass('table-success');
+                }
+            });
+
+            // Optional: update header if some rows manually toggled
+            $(document).on('change', '.rowCheckbox', function () {
+                let total = table.rows().nodes().to$().find('.rowCheckbox').length;
+                let checked = table.rows().nodes().to$().find('.rowCheckbox:checked').length;
+                allSelected = (total === checked);
+
+                if (allSelected) {
+                    $('#toggleSelectAll').addClass('table-success');
+                } else {
+                    $('#toggleSelectAll').removeClass('table-success');
+                }
+            });
+
+            // View / Pay modal logic
+            $(document).on('submit', '.payForm', function (e) {
+                e.preventDefault();
+                $.post(this.action, $(this).serialize(), function (html) {
+                    if ($.trim(html)) {
+                        $('#modalContent').html(html);
+                        new bootstrap.Modal(document.getElementById('paymentModal')).show();
+                    } else {
+                        Swal.fire('Already Paid!');
+                    }
+                });
+            });
+
+
+$(document).on('click', '.payBtn', function () {
+    $.get('@Url.Action("FetchSingleWorkerPaymentData", "AccountManager")', {
+        workerCode: $(this).data('worker'),
+        attendanceMonth: $(this).data('month')
+    }, function (html) {
+        if (html.trim() !== "") {
+            $('#modalContent').html(html);
+            new bootstrap.Modal(document.getElementById('paymentModal')).show();
+        } else {
+            alert("Unable to load payment form! ❌");
+        }
+    });
+});
+
+
+
+            // 👁 View only modal
+$(document).on('click', '.viewBtn', function () {
+    $.get('@Url.Action("GetWorkerPaymentDetails", "AccountManager")', {
+        workerCode: $(this).data('worker'),
+        attendanceMonth: $(this).data('month')
+    }, function (html) {
+        if (html.trim() !== "") {
+            $('#modalContent').html(html);
+            new bootstrap.Modal(document.getElementById('paymentModal')).show();
+        } else {
+            alert("No payment data found! ❌");
+        }
+    });
+});
+
+
+
+            $('.daterange-btn').daterangepicker({
+                locale: { format: 'YYYY-MM-DD' },
+                startDate: moment().startOf('month'),
+                endDate: moment(),
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 15 Days': [moment().subtract(14, 'days'), moment()],
+                    'Last 1 Month': [moment().subtract(1, 'month'), moment()]
+                }
+            }, function (start, end) {
+                $('#fromDate').val(start.format('YYYY-MM-DD'));
+                $('#toDate').val(end.format('YYYY-MM-DD'));
+
+                $('#workerTable tbody tr').each(function () {
+                    let d = moment($(this).data('date'), 'YYYY-MM-DD');
+                    $(this).toggle(d.isBetween(start, end, null, '[]'));
+                });
+            });
+        });
+    </script>
+}

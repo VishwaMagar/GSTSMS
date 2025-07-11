@@ -97,6 +97,13 @@ namespace GSTSMSLibrary.AccountManager
 
 
 
+
+
+
+
+       
+
+
         #region********************************************************************* Community Notice  ***********************************************************
 
         public string NoticeCode { get; set; }
@@ -197,6 +204,216 @@ namespace GSTSMSLibrary.AccountManager
 
         public int GSTTypeId { get; set; }
         public string GSTTypeName { get; set; }
+
+        #endregion
+
+
+        #region********************************************************************* Event Management ***********************************************************
+
+
+        public int EBudgetId { get; set; }
+        public string EventCode { get; set; }
+        public string EventName { get; set; }
+        public string EventHandlerName { get; set; }
+
+        public decimal? AllocatedBudget { get; set; }
+        public decimal? ActualCost { get; set; }
+        public DateTime? BudgetAddedDate { get; set; }
+        public int BudgetStatus { get; set; }
+        public string BudgetStatusName { get; set; }
+
+        public string BankAccount { get; set; }
+
+
+        public string TransactionId_ChequeId { get; set; }
+        public string PaymentId { get; set; }
+        public int PaymentModeId { get; set; }
+
+
+        #endregion
+
+
+
+        #region********************************************************************* Worker Pay.Manage ***********************************************************
+
+       
+        public string Password { get; set; }
+
+        public int RoleId { get; set; }
+        public string RoleName { get; set; }
+        public string StaffName { get; set; }
+       
+        public string ProfilePic { get; set; }
+
+        public string BankName_Code { get; set; }
+       
+        public string PaymentBy { get; set; }
+        public string PaidTo { get; set; }
+       
+        public string PaymentPurpose { get; set; }
+       
+        public int TransactionType { get; set; }
+
+        public string WorkerCode { get; set; }
+        public string AttendanceMonth { get; set; }
+        public string Contact { get; set; }
+        public DateTime DateOfJoining { get; set; }
+        public decimal BaseSalary { get; set; }
+        public string AccountNumber { get; set; }
+       
+        public string WorkerUPI { get; set; }
+        public int DaysPresent { get; set; }
+        public decimal PerdayPayment { get; set; }
+        public decimal AmountToBePaid { get; set; }
+
+        public string PaymentStatus { get; set; }
+        public string TransactionRef { get; set; }
+        public DateTime MonthDate { get; set; }
+
+        public bool IsPaid { get; set; }
+        public int SerialNumber { get; set; }
+       
+
+        #endregion
+
+
+
+        #region********************************************************************* Reports  ***********************************************************
+
+
+
+        public DateTime PossessionDate { get; set; }
+        public string Gender { get; set; }
+        public int FamilyMemberCount { get; set; }
+        public int NoOfVehicle { get; set; }
+        public DateTime RegisterationDate { get; set; }
+
+        public string WorkerName { get; set; }
+        public string WorkerContactNo { get; set; }
+        public DateTime? JoiningDate { get; set; }
+        public DateTime? RegisterDate { get; set; }
+      
+
+        public string RegistrationDate { get; set; }
+
+      
+        public decimal Percentage { get; set; }
+
+
+
+        public string ExpenseTypeName { get; set; }
+      
+        public DateTime? ExpenseDate { get; set; }  // Stored as string because formatted date (dd/MM/yyyy)
+
+        public string MonthName { get; set; }      //COMMONNNNNNNN
+
+
+
+
+        /////////////////////////////////////////////////////////vraj ////////////////////////////////////////////////////////////////
+        ///
+        // For the grouped bar chart (Event Budget)
+        public string MonthYear { get; set; }
+       
+
+        public int Month { get; set; }
+        public int Year { get; set; }
+
+        // For event budget detail popup
+        public DateTime FromDate { get; set; }
+        public decimal BudgetDifference => (AllocatedBudget ?? 0) - (ActualCost ?? 0);
+        public int MonthNumber { get; set; }
+        public decimal TotalIncome { get; set; }
+        public decimal TotalExpense { get; set; }
+
+        // 🔽 NEW: For clicked month income/expense breakdown
+        public string TypeLabel { get; set; }          // "Income" / "Expense"
+
+
+
+
+        #endregion
+
+
+        #region********************************************************************* Society Ac.Details Cash ***********************************************************
+
+        public int TransactionId { get; set; }
+       
+        public string PaidToName { get; set; }
+        public string PaymentModeName { get; set; }
+     
+        public string TransactionNature { get; set; }
+       
+        ///
+
+        public string AccountType { get; set; }
+        public int TransactionTypeId { get; set; }
+      
+        public string ChecqueNo { get; set; }
+      
+
+        public string AttachmentPath { get; set; }
+        public string Type { get; set; }
+        public string ReceiverName { get; set; }
+        public string ReceiverCode { get; set; }
+       
+        public string MaintenanceCode { get; set; }
+        public string OtherReceiver { get; set; }
+       
+        public string PDFPath { get; set; }
+        public string Attchment { get; set; }
+        public string SalarySlip { get; set; }
+
+        public List<AccountManager> lstTransactionType { get; set; }
+
+
+        public class ReceiptViewModel
+        {
+            public string TransactionCode { get; set; }
+            public string PaidDate { get; set; }
+            public string PaymentBy { get; set; }
+            public string PaidTo { get; set; }
+            public decimal Amount { get; set; }
+            public string AmountInWords { get; set; }
+            public string PaymentPurpose { get; set; }
+            public string PaymentMode { get; set; }
+            public List<ReceiptItem> Items { get; set; }
+        }
+
+
+
+        public class ReceiptItem
+        {
+            public string Description { get; set; }
+            public decimal Amount { get; set; }
+            public bool IsPenalty { get; set; }
+        }
+
+
+
+        #endregion
+
+
+
+
+        #region********************************************************************* Complaints ***********************************************************
+
+
+
+        // ✅ Complaint List Properties
+
+        public string ComplaintType { get; set; }
+        public string Complaint { get; set; }
+        public DateTime ComplaintDate { get; set; }
+        public string AssignBy { get; set; }
+       
+
+
+
+        public int ComplaintId { get; set; }
+        public string SecretoryName { get; set; }
+
+
 
         #endregion
 

@@ -1,8 +1,833 @@
-﻿
+﻿@model GSTSMSLibrary.AccountManager.AccountManager
+@using Newtonsoft.Json
 @{
     ViewBag.Title = "Dashboard";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Dashboard</h2>
+<script src="https://code.highcharts.com/highcharts.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker3.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet" />
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker3.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+
+
+
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+
+
+
+
+
+
+
+<style>
+
+    .bank {
+        max-width: 600px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .left-section {
+        flex-grow: 1;
+    }
+
+        .left-section h6 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+    .dropdown-select {
+        font-size: 13px;
+        padding: 4px 6px;
+        margin-left: 10px;
+    }
+
+    .radio-group {
+        margin-top: 10px;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+    }
+
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .radio-group input[type="radio"] {
+            margin-right: 5px;
+            accent-color: pink;
+        }
+
+    .slider-container {
+        margin-top: 10px;
+        position: relative;
+    }
+
+    input[type=range] {
+        width: 100%;
+        appearance: none;
+        height: 6px;
+        background: #f9cce1;
+        border-radius: 5px;
+        outline: none;
+    }
+
+        input[type=range]::-webkit-slider-thumb {
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: white;
+            border: 2px solid pink;
+            border-radius: 50%;
+            cursor: pointer;
+            margin-top: -4px;
+        }
+
+    .amounts {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        color: #333;
+        margin-top: 5px;
+    }
+
+    .right-section {
+        text-align: right;
+        font-size: 14px;
+    }
+
+        .right-section a {
+            color: #3f51b5;
+            font-weight: 500;
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .right-section h5 {
+            margin: 8px 0 0;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+    .bank-card {
+        width: 250px;
+        position: relative;
+        overflow: visible;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .bank-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+    .bank-details {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background-color: #fd6435;
+        color: #000;
+        padding: 10px;
+        display: none;
+        z-index: 100;
+        border-bottom-left-radius: 0.5rem;
+        border-bottom-right-radius: 0.5rem;
+    }
+
+    .bank-card:hover .bank-details {
+        display: block;
+    }
+
+    .center {
+        text-align: center;
+    }
+</style>
+
+
+<style>
+    .dot {
+        height: 12px;
+        width: 12px;
+        display: inline-block;
+        border-radius: 50%;
+    }
+</style>
+
+
+
+
+
+
+<style>
+    .event-expense-container {
+        width: 100%;
+        max-width: 600px;
+        margin: auto;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .chart-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0;
+        color: #222;
+    }
+
+    .month-dropdown {
+        font-size: 14px;
+        padding: 6px 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        outline: none;
+        background: white;
+        width: 130px;
+    }
+
+    .chart-wrapper {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 2 / 1.3; /* Similar to your screenshot size */
+    }
+
+
+
+    .month-dropdown {
+        width: 100%;
+    }
+    
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- TOP CARDS -->
+<div class="row row-flex text-white mb-4" style="gap: 20px;">
+    <div class="col bg-danger p-3 rounded shadow-sm bank-card" style="width: 250px;">
+        <h6>
+            <i class="fas fa-screwdriver-wrench"></i>
+            Maintenance Due
+        </h6>
+        <h3 class="center">₹ @((ViewBag.MaintenanceDue ?? 0).ToString("N0"))</h3>
+    </div>
+    <div class="col bg-info p-3 rounded shadow-sm bank-card" style="width: 250px;">
+        <h6>
+            <i class="fas fa-hand-holding-dollar"></i>
+            Cash in Hand
+        </h6>
+        <h3 class="center">₹ @((ViewBag.CashInHand ?? 0).ToString("N0"))</h3>
+    </div>
+    <div class="col bg-warning p-3 rounded shadow-sm text-dark bank-card">
+        <h6> <i class="fas fa-university"></i> Bank Balance</h6>
+        <h3 class="center">View...</h3>
+        <div class="bank-details">
+            <ul class="mb-0" style="list-style: none; padding-left: 0; margin-bottom: 0;">
+                <li> <i class="fas fa-university"></i> KKBK - ₹@ViewBag.KKBK.ToString("N0")</li>
+                <li> <i class="fas fa-university"></i> HDFC - ₹@ViewBag.HDFC.ToString("N0")</li>
+            </ul>
+        </div>
+    </div>
+    <div class="col bg-primary p-3 rounded shadow-sm bank-card" style="width: 250px;">
+        <h6>
+            <i class="fas fa-comments"></i>
+            Total Complaints
+        </h6>
+        <h3 class="center">@ViewBag.TotalComplaints</h3>
+    </div>
+    <div class="col bg-danger p-3 rounded shadow-sm bank-card" style="width: 250px;">
+        <h6>
+            <i class="fas fa-clock"></i>
+            Pending Issues
+        </h6>
+        <h3 class="center">@ViewBag.PendingComplaints</h3>
+    </div>
+    <div class="col bg-success p-3 rounded shadow-sm bank-card" style="width: 250px;">
+        <h6>
+            <i class="fas fa-check-circle"></i>
+            Solved Complaints
+        </h6>
+        <h3 class="center">@ViewBag.SolvedComplaints</h3>
+    </div>
+</div>
+
+
+
+
+
+
+
+<div class="d-flex flex-wrap justify-content-between" style="gap: 20px;">
+    <!-- Left: Event Expenses -->
+    <div style="flex: 1; min-width: 400px;">
+        <div class="event-expense-container">
+            <div class="header-row">
+                <h5 class="chart-title">Event Expences</h5>
+                <select id="monthSelector" style="width: 120px;" class="month-dropdown">
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="eventChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: Total Transactions -->
+    <div style="flex: 1; min-width: 400px;">
+        <h5>Total Transactions</h5>
+        <div class="card p-3 mb-4" style="border: 1px solid #ccc; border-radius: 10px; max-width: 500px;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <strong>Total Transactions :</strong>
+                    <div class="mt-2">
+                        <label class="me-3">
+                            <input type="radio" name="transactionType" value="Credited" checked disabled />
+                            Credited
+                        </label>
+                        <label>
+                            <input type="radio" name="transactionType" value="Debited" disabled />
+                            Debited
+                        </label>
+                    </div>
+                </div>
+
+                <select id="monthSelect" class="form-control" style="width: 120px;">
+                    @for (int i = 1; i <= 12; i++)
+                    {
+                        <option value="@i">@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(i)</option>
+                    }
+                </select>
+
+                <div>
+                    <a href="#" class="text-primary fw-bold" style="text-decoration:none;">Bank Balance</a><br />
+                    ₹ <span id="bankBalanceValue" class="fw-bold">--</span>
+                </div>
+            </div>
+
+            <canvas id="transactionChart" height="150"></canvas>
+
+            <div class="d-flex justify-content-between mt-3">
+                <div>₹ <span id="creditedAmount">0.00</span></div>
+                <div>₹ <span id="debitedAmount">0.00</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Total transaction Script-->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>let transactionChart;
+
+    async function loadBankTransactionSummary(month) {
+        try {
+            const res = await fetch(`/AccountManager/GetBankTransactionSummary?month=${month}`);
+            const data = await res.json();
+
+            if (data.status === "success") {
+                const d = data.data;
+                const credited = d.Credited || 0;
+                const debited = d.Debited || 0;
+                const balance = d.Balance || 0;
+
+                document.getElementById("creditedAmount").innerText = credited.toLocaleString('en-IN');
+                document.getElementById("debitedAmount").innerText = debited.toLocaleString('en-IN');
+                document.getElementById("bankBalanceValue").innerText = balance.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+
+                const ctx = document.getElementById('transactionChart').getContext('2d');
+                if (transactionChart) {
+                    transactionChart.destroy();
+                }
+
+                transactionChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Credited', 'Debited'],
+                        datasets: [{
+                            label: 'Amount (₹)',
+                            data: [credited, debited],
+                            backgroundColor: ['#f48fb1', '#ce93d8']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            } else {
+                alert("Failed to load transaction data.");
+            }
+        } catch {
+            alert("Error loading data.");
+        }
+    }
+
+    document.getElementById("monthSelect").addEventListener("change", function () {
+        loadBankTransactionSummary(this.value);
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const currentMonth = new Date().getMonth() + 1;
+        document.getElementById("monthSelect").value = currentMonth;
+        loadBankTransactionSummary(currentMonth);
+    });</script>
+<!--Event Expence Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>var chart;
+
+    async function fetchChartData(month) {
+        try {
+            const response = await fetch('/AccountManager/GetEventExpenses?month=' + month);
+            const data = await response.json();
+
+            if (data.error) {
+                alert("Error loading chart data: " + data.message);
+                return { labels: [], allocated: [], actual: [] };
+            }
+
+            return data;
+        } catch (error) {
+            alert("Unexpected error occurred while fetching chart data.");
+            return { labels: [], allocated: [], actual: [] };
+        }
+    }
+
+    function renderChart(data) {
+        const ctx = document.getElementById('eventChart').getContext('2d');
+        if (chart) chart.destroy();
+
+        chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [
+                    {
+                        label: 'Allocated Budget',
+                        backgroundColor: 'rgba(99, 102, 241, 0.9)',
+                        data: data.allocated
+                    },
+                    {
+                        label: 'Actual Cost',
+                        backgroundColor: 'rgba(99, 102, 241, 0.4)',
+                        data: data.actual
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+    }
+
+    document.getElementById('monthSelector').addEventListener('change', async function () {
+        const selectedMonth = this.value;
+        const data = await fetchChartData(selectedMonth);
+        renderChart(data);
+    });
+
+    // Initial load
+    window.onload = async function () {
+        const initialMonth = document.getElementById('monthSelector').value;
+        const data = await fetchChartData(initialMonth);
+        renderChart(data);
+    };</script>
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="container">
+    <div class="row justify-content-center">
+        <!-- Worker Payment Card -->
+        <div class="col-md-5">
+            <div class="card" style="width: 100%;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6><b>Worker Payment Status</b></h6>
+                        <select id="monthSelector" class="form-control" style="width: 120px;">
+                            @for (int i = 1; i <= 12; i++)
+                            {
+                                <option value="@i">@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(i)</option>
+                            }
+                        </select>
+                    </div>
+
+                    <canvas id="workerPaymentChart" height="90" style="max-width: 200px; margin: 0 auto;"></canvas>
+                    <div class="text-center mt-2">
+                        <span class="dot bg-primary"></span> Completed &nbsp;&nbsp;
+                        <span class="dot bg-light border border-dark"></span> Pending
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Maintenance Status Card -->
+        <div class="col-md-7">
+            <div class="card p-3" style="background-color: #fddde6; border-radius: 15px;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5>Maintenance Status</h5>
+                    <div class="d-flex">
+                        <select id="wingSelect" class="form-select "></select>
+                        <select id="monthSelect" class="form-select " style="width:120px">
+                            @for (int i = 1; i <= 12; i++)
+                            {
+                                <option value="@i">@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(i)</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-6 text-center">
+                        <canvas id="maintenanceChart" style="max-height: 200px;"></canvas>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><b>Total Maintenance Amount</b></h6>
+                        ₹ <span id="totalAmount">--</span>
+                        <br /><br />
+                        <h6><b>Pending Amount</b></h6>
+                        ₹ <span id="pendingAmount">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--worker payment script-->
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>let workerChart;
+
+    const centerTextPlugin = {
+        id: 'centerText',
+        afterDraw: function (chart) {
+            const { ctx } = chart;
+            const dataset = chart.data.datasets[0];
+            if (!dataset || dataset.data.length < 2) return;
+
+            const completed = dataset.data[0] ?? 0;
+            const pending = dataset.data[1] ?? 0;
+
+            ctx.save();
+            ctx.font = 'bold 16px Arial';
+            ctx.fillStyle = '#333';
+            ctx.textAlign = 'center';
+            ctx.fillText(`${completed} / ${pending}`,
+                chart.getDatasetMeta(0).data[0].x,
+                chart.getDatasetMeta(0).data[0].y
+            );
+            ctx.restore();
+        }
+    };
+
+    async function fetchWorkerChart(month) {
+        try {
+            const response = await fetch(`/AccountManager/GetWorkerPaymentChart?month=${month}`);
+            const data = await response.json();
+
+            const completed = data.Completed || 0;
+            const pending = data.Pending || 0;
+
+            const chartData = {
+                labels: ["Completed", "Pending"],
+                datasets: [{
+                    data: [completed, pending],
+                    backgroundColor: ['#5A56E9', '#D3D3F3'],
+                    borderWidth: 0,
+                    cutout: '70%',
+                }]
+            };
+
+            const chartOptions = {
+                rotation: -90,
+                circumference: 180,
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return `${context.label}: ${context.formattedValue}`;
+                            }
+                        }
+                    }
+                }
+            };
+
+            const ctx = document.getElementById('workerPaymentChart').getContext('2d');
+            if (workerChart) workerChart.destroy();
+
+            workerChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: chartData,
+                options: chartOptions,
+                plugins: [centerTextPlugin]
+            });
+        } catch (error) {
+            console.error("Error loading chart:", error);
+            alert("Error loading chart data.");
+        }
+    }
+
+    document.getElementById("monthSelector").addEventListener("change", function () {
+        const selectedMonth = parseInt(this.value);
+        fetchWorkerChart(selectedMonth);
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const currentMonth = new Date().getMonth() + 1;
+        document.getElementById("monthSelector").value = currentMonth;
+        fetchWorkerChart(currentMonth);
+    });</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!--For wing script-->
+<script>async function loadWingDropdown() {
+        try {
+            const response = await fetch('/AccountManager/GetWingNames');
+            const wings = await response.json();
+
+            const select = document.getElementById("wingSelect");
+            select.innerHTML = "";
+
+            // Add default 'All' option
+            const allOption = document.createElement("option");
+            allOption.value = "All";
+            allOption.text = "All Wings";
+            select.appendChild(allOption);
+
+            // Add options from database: WingId as value, WingName as text
+            wings.forEach(wing => {
+                const opt = document.createElement("option");
+                opt.value = wing.WingId;     // backend returns WingId
+                opt.text = wing.WingName;    // backend returns WingName
+                select.appendChild(opt);
+            });
+        } catch (err) {
+            console.error("Failed to load wing list", err);
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", loadWingDropdown);</script>
+
+<!--for Maintainance chart script-->
+<script>let maintenanceChart;
+
+    async function loadMaintenanceChart(month, wing) {
+        try {
+            const res = await fetch(`/AccountManager/GetMaintenanceStatusChart?month=${month}&wing=${encodeURIComponent(wing)}`);
+            const result = await res.json();
+
+            const paid = result.Paid || 0;
+            const unpaid = result.Unpaid || 0;
+            const total = result.TotalAmount || 0;
+            const pending = result.PendingAmount || 0;
+
+            const data = {
+                labels: ['Paid', 'Unpaid'],
+                datasets: [{
+                    data: [paid, unpaid],
+                    backgroundColor: ['#5A56E9', '#f06292'],
+                }]
+            };
+
+            const options = {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => {
+                                const sum = paid + unpaid;
+                                const percent = sum ? (context.raw / sum * 100).toFixed(1) : 0;
+                                return `${context.label}: ₹${context.formattedValue} (${percent}%)`;
+                            }
+                        }
+                    }
+                }
+            };
+
+            if (maintenanceChart) maintenanceChart.destroy();
+            const ctx = document.getElementById('maintenanceChart').getContext('2d');
+            maintenanceChart = new Chart(ctx, { type: 'pie', data, options });
+
+            document.getElementById("totalAmount").innerText = total.toLocaleString('en-IN');
+            document.getElementById("pendingAmount").innerText = pending.toLocaleString('en-IN');
+        } catch (err) {
+            console.error(err);
+            alert("Error loading maintenance chart");
+        }
+    }
+
+    document.getElementById("monthSelect").addEventListener("change", function () {
+        loadMaintenanceChart(this.value, document.getElementById("wingSelect").value);
+    });
+
+    document.getElementById("wingSelect").addEventListener("change", function () {
+        loadMaintenanceChart(document.getElementById("monthSelect").value, this.value);
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const currentMonth = new Date().getMonth() + 1;
+        document.getElementById("monthSelect").value = currentMonth;
+        loadMaintenanceChart(currentMonth, "All");
+    });</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="mb-3">Top 5 Members of Red List Name</h5>
+<div class="table-responsive">
+    <table class="table table-bordered table-striped">
+        <thead class="table-light">
+            <tr>
+                <th>Sr.No</th>
+                <th>Red List Member Name</th>
+                <th>Wing Name</th>
+                <th>Flat No</th>
+                <th>Maintance Pending</th>
+                <th>Maintance Due Pending</th>
+            </tr>
+        </thead>
+        <tbody id="redListBody">
+            <tr><td colspan="6">Loading...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<script>async function loadRedListMembers() {
+        try {
+            const response = await fetch('/AccountManager/GetTop5RedListMembers');
+            const result = await response.json();
+
+            const tbody = document.getElementById('redListBody');
+            tbody.innerHTML = '';
+
+            if (result.status === 'success') {
+                const data = result.data;
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6">No data available.</td></tr>';
+                } else {
+                    data.forEach((item, index) => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${(index + 1).toString().padStart(2, '0')}</td>
+                                <td><a href="#" class="text-primary" style="text-decoration:none;">${item.Name}</a></td>
+                                <td>${item.Wing}</td>
+                                <td>${item.FlatNo}</td>
+                                <td>${item.MonthsPending}</td>
+                                <td>${item.AmountPending}</td>
+                            </tr>
+                        `;
+                    });
+                }
+            } else {
+                tbody.innerHTML = <tr><td colspan="6">${result.message}</td></tr>;
+            }
+        } catch (err) {
+            document.getElementById('redListBody').innerHTML = <tr><td colspan="6">Error loading data.</td></tr>;
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", loadRedListMembers);</script>

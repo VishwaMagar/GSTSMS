@@ -1,0 +1,33 @@
+﻿@model GSTSMSLibrary.AccountManager.AccountManager
+
+<div class="modal-header">
+    <h4 class="modal-title">View Details</h4>
+    <button type="button" class="btn btn-outline-danger btn-sm position-absolute" style="top: 10px; right: 10px;" onclick="closeModal()">
+        <i class="fa fa-times"></i>
+    </button>
+</div>
+
+<div class="modal-body">
+    <div class="row mb-2">
+        <div class="col-md-6"><strong>Event Name :</strong> @Model.EventName</div>
+        <div class="col-md-6"><strong>Bank Account :</strong> @Model.BankAccount</div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-md-6"><strong>Event Handler :</strong> @Model.EventHandlerName</div>
+        <div class="col-md-6"><strong>IFSC Code :</strong> @Model.IFSCCode</div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-md-6"><strong>Phone No. :</strong> @Model.PhoneNumber</div>
+        <div class="col-md-6">
+            <strong>Allocated Budget :</strong> ₹ @(Model.AllocatedBudget.HasValue ? Model.AllocatedBudget.Value.ToString("N0") : "-")
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-md-6">
+            <strong>Date :</strong> @(Model.CreatedDate.HasValue ? Model.CreatedDate.Value.ToString("dd-MM-yyyy") : "-")
+        </div>
+        <div class="col-md-6">
+            <strong>Actual Cost :</strong> ₹ @(Model.ActualCost.HasValue ? Model.ActualCost.Value.ToString("N0") : "-")
+        </div>
+    </div>
+</div>

@@ -1,0 +1,115 @@
+﻿@model List<GSTSMSLibrary.AccountManager.AccountManager>
+
+@using (Html.BeginForm("SubmitBudget", "AccountManager", FormMethod.Post, new { id = "budgetForm" }))
+{
+    <div class="position-relative p-4 bg-white rounded shadow-sm" style="max-width: 720px; margin: auto;">
+        <button type="button" class="btn btn-outline-danger btn-sm position-absolute" style="top: 10px; right: 10px;" onclick="closeModal()">
+            <i class="fa fa-times"></i>
+        </button>
+
+        <h4 class="text-center fw-bold mb-4">Create Budget</h4>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Event Name :</label>
+                <select id="ddlEventName" name="EventName" class="form-select" required>
+                    <option value="">Select Event</option>
+                    @foreach (var ev in Model)
+                    {
+                        <option value="@ev.EventName">@ev.EventName</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Event Handler :</label>
+                <input type="text" id="EventHandlerName" name="EventHandlerName" class="form-control" readonly />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Date :</label>
+                <input type="date" id="CreatedDate" name="CreatedDate" class="form-control" readonly />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Phone No. :</label>
+                <input type="text" id="PhoneNumber" name="PhoneNumber" class="form-control" readonly />
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Savings :</label>
+                <div class="fw-bold text-primary fs-5">₹ @ViewBag.OpeningBalance</div>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Allocated Budget :</label>
+                <input type="number" id="AllocatedBudget" name="AllocatedBudget" class="form-control" placeholder="₹ 0" step="0.01" min="0" required />
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-center mt-4 gap-3">
+            <button type="submit" class="btn btn-primary" style="background-color: #5A5AED; border-color: #5A5AED;">+ Add Budget</button>
+            <button type="reset" class="btn btn-danger">Clear</button>
+        </div>
+    </div>
+}
+
+<style>
+    .modal-content {
+        border-radius: 16px;
+        overflow: hidden;
+        max-width: 750px;
+        margin: auto;
+    }
+
+    .modal-dialog {
+        max-width: 760px;
+        margin: 1.75rem auto;
+    }
+
+    .modal-body {
+        overflow-y: auto;
+        max-height: 80vh;
+    }
+
+    .modal-content, .modal-dialog {
+        overflow-x: hidden;
+    }
+</style>
+
+<script>
+    function closeModal() {
+        $("#createModal").modal("hide");
+    }
+
+    $(document).ready(function () {
+        $("#ddlEventName").change(function () {
+            let selectedEvent = $(this).val();
+            if (selectedEvent) {
+                $.ajax({
+                    url: '@Url.Action("GetEventDetails", "AccountManager")',
+                    type: 'POST',
+                    data: { eventName: selectedEvent },
+                    success: function (data) {
+                        if (data) {
+                            $("#EventHandlerName").val(data.EventHandlerName || '');
+                            $("#CreatedDate").val(data.CreatedDateString || '');
+                            $("#PhoneNumber").val(data.PhoneNumber || '');
+                        } else {
+                            $("#EventHandlerName").val('');
+                            $("#CreatedDate").val('');
+                            $("#PhoneNumber").val('');
+                        }
+                    },
+                    error: function () {
+                        alert("Error fetching event details.");
+                    }
+                });
+            } else {
+                $("#EventHandlerName").val('');
+                $("#CreatedDate").val('');
+                $("#PhoneNumber").val('');
+            }
+        });
+    });
+</script>

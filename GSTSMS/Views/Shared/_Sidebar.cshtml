@@ -284,7 +284,7 @@
                 <ul class="sidebar-menu">
                     @* Dashboard *@
                     <li class="dropdown">
-                        <a href="javascript:void(0);" class="nav-link">
+                        <a href="@Url.Action("Dashboard","AccountManager")" class="nav-link">
                             <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
                         </a>
                     </li>
@@ -296,13 +296,12 @@
                         </a>
                         <ul id="accountantSubmenu1" class="dropdown-menu collapse">
                             <li><a class="nav-link" href="@Url.Action("BankDetailsListSS","AccountManager")">Bank</a></li>                 
-                            <li><a class="nav-link" href="javascript:void(0);">Cash</a></li>
-                        </ul>
+                            <li><a class="nav-link" href="@Url.Action("CashTansactionListDD", "AccountManager")">Cash</a></li>                        </ul>
                     </li>
 
                     @* Worker Payment Management *@
                     <li class="dropdown">
-                        <a href="javascript:void(0);" class="nav-link">
+                        <a  href="@Url.Action("FetchingWorkersData", "AccountManager")" class="nav-link">
                             <i class="fas fa-rupee-sign"></i><span>Worker Payment Management</span>
                         </a>
                     </li>
@@ -323,7 +322,7 @@
 
                     @* Event Management *@
                     <li class="dropdown">
-                        <a href="javascript:void(0);" class="nav-link">
+                        <a href="@Url.Action("EventList","AccountManager")" class="nav-link">
                             <i class="fas fa-calendar-check"></i><span>Event Management</span>
                         </a>
                     </li>
@@ -335,13 +334,13 @@
                         </a>
                         <ul id="accountantSubmenu2" class="dropdown-menu collapse">
                             <li><a class="nav-link" href="@Url.Action("SendEMail", "AccountManager")">Message/Email</a></li>
-                            <li><a class="nav-link" href="javascript:void(0);">Complaints & Requests</a></li>
+                            <li><a class="nav-link"  href="@Url.Action("ComplaintList", "AccountManager")">Complaints & Requests</a></li>
                             <li><a class="nav-link" href="@Url.Action("NoticeList", "AccountManager")">Notice </a></li>                        </ul>
                     </li>
 
                     @* Reports *@
                     <li class="dropdown">
-                        <a href="javascript:void(0);" class="nav-link">
+                        <a href="@Url.Action("AuditReport","AccountManager")" class="nav-link">
                             <i class="fas fa-chart-line"></i><span>Reports</span>
                         </a>
                     </li>

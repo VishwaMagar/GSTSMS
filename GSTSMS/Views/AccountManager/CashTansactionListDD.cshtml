@@ -1,0 +1,1070 @@
+﻿@model IEnumerable<GSTSMSLibrary.AccountManager.AccountManager>
+
+@{
+    ViewBag.Title = "Cash Transaction List";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    int srNo = 1;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://demo.getstisla.com/assets/modules/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://demo.getstisla.com/assets/modules/fontawesome/css/all.min.css" />
+    <link rel="stylesheet" href="https://demo.getstisla.com/assets/css/style.css" />
+    <link rel="stylesheet" href="https://demo.getstisla.com/assets/css/components.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css" />
+
+    <style>
+        th.sorting:before, th.sorting:after,
+        th.sorting_asc:before, th.sorting_asc:after,
+        th.sorting_desc:before, th.sorting_desc:after {
+            display: none !important;
+        }
+
+        .card-body {
+            align-items: end;
+        }
+
+        .cashsection {
+            width: 1592px;
+            /*  margin-left: 12px;*/
+        }
+
+        .cashtable {
+            width: 1200px;
+        }
+
+        .tablewidth {
+            width: 1300px;
+        }
+    </style>
+
+
+}
+
+
+<div>
+    <section class="section cashsection">
+        <div class="section-header">
+            <h1>Cash Transaction List</h1>
+        </div>
+
+        <div class="section-body cashtable">
+            <div class="mb-3">
+                <a href="@Url.Action("CashTansactionListDD", "AccountManager", new { type = "Credited" })" class="btn btn-success me-2">Show Credited</a>
+                <a href="@Url.Action("CashTansactionListDD", "AccountManager", new { type = "Debited" })" class="btn btn-danger me-2">Show Debited</a>
+            </div>
+
+            <div class="card-body">
+                <button class="btn btn-primary" data-url="@Url.Action("CashTransactionPage", "AccountManager")" id="openModalBtn">Add Transaction</button>
+            </div>
+
+            <div class="card tablewidth">
+                <div class="card-header">
+                    <h4>Transaction Table</h4>
+                </div>
+
+                <div class="card-body">
+                    <!-- Date Range Button -->
+                    <div class="input-group">
+                        <button class="btn btn-outline-primary daterange-btn" type="button">
+                            <i class="fas fa-calendar-alt me-2"></i>
+                            <span>Select Date Range</span>
+                            <i class="fas fa-caret-down ms-2"></i>
+                        </button>
+                    </div>
+
+                    <!-- Hidden inputs to store selected dates -->
+                    <input type="hidden" id="fromDate1" name="FromDate" />
+                    <input type="hidden" id="toDate1" name="ToDate" />
+
+                    <div class="mb-3" id="exportButtons"></div>
+
+                    <div class="table-responsive">
+                        <!-- Fix this line -->
+                        <table id="cashTable" class="table table-striped table-bordered cashtable">
+
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="select-all" /></th>
+                                    <th>Sr. No</th>
+                                    @*<th>Transaction Id</th>
+                                        <th>Transaction Code</th>*@
+                                    <th>Maintenance Type</th>
+                                    <th>Entity Code</th>
+                                    <th>Payment By</th>
+                                    <th>Paid To</th>
+                                    <th>Amount</th>
+                                    <th>Payment Mode</th>
+                                    <th>Payment Purpose</th>
+                                    <th>Cheque/Txn ID</th>
+                                    <th>Paid Date</th>
+                                    <th>Transaction Nature</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td><input type="checkbox" class="row-checkbox" /></td>
+                                        <td>@(srNo++)</td>
+                                        @*<td>@item.TransactionId</td>
+                                            <td>@item.TransactionCode</td>*@
+                                        <td>@item.SubTypeName</td>
+                                        <td>@item.EntityCode</td>
+                                        <td>@item.PaymentByName</td>
+                                        <td>@item.PaidToName</td>
+                                        <td>@item.Amount.ToString("C")</td>
+                                        <td>@item.PaymentModeName</td>
+                                        <td>@item.PaymentPurpose</td>
+                                        <td>@item.TransactionId_ChequeId</td>
+                                        <td>@(item.PaidDate.HasValue ? item.PaidDate.Value.ToString("dd-MM-yyyy") : "")</td>
+                                        <td>@item.TransactionNature</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-info btn-view-transaction" data-id="@item.TransactionId">
+                                                <i class="fa fa-eye"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal fade" id="transactionDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" id="transactionModalContent"></div>
+    </div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal fade" id="CashModal" tabindex="-1" aria-labelledby="CashModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="CashModalLabel">Add Transaction</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+</div>
+
+@*@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+
+
+
+
+    <script>
+        $(document).ready(function () {
+            const table = $('#cashTable').DataTable({
+                dom: 'Bfrtip',
+                ordering: false,
+                pageLength: 10,
+                responsive: true,
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        text: '<i class="fas fa-file-excel"></i> Excel',
+                        className: 'btn btn-success btn-sm',
+                        exportOptions: {
+                            rows: function (idx, data, node) {
+                                return $(node).find('input.row-checkbox').is(':checked');
+                            },
+                            columns: ':visible:not(:first-child):not(:last-child)'
+                        },
+                        action: function (e, dt, button, config) {
+                            if ($('.row-checkbox:checked').length === 0) {
+                                alert('Please select at least one row to export.');
+                                return;
+                            }
+                            $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
+                        }
+                    },
+                    {
+                        extend: 'csvHtml5',
+                        text: '<i class="fas fa-file-csv"></i> CSV',
+                        className: 'btn btn-info btn-sm',
+                        exportOptions: {
+                            rows: function (idx, data, node) {
+                                return $(node).find('input.row-checkbox').is(':checked');
+                            },
+                            columns: ':visible:not(:first-child):not(:last-child)'
+                        },
+                        action: function (e, dt, button, config) {
+                            if ($('.row-checkbox:checked').length === 0) {
+                                alert('Please select at least one row to export.');
+                                return;
+                            }
+                            $.fn.dataTable.ext.buttons.csvHtml5.action.call(this, e, dt, button, config);
+                        }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        text: '<i class="fas fa-file-pdf"></i> PDF',
+                        className: 'btn btn-danger btn-sm',
+                        orientation: 'landscape',
+                        pageSize: 'A4',
+                        exportOptions: {
+                            rows: function (idx, data, node) {
+                                return $(node).find('input.row-checkbox').is(':checked');
+                            },
+                            columns: ':visible:not(:first-child):not(:last-child)'
+                        }
+                    }
+                ]
+            });
+
+            table.buttons().container().appendTo('#exportButtons');
+
+            $('#select-all').on('click', function () {
+                const checked = this.checked;
+                $('.row-checkbox', table.rows({ search: 'applied' }).nodes()).each(function () {
+                    this.checked = checked;
+                });
+            });
+    // Load Add Modal
+        $('#openModalBtn').click(function () {
+            $.get('@Url.Action("CashTransactionPage", "AccountManager")', function (data) {
+                $('#modalBody').html(data);
+                const modal = new bootstrap.Modal(document.getElementById('CashModal'));
+                modal.show();
+                toggleFields();
+            }).fail(function () {
+                alert("Error loading the form.");
+            });
+        });
+
+    // View Transaction
+                $(document).on("click", ".btn-view-transaction", function () {
+                    const id = $(this).data("id");
+                    $.get("@Url.Action("GetTransactionDetails", "AccountManager")", { id: id }, function (data) {
+                        $("#transactionModalContent").html(data);
+                        const myModal = new bootstrap.Modal(document.getElementById("transactionDetailModal"));
+                        myModal.show();
+                    });
+                });
+
+
+
+
+
+
+
+
+
+
+
+
+
+                $(document).ready(function () {
+        const displayFormat = 'DD-MM-YYYY';
+
+        // Initialize Date Range Picker
+        $('.daterange-btn').daterangepicker({
+            locale: {
+                format: displayFormat,
+                applyLabel: 'Apply',
+                cancelLabel: 'Cancel'
+            },
+            showDropdowns: true,
+            autoUpdateInput: false,
+            startDate: moment().startOf('month'),
+            endDate: moment(),
+            ranges: {
+                'Today': [moment(), moment()],
+                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [
+                    moment().subtract(1, 'month').startOf('month'),
+                    moment().subtract(1, 'month').endOf('month')
+                ]
+            }
+        }, function (start, end) {
+            const formattedStart = start.format(displayFormat);
+            const formattedEnd = end.format(displayFormat);
+
+            $('.daterange-btn span').html(${formattedStart} - ${formattedEnd});
+            $('#fromDate1').val(formattedStart);
+            $('#toDate1').val(formattedEnd);
+
+            $('#cashTable').DataTable().draw(); // Trigger DataTable filter
+        });
+
+        // Set initial values
+        const defaultStart = moment().startOf('month').format(displayFormat);
+        const defaultEnd = moment().format(displayFormat);
+        $('.daterange-btn span').html(${defaultStart} - ${defaultEnd});
+        $('#fromDate1').val(defaultStart);
+        $('#toDate1').val(defaultEnd);
+
+        // Custom DataTable Date Filter (paid date in 11th index => index 10 or 11 based on your column)
+        $.fn.dataTable.ext.search.push(function (settings, data) {
+            const min = $('#fromDate1').val();
+            const max = $('#toDate1').val();
+            const dateStr = data[10]; // 🔁 Update this index based on your Paid Date column
+
+            if (!min && !max) return true;
+            if (!dateStr) return false;
+
+            const rowDate = moment(dateStr, displayFormat);
+            const minDate = min ? moment(min, displayFormat) : null;
+            const maxDate = max ? moment(max, displayFormat) : null;
+
+            if (!rowDate.isValid()) return false;
+            if (minDate && rowDate.isBefore(minDate, 'day')) return false;
+            if (maxDate && rowDate.isAfter(maxDate, 'day')) return false;
+
+            return true;
+        });
+    });
+
+
+                /////////////////////////// Shruti Mane/////////////////////////////////////////////////
+
+                /// ==============================
+                /// Modal Form Load
+                /// ==============================
+                /// Opens the "Add Transaction" modal and loads the partial form via AJAX.
+
+    // Open modal and load partial form
+    $('#openModalBtn').click(function () {
+        $.get('@Url.Action("CashTransactionPage", "AccountManager")', function (data) {
+            $('#modalBody').html(data);
+            var modal = new bootstrap.Modal(document.getElementById('CashModal'));
+            modal.show();
+        }).fail(function () {
+            alert("Error loading the form. Please check your controller or path.");
+        });
+    });
+
+                /// ==============================
+                /// Toggle Field Visibility
+                /// ==============================
+                /// Dynamically shows/hides fields based on:
+                /// - Transaction type: Credit (26), Debit (27)
+                /// - Payment mode: Cash (32), Cheque (34)
+                /// - Receiver type: Member, Worker, Vendor, Other
+
+    // Toggle fields based on selections
+    function toggleFields() {
+        var transactionVal = $('#TransactionIdDropdown').val();
+        var PaymentMode = $('input[name="PaymentMode"]:checked').val();
+        var receiverType = $('#TransactionTypeDropdown').val();
+
+        $('.cheque-fields').hide();
+        $('#TypeDropdownDiv').hide();
+        $('#ReceiverDropdownDiv').hide();
+        $('#ReceiverTextboxDiv').hide();
+        $('#CreditSection').hide();
+
+        if (transactionVal === "26") {
+            $('#CreditSection').show();
+            if (PaymentMode === "34") $('.cheque-fields').show();
+        } else if (transactionVal === "27") {
+            $('#TypeDropdownDiv').show();
+            if (PaymentMode === "34") $('.cheque-fields').show();
+            if (receiverType === "Other") {
+                $('#ReceiverTextboxDiv').show();
+            } else if (receiverType) {
+                $('#ReceiverDropdownDiv').show();
+            }
+        }
+                }
+                /// Auto-toggle fields when dropdowns/radios change
+
+                $(document).on('change', '#TransactionIdDropdown, input[name="PaymentMode"], #TransactionTypeDropdown', toggleFields);
+
+
+                /// ==============================
+                /// Receiver Dropdown Binding
+                /// ==============================
+                /// - If receiver type is "Other", show textbox
+                /// - Else, fetch list from server via AJAX and populate dropdown
+                /// - Also set EntityCode and Amount if available
+
+    // Populate receiver dropdown based on type
+    $(document).on('change', '#TransactionTypeDropdown', function () {
+        var selectedType = $(this).val();
+
+        if (selectedType === "Other") {
+            $('#ReceiverDropdownDiv').hide();
+            $('#ReceiverTextboxDiv').show();
+        } else {
+            $('#ReceiverTextboxDiv').hide();
+            $('#ReceiverDropdownDiv').show();
+
+            $.get('/AccountManager/GetReceiversByType', { type: selectedType }, function (data) {
+                var $rc = $('#ReceiverCode');
+                $rc.empty().append($('<option>', { value: '', text: '-- Select Receiver --' }));
+
+                data.forEach(function (item) {
+                    $rc.append($('<option>', {
+                        value: item.Value,
+                        text: item.Text,
+                        'data-entity': item.EntityCode,
+                        'data-amount': item.Amount || 0
+                    }));
+                });
+
+                $rc.off('change').on('change', function () {
+                    var selected = $('option:selected', this);
+                    var entityCode = selected.data('entity');
+                    var amount = selected.data('amount');
+
+                    $('#Amount').val(amount || '');
+
+                    $('#ExpenseCode').val('');
+                    $('#EventCode').val('');
+                    if (selectedType === "Vendor") {
+                        $('#ExpenseCode').val(entityCode);
+                    } else if (selectedType === "EventHandler") {
+                        $('#EventCode').val(entityCode);
+                    }
+                });
+
+                toggleFields();
+            });
+        }
+    });
+
+                /// ==============================
+                /// Maintenance Dropdown Logic
+                /// ==============================
+                /// - When Maintenance is selected, fetch associated members and total amount
+                /// - On month/year change, reload Maintenance list from server
+
+    // Maintenance logic
+    $(document).on('change', '#MaintenanceDropdown', function () {
+        var code = $(this).val();
+        if (!code) return;
+
+        $.get('/AccountManager/GetMembersByMaintenance', { maintenanceCode: code }, function (data) {
+            var $receiver = $('#MemberDropdown');
+            $receiver.empty().append($('<option>', { value: '', text: '-- Select Member --' }));
+            $.each(data.members, function (i, item) {
+                $receiver.append($('<option>').val(item.Value).text(item.Text));
+            });
+            $('#Amount').val(data.totalAmount.toFixed(2));
+        }).fail(function () {
+            alert("Failed to fetch members.");
+        });
+    });
+
+    // Load maintenance by month/year
+    $(document).on('change', '#month, #year', function () {
+        var month = $('#month').val();
+        var year = $('#year').val();
+        if (month && year) {
+            $.get('@Url.Action("GetMaintenanceListByMonthYear", "AccountManager")', { month: month, year: year }, function (data) {
+                var $dropdown = $('#MaintenanceDropdown');
+                $dropdown.empty().append($('<option>', { value: '', text: '-- Select Maintenance --' }));
+                data.forEach(function (item) {
+                    $dropdown.append($('<option>', { value: item.Value, text: item.Text }));
+                });
+            });
+        }
+    });
+
+
+                /// ==============================
+                /// File Upload Validation
+                /// ==============================
+                /// - Accept only PDF
+                /// - Max size: 2MB
+                /// - Show filename or reset input on invalid file
+
+    // Validate file input
+    $(document).on('change', '#AttachmentPath', function () {
+        var file = this.files && this.files[0];
+        if (file) {
+            var ext = file.name.split('.').pop().toLowerCase();
+            if (ext !== 'pdf') {
+                alert('Only PDF files are allowed.');
+                resetFileInput();
+                return;
+            }
+            if (file.size > 2 * 1024 * 1024) {
+                alert('File size exceeds 2MB.');
+                resetFileInput();
+                return;
+            }
+            $('#selectedFileName').text('Selected file: ' + file.name).show();
+        } else {
+            $('#selectedFileName').hide();
+        }
+    });
+
+    $(document).on('click', '#removeAttachmentIcon', function () {
+        resetFileInput();
+    });
+
+    function resetFileInput() {
+        var $fileInput = $('#AttachmentPath');
+        $fileInput.val('');
+        $fileInput.replaceWith($fileInput.clone(true));
+        $('#selectedFileName').hide();
+    }
+
+
+                /// ==============================
+                /// Form Submission with Validation
+                /// ==============================
+                /// - Validates required fields based on type
+                /// - Submits form via AJAX if valid
+                /// - Handles PDF generation:
+                ///     - For Credit (26): generates receipt PDF
+                ///     - For Debit (27) to Worker: generates salary slip PDF
+    // Final form submit
+    $(document).on('submit', '#cashTransactionForm', function (e) {
+        e.preventDefault();
+
+        var isValid = true;
+        var transactionType = $('#TransactionIdDropdown').val();
+        var PaymentMode = $('input[name="PaymentMode"]:checked').val();
+        var receiverType = $('#TransactionTypeDropdown').val();
+
+        $('.text-danger').remove();
+        $('.is-invalid').removeClass('is-invalid');
+
+        function markInvalid(selector, message) {
+            isValid = false;
+            $(selector).addClass('is-invalid');
+            $(selector).after('<span class="text-danger">' + message + '</span>');
+        }
+
+        if (!transactionType) markInvalid('#TransactionIdDropdown', 'Select Transaction Type');
+        if (!PaymentMode) markInvalid('input[name="PaymentMode"]', 'Select Payment Mode');
+        if (!$('#Amount').val()) markInvalid('#Amount', 'Enter Amount');
+        if (!$('#PaymentPurpose').val()) markInvalid('#PaymentPurpose', 'Enter Payment Purpose');
+
+        if (transactionType === "26") {
+            if (!$('#month').val()) markInvalid('#month', 'Select Month');
+            if (!$('#year').val()) markInvalid('#year', 'Select Year');
+            if (!$('#MaintenanceDropdown').val()) markInvalid('#MaintenanceDropdown', 'Select Maintenance');
+            if (!$('#MemberDropdown').val()) markInvalid('#MemberDropdown', 'Select Member');
+            if (PaymentMode === "34") {
+                if (!$('#ChecqueNo').val()) markInvalid('#ChecqueNo', 'Enter Cheque Number');
+                if (!$('#BankName').val()) markInvalid('#BankName', 'Enter Bank Name');
+            }
+        }
+
+        if (transactionType === "27") {
+            if (!receiverType) markInvalid('#TransactionTypeDropdown', 'Select Type');
+            if (receiverType === "Other") {
+                if (!$('#OtherReceiver').val()) markInvalid('#OtherReceiver', 'Enter Receiver Name');
+            } else {
+                if (!$('#ReceiverCode').val()) markInvalid('#ReceiverCode', 'Select Receiver');
+            }
+            if (PaymentMode === "34") {
+                if (!$('#ChecqueNo').val()) markInvalid('#ChecqueNo', 'Enter Cheque Number');
+                if (!$('#BankName').val()) markInvalid('#BankName', 'Enter Bank Name');
+            }
+        }
+
+        if (!isValid) return;
+
+        var form = $(this);
+        var formData = new FormData(this);
+
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (result) {
+                if (result.success) {
+                    $('#CashModal').modal('hide');
+                    form[0].reset();
+
+                    if (result.transactionId == 26) {
+                        $.post('/AccountManager/GenerateReceiptPdf', { transactionCode: result.transactionCode }, function (res) {
+                            if (res.success) {
+                                alert('Transaction saved and receipt PDF generated successfully!');
+                            } else {
+                                alert('Transaction saved but PDF generation failed.');
+                            }
+                        }).fail(function () {
+                            alert('Error during receipt PDF generation.');
+                        });
+                    } else if (result.transactionId == 27 && result.receiverType === "Worker" && result.receiverCode) {
+                        $.post('/AccountManager/GenerateSalarySlip', { workerCode: result.receiverCode }, function (res) {
+                            if (res.success) {
+                                window.open(res.filePath, '_blank');
+                                alert('Transaction saved and salary slip generated!');
+                            } else {
+                                alert('Transaction saved, but salary slip generation failed: ' + res.message);
+                            }
+                        }).fail(function () {
+                            alert('Transaction saved, but an error occurred during salary slip generation.');
+                        });
+                    } else {
+                        alert('Transaction saved successfully!');
+                    }
+                } else {
+                    $('#modalBody').html(result);
+                }
+            },
+            error: function () {
+                alert('An error occurred while saving the transaction.');
+            }
+        });
+    });
+
+
+                /// ==============================
+                /// Reset Modal on Close
+                /// ==============================
+                /// - Clears form fields, hides optional sections, removes validation messages
+
+    // Reset form on modal close
+    $(document).on('click', '#closeModalBtn', function () {
+        const $form = $('#cashTransactionForm');
+        if ($form.length) {
+            $form[0].reset();
+        }
+
+        $form.find('select').each(function () {
+            $(this).val($(this).find('option:first').val());
+        });
+
+        $('#CreditSection, #TypeDropdownDiv, #ReceiverDropdownDiv, #ReceiverTextboxDiv, .cheque-fields').hide();
+        $('.text-danger').remove();
+        $('.is-invalid').removeClass('is-invalid');
+        $('#selectedFileName').hide();
+        $('#AttachmentPath').val('');
+    });
+
+    toggleFields();
+            });
+
+        </script>*@
+
+
+
+
+@section Scripts {
+    <!-- External JS Libraries -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            const displayFormat = 'DD-MM-YYYY';
+
+            // ===================== DataTable =====================
+            const table = $('#cashTable').DataTable({
+                dom: 'Bfrtip',
+                ordering: false,
+                pageLength: 10,
+                responsive: true,
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        text: '<i class="fas fa-file-excel"></i> Excel',
+                        className: 'btn btn-success btn-sm',
+                        exportOptions: {
+                            rows: function (idx, data, node) {
+                                return $(node).find('input.row-checkbox').is(':checked');
+                            },
+                            columns: ':visible:not(:first-child):not(:last-child)'
+                        },
+                        action: function (e, dt, button, config) {
+                            if ($('.row-checkbox:checked').length === 0) {
+                                alert('Please select at least one row to export.');
+                                return;
+                            }
+                            $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
+                        }
+                    },
+                    {
+                        extend: 'csvHtml5',
+                        text: '<i class="fas fa-file-csv"></i> CSV',
+                        className: 'btn btn-info btn-sm',
+                        exportOptions: {
+                            rows: function (idx, data, node) {
+                                return $(node).find('input.row-checkbox').is(':checked');
+                            },
+                            columns: ':visible:not(:first-child):not(:last-child)'
+                        },
+                        action: function (e, dt, button, config) {
+                            if ($('.row-checkbox:checked').length === 0) {
+                                alert('Please select at least one row to export.');
+                                return;
+                            }
+                            $.fn.dataTable.ext.buttons.csvHtml5.action.call(this, e, dt, button, config);
+                        }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        text: '<i class="fas fa-file-pdf"></i> PDF',
+                        className: 'btn btn-danger btn-sm',
+                        orientation: 'landscape',
+                        pageSize: 'A4',
+                        exportOptions: {
+                            rows: function (idx, data, node) {
+                                return $(node).find('input.row-checkbox').is(':checked');
+                            },
+                            columns: ':visible:not(:first-child):not(:last-child)'
+                        }
+                    }
+                ]
+            });
+
+            table.buttons().container().appendTo('#exportButtons');
+
+            $('#select-all').on('click', function () {
+                const checked = this.checked;
+                $('.row-checkbox', table.rows({ search: 'applied' }).nodes()).prop('checked', checked);
+            });
+
+            // ===================== Date Range Filter =====================
+            $('.daterange-btn').daterangepicker({
+                locale: {
+                    format: displayFormat,
+                    applyLabel: 'Apply',
+                    cancelLabel: 'Cancel'
+                },
+                showDropdowns: true,
+                autoUpdateInput: false,
+                startDate: moment().startOf('month'),
+                endDate: moment(),
+                ranges: {
+                    'Today': [moment(), moment()],
+                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [
+                        moment().subtract(1, 'month').startOf('month'),
+                        moment().subtract(1, 'month').endOf('month')
+                    ]
+                }
+            }, function (start, end) {
+                const formattedStart = start.format(displayFormat);
+                const formattedEnd = end.format(displayFormat);
+                $('.daterange-btn span').html(`${formattedStart} - ${formattedEnd}`);
+                $('#fromDate1').val(formattedStart);
+                $('#toDate1').val(formattedEnd);
+                $('#cashTable').DataTable().draw();
+            });
+
+            const defaultStart = moment().startOf('month').format(displayFormat);
+            const defaultEnd = moment().format(displayFormat);
+            $('.daterange-btn span').html(`${defaultStart} - ${defaultEnd}`);
+            $('#fromDate1').val(defaultStart);
+            $('#toDate1').val(defaultEnd);
+
+            $.fn.dataTable.ext.search.push(function (settings, data) {
+                const min = $('#fromDate1').val();
+                const max = $('#toDate1').val();
+                const dateStr = data[10];
+                if (!min && !max) return true;
+                if (!dateStr) return false;
+                const rowDate = moment(dateStr, displayFormat);
+                const minDate = min ? moment(min, displayFormat) : null;
+                const maxDate = max ? moment(max, displayFormat) : null;
+                if (!rowDate.isValid()) return false;
+                if (minDate && rowDate.isBefore(minDate, 'day')) return false;
+                if (maxDate && rowDate.isAfter(maxDate, 'day')) return false;
+                return true;
+            });
+
+            // ===================== Modal Events =====================
+            $('#openModalBtn').click(function () {
+                $.get('@Url.Action("CashTransactionPage", "AccountManager")', function (data) {
+                    $('#modalBody').html(data);
+                    const modal = new bootstrap.Modal(document.getElementById('CashModal'));
+                    modal.show();
+                    toggleFields();
+                }).fail(function () {
+                    alert("Error loading the form.");
+                });
+            });
+
+            $(document).on("click", ".btn-view-transaction", function () {
+                const id = $(this).data("id");
+                $.get("@Url.Action("GetTransactionDetails", "AccountManager")", { id: id }, function (data) {
+                    $("#transactionModalContent").html(data);
+                    const myModal = new bootstrap.Modal(document.getElementById("transactionDetailModal"));
+                    myModal.show();
+                });
+            });
+
+            // ===================== Toggle Fields =====================
+            function toggleFields() {
+                var transactionVal = $('#TransactionIdDropdown').val();
+                var PaymentMode = $('input[name="PaymentMode"]:checked').val();
+                var receiverType = $('#TransactionTypeDropdown').val();
+
+                $('.cheque-fields').hide();
+                $('#TypeDropdownDiv, #ReceiverDropdownDiv, #ReceiverTextboxDiv, #CreditSection').hide();
+
+                if (transactionVal === "26") {
+                    $('#CreditSection').show();
+                    if (PaymentMode === "34") $('.cheque-fields').show();
+                } else if (transactionVal === "27") {
+                    $('#TypeDropdownDiv').show();
+                    if (PaymentMode === "34") $('.cheque-fields').show();
+                    if (receiverType === "Other") {
+                        $('#ReceiverTextboxDiv').show();
+                    } else if (receiverType) {
+                        $('#ReceiverDropdownDiv').show();
+                    }
+                }
+            }
+
+            $(document).on('change', '#TransactionIdDropdown, input[name="PaymentMode"], #TransactionTypeDropdown', toggleFields);
+
+            // ===================== Receiver Binding =====================
+            $(document).on('change', '#TransactionTypeDropdown', function () {
+                var selectedType = $(this).val();
+
+                if (selectedType === "Other") {
+                    $('#ReceiverDropdownDiv').hide();
+                    $('#ReceiverTextboxDiv').show();
+                } else {
+                    $('#ReceiverTextboxDiv').hide();
+                    $('#ReceiverDropdownDiv').show();
+
+                    $.get('/AccountManager/GetReceiversByType', { type: selectedType }, function (data) {
+                        var $rc = $('#ReceiverCode');
+                        $rc.empty().append($('<option>', { value: '', text: '-- Select Receiver --' }));
+
+                        data.forEach(function (item) {
+                            $rc.append($('<option>', {
+                                value: item.Value,
+                                text: item.Text,
+                                'data-entity': item.EntityCode,
+                                'data-amount': item.Amount || 0
+                            }));
+                        });
+
+                        $rc.off('change').on('change', function () {
+                            var selected = $('option:selected', this);
+                            $('#Amount').val(selected.data('amount') || '');
+                            $('#ExpenseCode, #EventCode').val('');
+                            if (selectedType === "Vendor") {
+                                $('#ExpenseCode').val(selected.data('entity'));
+                            } else if (selectedType === "EventHandler") {
+                                $('#EventCode').val(selected.data('entity'));
+                            }
+                        });
+
+                        toggleFields();
+                    });
+                }
+            });
+
+            // ===================== Maintenance Dropdown =====================
+            $(document).on('change', '#MaintenanceDropdown', function () {
+                var code = $(this).val();
+                if (!code) return;
+
+                $.get('/AccountManager/GetMembersByMaintenance', { maintenanceCode: code }, function (data) {
+                    var $receiver = $('#MemberDropdown');
+                    $receiver.empty().append($('<option>', { value: '', text: '-- Select Member --' }));
+                    $.each(data.members, function (i, item) {
+                        $receiver.append($('<option>').val(item.Value).text(item.Text));
+                    });
+                    $('#Amount').val(data.totalAmount.toFixed(2));
+                }).fail(function () {
+                    alert("Failed to fetch members.");
+                });
+            });
+
+            $(document).on('change', '#month, #year', function () {
+                var month = $('#month').val();
+                var year = $('#year').val();
+                if (month && year) {
+                    $.get('@Url.Action("GetMaintenanceListByMonthYear", "AccountManager")', { month: month, year: year }, function (data) {
+                        var $dropdown = $('#MaintenanceDropdown');
+                        $dropdown.empty().append($('<option>', { value: '', text: '-- Select Maintenance --' }));
+                        data.forEach(function (item) {
+                            $dropdown.append($('<option>', { value: item.Value, text: item.Text }));
+                        });
+                    });
+                }
+            });
+
+            // ===================== File Upload Validation =====================
+            $(document).on('change', '#AttachmentPath', function () {
+                var file = this.files[0];
+                if (file) {
+                    var ext = file.name.split('.').pop().toLowerCase();
+                    if (ext !== 'pdf') {
+                        alert('Only PDF files are allowed.');
+                        resetFileInput();
+                        return;
+                    }
+                    if (file.size > 2 * 1024 * 1024) {
+                        alert('File size exceeds 2MB.');
+                        resetFileInput();
+                        return;
+                    }
+                    $('#selectedFileName').text('Selected file: ' + file.name).show();
+                } else {
+                    $('#selectedFileName').hide();
+                }
+            });
+
+            $(document).on('click', '#removeAttachmentIcon', resetFileInput);
+
+            function resetFileInput() {
+                var $fileInput = $('#AttachmentPath');
+                $fileInput.val('');
+                $fileInput.replaceWith($fileInput.clone(true));
+                $('#selectedFileName').hide();
+            }
+
+            // ===================== Form Submission =====================
+            $(document).on('submit', '#cashTransactionForm', function (e) {
+                e.preventDefault();
+                var isValid = true;
+
+                function markInvalid(selector, message) {
+                    isValid = false;
+                    $(selector).addClass('is-invalid');
+                    $(selector).after('<span class="text-danger">' + message + '</span>');
+                }
+
+                var transactionType = $('#TransactionIdDropdown').val();
+                var PaymentMode = $('input[name="PaymentMode"]:checked').val();
+                var receiverType = $('#TransactionTypeDropdown').val();
+
+                $('.text-danger').remove();
+                $('.is-invalid').removeClass('is-invalid');
+
+                if (!transactionType) markInvalid('#TransactionIdDropdown', 'Select Transaction Type');
+                if (!PaymentMode) markInvalid('input[name="PaymentMode"]', 'Select Payment Mode');
+                if (!$('#Amount').val()) markInvalid('#Amount', 'Enter Amount');
+                if (!$('#PaymentPurpose').val()) markInvalid('#PaymentPurpose', 'Enter Payment Purpose');
+
+                if (transactionType === "26") {
+                    if (!$('#month').val()) markInvalid('#month', 'Select Month');
+                    if (!$('#year').val()) markInvalid('#year', 'Select Year');
+                    if (!$('#MaintenanceDropdown').val()) markInvalid('#MaintenanceDropdown', 'Select Maintenance');
+                    if (!$('#MemberDropdown').val()) markInvalid('#MemberDropdown', 'Select Member');
+                    if (PaymentMode === "34") {
+                        if (!$('#ChecqueNo').val()) markInvalid('#ChecqueNo', 'Enter Cheque Number');
+                        if (!$('#BankName').val()) markInvalid('#BankName', 'Enter Bank Name');
+                    }
+                }
+
+                if (transactionType === "27") {
+                    if (!receiverType) markInvalid('#TransactionTypeDropdown', 'Select Type');
+                    if (receiverType === "Other") {
+                        if (!$('#OtherReceiver').val()) markInvalid('#OtherReceiver', 'Enter Receiver Name');
+                    } else {
+                        if (!$('#ReceiverCode').val()) markInvalid('#ReceiverCode', 'Select Receiver');
+                    }
+                    if (PaymentMode === "34") {
+                        if (!$('#ChecqueNo').val()) markInvalid('#ChecqueNo', 'Enter Cheque Number');
+                        if (!$('#BankName').val()) markInvalid('#BankName', 'Enter Bank Name');
+                    }
+                }
+
+                if (!isValid) return;
+
+                var form = $(this);
+                var formData = new FormData(this);
+
+                $.ajax({
+                    url: form.attr('action'),
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (result) {
+                        if (result.success) {
+                            $('#CashModal').modal('hide');
+                            form[0].reset();
+
+                            if (result.transactionId == 26) {
+                                $.post('/AccountManager/GenerateReceiptPdf', { transactionCode: result.transactionCode }, function (res) {
+                                    if (res.success) {
+                                        alert('Transaction saved and receipt PDF generated successfully!');
+                                    } else {
+                                        alert('Transaction saved but PDF generation failed.');
+                                    }
+                                }).fail(function () {
+                                    alert('Error during receipt PDF generation.');
+                                });
+                            } else if (result.transactionId == 27 && result.receiverType === "Worker" && result.receiverCode) {
+                                $.post('/AccountManager/GenerateSalarySlip', { workerCode: result.receiverCode }, function (res) {
+                                    if (res.success) {
+                                        window.open(res.filePath, '_blank');
+                                        alert('Transaction saved and salary slip generated!');
+                                    } else {
+                                        alert('Transaction saved, but salary slip generation failed: ' + res.message);
+                                    }
+                                }).fail(function () {
+                                    alert('Transaction saved, but an error occurred during salary slip generation.');
+                                });
+                            } else {
+                                alert('Transaction saved successfully!');
+                            }
+                        } else {
+                            $('#modalBody').html(result);
+                        }
+                    },
+                    error: function () {
+                        alert('An error occurred while saving the transaction.');
+                    }
+                });
+            });
+
+            // ===================== Reset Modal on Close =====================
+            $(document).on('click', '#closeModalBtn', function () {
+                const $form = $('#cashTransactionForm');
+                if ($form.length) {
+                    $form[0].reset();
+                }
+                $form.find('select').each(function () {
+                    $(this).val($(this).find('option:first').val());
+                });
+
+                $('#CreditSection, #TypeDropdownDiv, #ReceiverDropdownDiv, #ReceiverTextboxDiv, .cheque-fields').hide();
+                $('.text-danger').remove();
+                $('.is-invalid').removeClass('is-invalid');
+                $('#selectedFileName').hide();
+                $('#AttachmentPath').val('');
+            });
+        });
+    </script>
+}
+

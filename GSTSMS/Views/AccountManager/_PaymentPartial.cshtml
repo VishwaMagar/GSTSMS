@@ -1,0 +1,17 @@
+﻿@model GSTSMSLibrary.AccountManager.AccountManager
+
+<div>
+    <h5 class="fw-bold text-primary">Payment Details</h5>
+    <p><strong>Event Name:</strong> @Model.EventName</p>
+    <p><strong>Event Handler:</strong> @Model.EventHandlerName</p>
+    <p><strong>IFSC Code:</strong> @Model.IFSCCode</p>
+    <p><strong>Amount to Pay:</strong> ₹ @Model.ActualCost</p>
+
+    <div id="bankDetails" class="d-none mt-3">
+        <p><strong>Bank Name:</strong> <span id="bankName"></span></p>
+        <p><strong>Branch:</strong> <span id="bankBranch"></span></p>
+        <p><strong>Address:</strong> <span id="bankAddress"></span></p>
+    </div>
+
+    <button class="btn btn-success mt-3" id="confirmPaymentBtn">Confirm & Pay</button>
+</div>

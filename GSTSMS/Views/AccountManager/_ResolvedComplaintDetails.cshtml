@@ -1,0 +1,79 @@
+﻿@model GSTSMSLibrary.AccountManager.AccountManager
+@using System.IO
+
+<div class="modal-header">
+    <h5 class="modal-title"><strong>View Details</strong></h5>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<div class="modal-body">
+    <div class="row mb-3">
+        <div class="col-md-4 font-weight-bold">Name</div>
+        <div class="col-md-8">
+            <input type="text" class="form-control" readonly value="@Model.SecretoryName" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-4 font-weight-bold">Complaint Type</div>
+        <div class="col-md-8">
+            <input type="text" class="form-control" readonly value="@Model.ComplaintType" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-4 font-weight-bold">Open Date</div>
+        <div class="col-md-8">
+            <input type="text" class="form-control" readonly value="@Model.ComplaintDate.ToString("dd/MM/yyyy")" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-4 font-weight-bold">Description</div>
+        <div class="col-md-8">
+            <textarea class="form-control" rows="5" readonly>@Html.Raw(Model.Description)</textarea>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-4 font-weight-bold">Status</div>
+        <div class="col-md-8">
+            <input type="text" class="form-control" readonly value="@Model.Status" />
+        </div>
+    </div>
+
+    @* Document View Button *@
+    @{
+        string docFileName = Model.DocumentPath;
+        string relativePath = docFileName.StartsWith("") ? docFileName : "/Uploads/ComplaintDocuments/" + docFileName;
+        string fullPath = Server.MapPath(relativePath);
+        bool fileExists = !string.IsNullOrEmpty(docFileName) && System.IO.File.Exists(fullPath);
+    }
+
+
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <label class="font-weight-bold">Complaint Document (PDF)</label>
+
+            @if (fileExists)
+            {
+                <a href="@Url.Content(relativePath)" target="_blank" class="btn btn-success mt-2">
+                    <i class="fas fa-file-pdf"></i> View Document
+                </a>
+            }
+            else
+            {
+                <div class="text-danger mt-2"><strong>PDF not found on server.</strong></div>
+
+                <div class="alert alert-warning mt-2">
+                    <p><strong>Debug Info:</strong></p>
+                    <p><strong>DocumentPath:</strong> @Model.DocumentPath</p>
+                    <p><strong>Expected Path:</strong> @relativePath</p>
+                    <p><strong>Server File Path:</strong> @fullPath</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
